@@ -1,13 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>{[{name}]}.js</title>
-  </head>
 
-  <body>
-    <script src="../{[{name}]}.js"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <title>labelizer.js</title>
+</head>
+
+<body>
+  <header>
+
+  </header>
+  <div class="container">
+
+    <section id="text">
+      La linguistique est une discipline scientifique s’intéressant à l’étude du langage. Elle se distingue de la
+      grammaire, dans la mesure où elle n'est pas prescriptive mais descriptive. La prescription correspond à la norme,
+      c'est-à-dire ce qui est jugé correct linguistiquement par les grammairiens. À l'inverse, la linguistique se
+      contente
+      de décrire la langue telle qu'elle est et non telle qu'elle devrait être.
+
+      On trouve des témoignages de réflexions sur le langage dès l'Antiquité avec des philosophes comme Platon.
+      Cependant
+      il faut attendre le XXe siècle pour voir se dégager une approche scientifique autour des faits de langues.
+      Ferdinand
+      de Saussure a <a href="google.com">grandement</a> contribué à la description du langage et des langues, notamment
+      avec son influent Cours
+      de
+      linguistique <p>oui oui </p>générale (1916) qui est devenu un classique dans ce domaine et a imposé la conception
+      structurale du
+      langage qui domine largement la linguistique contemporaine en dépit des conflits d'écoles3. André Martinet a aussi
+      contribué à cette discipline avec son ouvrage Éléments de linguistique générale présentant les divers faits de
+      langues. On peut également citer Noam Chomsky, qui a posé les bases de la linguistique générative, qui est un
+      modèle
+      parmi d'autres.
+
+      Le travail descriptif de la linguistique peut se faire selon trois axes principaux :
+
+      études en synchronie et diachronie : l'étude synchronique d'une langue s'intéresse seulement à cette langue à un
+      moment donné de son histoire, à un seul de ses états, tandis que l’étude diachronique s'intéresse à son histoire,
+      à
+      son évolution, la situe dans une famille de langues, et décrit les changements structurels qu'elle a subi dans le
+      temps ;
+      études théoriques et appliquées : la linguistique théorique étudie la création de structures permettant la
+      description individuelle de langues ainsi que les théories cherchant à dégager des invariances ou des symétries ;
+      études contextuelles et indépendantes : l'étude contextuelle avec la sociolinguistique indique qu’on s’intéresse
+      aux
+      interactions et aux relations entretenues entre le langage et le monde, tandis que l'étude indépendante indique
+      qu’on considère le langage pour lui-même, indépendamment de ses conditions extérieures.
+    </section>
+    <section id="console">
+
+    </section>
+  </div>
+
+  <footer>
+
+  </footer>
+
+  <script src="../labelizer.js"></script>
+  <script>
+
+    window.onload = function () {
+      let options = {
+        tokenColorBgHover: 'blue',
+        tokenColorFgHover: 'white',
+        consoleSelector: '#console'
+      }
+      new Labelizer("#text", options);
+
+    };
+  </script>
+</body>
+
 </html>

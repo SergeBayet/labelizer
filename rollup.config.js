@@ -16,7 +16,7 @@ export default {
   ],
   output: [
     {
-      file: "{[{name}]}.js",
+      file: "labelizer.js",
       format: "umd",
       name: pkg.name,
       banner: `/*!\n${String(fs.readFileSync("./LICENSE"))

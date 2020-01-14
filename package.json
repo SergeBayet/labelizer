@@ -1,16 +1,16 @@
 {
-  "name": "{[{name}]}",
+  "name": "labelizer",
   "version": "1.0.0",
-  "description": "{[{description}]}",
+  "description": "Lexicographic labelizer",
   "main": "index.js",
-  "author": "{[{author}]}",
+  "author": "Serge Bayet",
   "scripts": {
     "lint": "eslint src test",
     "lint:fix": "eslint --fix src test",
     "clean:node": "rm -rf index.js lib",
-    "clean:browser": "rm -rf {[{name}]}*.js",
+    "clean:browser": "rm -rf labelizer*.js",
     "clean": "npm run clean:node && npm run clean:browser",
-    "minify": "uglifyjs {[{name}]}.js -o {[{name}]}.min.js  --compress --mangle --comments /Copyright/",
+    "minify": "uglifyjs labelizer.js -o labelizer.min.js  --compress --mangle --comments /Copyright/",
     "build:browser": "rollup -c && npm run minify",
     "build:node": "babel src -d .",
     "build": "npm run build:browser && npm run build:node",
@@ -40,5 +40,6 @@
     "rollup-plugin-babel": "^4.3.3",
     "uglify-js": "^3.6.8",
     "rollup-plugin-node-builtins": "^2.1.2"
-  }
+  },
+  "dependencies": {}
 }

@@ -1,9 +1,9 @@
 {
-  "name": "{[{name}]}",
-  "main": "{[{name}]}.js",
-  "homepage": "{[{repoUrl}]}",
-  "authors": ["{[{author}]}"],
-  "description": "{[{description}]}",
+  "name": "labelizer",
+  "main": "labelizer.js",
+  "homepage": "",
+  "authors": ["Serge Bayet"],
+  "description": "Lexicographic labelizer",
   "license": "MIT",
   "ignore": [
     "**/.*",
