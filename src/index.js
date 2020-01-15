@@ -1,4 +1,5 @@
 import carry from "./carry";
+import { getCookie, setCookie } from "./cookies";
 const version = "0.0.1";
 
 export default class Labelizer {
@@ -11,6 +12,11 @@ export default class Labelizer {
     this.consoleInitialized = false;
     this.language = 'fr';
     this.history = [];
+    let h = getCookie("lbz_history");
+    if (h != '') {
+      this.history = JSON.parse(h);
+    }
+    this.historyCursor = this.history.length;
     this.init();
   }
 
@@ -32,9 +38,9 @@ export default class Labelizer {
 
     this.indexToken = 0;
     this.repl(this.el);
-    var css = '.token:hover{ background-color: ' + (this.o.tokenColorBgHover || '#00FF00') + ' ; color: ' + (this.o.tokenColorFgHover || '#FF00FF') + ' ; cursor:pointer ; -webkit-user-select: none ; -moz-user-select: none; -ms-user-select: none; user-select: none; } ';
+    let css = '.token:hover{ background-color: ' + (this.o.tokenColorBgHover || '#00FF00') + ' ; color: ' + (this.o.tokenColorFgHover || '#FF00FF') + ' ; cursor:pointer ; -webkit-user-select: none ; -moz-user-select: none; -ms-user-select: none; user-select: none; } ';
     css += ' .token.selected { background-color : green }';
-    var style = document.createElement('style');
+    let style = document.createElement('style');
 
     if (style.styleSheet) {
       style.styleSheet.cssText = css;
@@ -132,7 +138,22 @@ export default class Labelizer {
         inputElement.value = '';
       }
       else if (e.keyCode == 38) {
-        console.log(this.history);
+
+        if (this.history.length > 0) {
+          this.historyCursor--;
+          if (this.historyCursor < 0) this.historyCursor = 0;
+          e.target.value = this.history[this.historyCursor];
+        }
+      }
+      else if (e.keyCode == 40) {
+        if (this.history.length > 0) {
+          this.historyCursor++;
+          if (this.historyCursor > this.history.length - 1) this.historyCursor = this.history.length - 1;
+          e.target.value = this.history[this.historyCursor];
+        }
+      }
+      else {
+        this.historyCursor = this.history.length;
       }
     });
     let screen = document.createElement('div');
@@ -148,6 +169,9 @@ export default class Labelizer {
   }
   executeConsole(action) {
     this.history.push(action);
+    this.history = [...new Set(this.history)];
+    setCookie("lbz_history", JSON.stringify(this.history), 90);
+    this.historyCursor = this.history.length;
     let params = this.consoleParser(action);
     console.log(params);
     this.displayConsole("> " + action);

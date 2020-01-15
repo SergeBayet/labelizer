@@ -199,6 +199,31 @@
     return stem;
   }
 
+  function setCookie(cname, cvalue, exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
+    var expires = "expires=" + d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+  }
+  function getCookie(cname) {
+    var name = cname + "=";
+    var ca = document.cookie.split(';');
+
+    for (var i = 0; i < ca.length; i++) {
+      var c = ca[i];
+
+      while (c.charAt(0) == ' ') {
+        c = c.substring(1);
+      }
+
+      if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+
+    return "";
+  }
+
   var Labelizer =
   /*#__PURE__*/
   function () {
@@ -214,6 +239,13 @@
       this.consoleInitialized = false;
       this.language = 'fr';
       this.history = [];
+      var h = getCookie("lbz_history");
+
+      if (h != '') {
+        this.history = JSON.parse(h);
+      }
+
+      this.historyCursor = this.history.length;
       this.init();
     }
 
@@ -346,7 +378,19 @@
 
             inputElement.value = '';
           } else if (e.keyCode == 38) {
-            console.log(_this2.history);
+            if (_this2.history.length > 0) {
+              _this2.historyCursor--;
+              if (_this2.historyCursor < 0) _this2.historyCursor = 0;
+              e.target.value = _this2.history[_this2.historyCursor];
+            }
+          } else if (e.keyCode == 40) {
+            if (_this2.history.length > 0) {
+              _this2.historyCursor++;
+              if (_this2.historyCursor > _this2.history.length - 1) _this2.historyCursor = _this2.history.length - 1;
+              e.target.value = _this2.history[_this2.historyCursor];
+            }
+          } else {
+            _this2.historyCursor = _this2.history.length;
           }
         });
         var screen = document.createElement('div');
@@ -361,6 +405,9 @@
       key: "executeConsole",
       value: function executeConsole(action) {
         this.history.push(action);
+        this.history = _toConsumableArray(new Set(this.history));
+        setCookie("lbz_history", JSON.stringify(this.history), 90);
+        this.historyCursor = this.history.length;
         var params = this.consoleParser(action);
         console.log(params);
         this.displayConsole("> " + action);
