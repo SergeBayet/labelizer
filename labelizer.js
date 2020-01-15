@@ -224,6 +224,11 @@
     return "";
   }
 
+  var stop = ["alors", "a", "à", "au", "aucuns", "aussi", "autre", "avant", "avec", "avoir", "bon", "car", "ce", "cela", "ces", "ceux", "chaque", "ci", "comme", "comment", "dans", "de", "d", "des", "du", "dedans", "dehors", "depuis", "devrait", "doit", "donc", "dos", "début", "elle", "elles", "en", "encore", "essai", "est", "et", "eu", "fait", "faites", "fois", "font", "hors", "ici", "il", "ils", "je", "juste", "l", "la", "le", "les", "leur", "là", "ma", "maintenant", "mais", "mes", "mine", "moins", "mon", "mot", "même", "ni", "nommés", "notre", "nous", "ou", "où", "par", "parce", "pas", "peut", "peu", "plupart", "pour", "pourquoi", "quand", "qu", "que", "quel", "quelle", "quelles", "quels", "qui", "sa", "sans", "ses", "seulement", "s", "si", "sien", "son", "sont", "sous", "soyez", "sujet", "sur", "ta", "tandis", "tellement", "tels", "tes", "ton", "tous", "tout", "trop", "très", "t", "tu", "voient", "vont", "votre", "vous", "vu", "ça", "étaient", "état", "étions", "été", "être"];
+  function isStopWord(word) {
+    return stop.includes(word.toLowerCase());
+  }
+
   var Labelizer =
   /*#__PURE__*/
   function () {
@@ -437,6 +442,10 @@
             this.stem(params.arguments, params.options);
             break;
 
+          case 'ngrams':
+            this.ngrams(params.arguments, params.options);
+            break;
+
           default:
             this.displayConsole('unknown command \'' + params.command + '\'');
             break;
@@ -485,7 +494,6 @@
           var n = nodes[i];
 
           if (n.nodeType == n.TEXT_NODE) {
-            //console.log(n.textContent);
             var toks = n.textContent.split(/([0-9A-z\xC0-\xF9]*)/g).filter(function (x) {
               return x !== '';
             });
@@ -551,6 +559,80 @@
         return parser;
       } // Commands Console
 
+    }, {
+      key: "ngrams",
+      value: function ngrams(args, opts) {
+        var selector = " .token";
+        var r = new RegExp("^[A-zÀ-ù0-9\-]+$");
+
+        if (opts.includes("selection") || opts.includes("s")) {
+          selector += ".selected";
+        }
+
+        var tokensEl = document.querySelectorAll(this.selector + selector);
+        var i = 0,
+            lastIndex = 0;
+        var n = parseInt(args[0] || '3'); // Default ngrams(3)
+
+        var ngrams = {};
+
+        while (tokensEl[i]) {
+          //console.log(tokensEl[i].innerText);
+          if (r.test(tokensEl[i].innerText)) {
+            lastIndex = i;
+            var ng = '';
+            var cursor = 1;
+
+            while (cursor <= n && tokensEl[i]) {
+              var text = tokensEl[i].innerText;
+
+              if (/^[\,\.\(\)\;\-\:\[\]\|·\(\)]$/.test(text)) {
+                break;
+              }
+
+              if (isStopWord(text)) {
+                console.log(ng);
+                if (cursor == 1 || cursor == n) break;
+              }
+
+              ng += text;
+              if (r.test(text)) cursor++;
+              i++;
+            }
+
+            if (cursor == n + 1) {
+              if (!ngrams[ng]) {
+                ngrams[ng] = 1;
+              } else {
+                ngrams[ng]++;
+              }
+            }
+
+            i = lastIndex;
+          }
+
+          i++;
+        }
+
+        ngrams = Object.keys(ngrams).map(function (key) {
+          return [key, ngrams[key]];
+        });
+        console.log(ngrams);
+
+        if (opts.includes("r") || opts.includes("rsort")) {
+          ngrams.sort(function (a, b) {
+            return a[1] > b[1];
+          });
+        } else {
+          ngrams.sort(function (a, b) {
+            return a[1] < b[1];
+          });
+        }
+
+        this.displayConsole(ngrams.map(function (x) {
+          return x[0] + ' (' + x[1] + ')';
+        }).join(' - ')); //console.log(ngrams);
+      }
     }, {
       key: "stem",
       value: function stem(args, opts) {

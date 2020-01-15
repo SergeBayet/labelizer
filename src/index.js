@@ -1,5 +1,6 @@
 import carry from "./carry";
 import { getCookie, setCookie } from "./cookies";
+import { isStopWord } from "./stopwords";
 const version = "0.0.1";
 
 export default class Labelizer {
@@ -194,6 +195,10 @@ export default class Labelizer {
       case 'stem':
         this.stem(params.arguments, params.options);
         break;
+      case 'ngrams':
+        this.ngrams(params.arguments, params.options);
+        break;
+
       default:
         this.displayConsole('unknown command \'' + params.command + '\'');
         break;
@@ -227,8 +232,9 @@ export default class Labelizer {
 
     for (var i = 0, m = nodes.length; i < m; i++) {
       var n = nodes[i];
+
       if (n.nodeType == n.TEXT_NODE) {
-        //console.log(n.textContent);
+
         let toks = n.textContent.split(/([A-zÀ-ù0-9]*)/gu).filter(x => x !== '');
         let newHTML = '';
         toks.forEach(el => {
@@ -236,6 +242,7 @@ export default class Labelizer {
 
           newHTML += '<span class="token" data-id="' + this.indexToken + '">' + el + '</span>';
         });
+
         // do some swappy text to html here?
         var replacementNode = document.createElement('span');
 
@@ -292,6 +299,64 @@ export default class Labelizer {
     return parser;
   }
   // Commands Console
+  ngrams(args, opts) {
+    let selector = " .token";
+    let r = new RegExp("^[A-zÀ-ù0-9\-]+$");
+    if (opts.includes("selection") || opts.includes("s")) {
+      selector += ".selected";
+    }
+    let tokensEl = document.querySelectorAll(this.selector + selector);
+    let i = 0, lastIndex = 0;
+    let n = parseInt(args[0] || '3');      // Default ngrams(3)
+
+    let ngrams = {};
+    while (tokensEl[i]) {
+      //console.log(tokensEl[i].innerText);
+      if (r.test(tokensEl[i].innerText)) {
+        lastIndex = i;
+        let ng = '';
+        let cursor = 1;
+
+        while (cursor <= n && tokensEl[i]) {
+          let text = tokensEl[i].innerText
+          if (/^[\,\.\(\)\;\-\:\[\]\|·\(\)]$/.test(text)) {
+            break;
+          }
+          if (isStopWord(text)) {
+            console.log(ng);
+            if (cursor == 1 || cursor == n) break;
+
+          }
+          ng += text;
+          if (r.test(text)) cursor++;
+          i++;
+        }
+        if (cursor == n + 1) {
+          if (!ngrams[ng]) {
+            ngrams[ng] = 1;
+          }
+          else {
+            ngrams[ng]++;
+          }
+
+        }
+        i = lastIndex;
+      }
+
+      i++;
+    }
+    ngrams = Object.keys(ngrams).map(key => [key, ngrams[key]]);
+    console.log(ngrams);
+    if (opts.includes("r") || opts.includes("rsort")) {
+      ngrams.sort((a, b) => a[1] > b[1]);
+    }
+    else {
+      ngrams.sort((a, b) => a[1] < b[1]);
+    }
+
+    this.displayConsole(ngrams.map(x => x[0] + ' (' + x[1] + ')').join(' - '));
+    //console.log(ngrams);
+  }
   stem(args, opts) {
     let selector = " .token";
     let sensitive = true;
