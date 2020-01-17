@@ -1,23 +1,21 @@
 import carry from "./carry";
 import { getCookie, setCookie } from "./cookies";
 import { isStopWord } from "./stopwords";
+import Terminal from "./terminal";
 const version = "0.0.1";
 
 export default class Labelizer {
 
   constructor(selector, options = {}) {
+    this.terminal = new Terminal(this, options.consoleSelector);
+
     this.selector = selector;
     this.el = document.querySelector(selector);
     this.o = options;
     this.indexToken = 0;
     this.consoleInitialized = false;
     this.language = 'fr';
-    this.history = [];
-    let h = getCookie("lbz_history");
-    if (h != '') {
-      this.history = JSON.parse(h);
-    }
-    this.historyCursor = this.history.length;
+
     this.init();
   }
 
@@ -27,13 +25,10 @@ export default class Labelizer {
     as.forEach(a => {
       a.addEventListener("click", e => e.preventDefault());
     });
-    this.console = document.querySelector(this.o.consoleSelector);
-    if (this.console) {
-      this.initConsole();
-    }
+
     this.lastSelected = false;
     if (!(this.el)) {
-      this.displayConsole("DOM selector must be provided!");
+      this.terminal.log("DOM selector must be provided!");
       return false;
     }
 
@@ -54,18 +49,18 @@ export default class Labelizer {
     tokensEl.forEach(el => {
 
       el.addEventListener("click", e => {
-        // this.displayConsole('id : ' + el.getAttribute('data-id'));
+        // this.terminal.log('id : ' + el.getAttribute('data-id'));
         if (window.event.ctrlKey) {
 
           if (!el.classList.contains("selected")) {
             el.classList = "token selected";
             this.lastSelected = el.getAttribute('data-id');
-            this.displayConsole("'" + e.target.innerText + "' selected");
+            this.terminal.log("'" + e.target.innerText + "' selected");
           }
           else {
             el.classList = "token";
             this.lastSelected = false;
-            this.displayConsole("'" + e.target.innerText + "' unselected");
+            this.terminal.log("'" + e.target.innerText + "' unselected");
           }
 
         }
@@ -73,7 +68,7 @@ export default class Labelizer {
           let idSelected = el.getAttribute('data-id');
           if (!this.lastSelected) {
             el.classList = "token selected";
-            this.displayConsole("'" + e.target.innerText + "' selected");
+            this.terminal.log("'" + e.target.innerText + "' selected");
           }
           else if (this.lastSelected < idSelected) {
             let selectedText = [];
@@ -83,7 +78,7 @@ export default class Labelizer {
               t.classList = "token selected";
               selectedText.push(t.innerText);
             }
-            this.displayConsole("'" + selectedText.join('') + "' selected");
+            this.terminal.log("'" + selectedText.join('') + "' selected");
           }
           else {
             let selectedText = [];
@@ -94,7 +89,7 @@ export default class Labelizer {
               selectedText.push(t.innerText);
 
             }
-            this.displayConsole("'" + selectedText.reverse().join('') + "' selected");
+            this.terminal.log("'" + selectedText.reverse().join('') + "' selected");
           }
           this.lastSelected = idSelected;
         }
@@ -105,129 +100,32 @@ export default class Labelizer {
             });
             el.classList = "token selected";
             this.lastSelected = el.getAttribute('data-id');
-            this.displayConsole("'" + e.target.innerText + "' selected");
+            this.terminal.log("'" + e.target.innerText + "' selected");
           }
           else {
             tokensEl.forEach(x => {
               x.classList = "token";
             });
             this.lastSelected = false;
-            this.displayConsole("'" + e.target.innerText + "' unselected");
+            this.terminal.log("'" + e.target.innerText + "' unselected");
           }
 
         }
 
       });
     });
-    this.displayConsole("Labelizer intialized.")
+    this.terminal.info("Labelizer initialized.")
   }
-  initConsole() {
-    if (this.consoleInitialized) return false;
-    this.consoleInitialized = true;
-    let inputElement = document.createElement('input');
-    inputElement.setAttribute('rows', '1');
-    inputElement.setAttribute('type', 'text');
-    inputElement.style.position = 'static';
-    inputElement.style.bottom = '0px';
-    inputElement.style.width = '100%';
-    inputElement.style.backgroundColor = '#111';
-    inputElement.style.color = '#EEE';
-    inputElement.autofocus = true;
-    inputElement.addEventListener('keydown', e => {
-      if (e.keyCode == 13) {
-        this.executeConsole(e.target.value);
-        inputElement.value = '';
-      }
-      else if (e.keyCode == 38) {
 
-        if (this.history.length > 0) {
-          this.historyCursor--;
-          if (this.historyCursor < 0) this.historyCursor = 0;
-          e.target.value = this.history[this.historyCursor];
-        }
-      }
-      else if (e.keyCode == 40) {
-        if (this.history.length > 0) {
-          this.historyCursor++;
-          if (this.historyCursor > this.history.length - 1) this.historyCursor = this.history.length - 1;
-          e.target.value = this.history[this.historyCursor];
-        }
-      }
-      else {
-        this.historyCursor = this.history.length;
-      }
-    });
-    let screen = document.createElement('div');
-    screen.setAttribute('class', 'context');
-    this.console.appendChild(screen);
 
-    this.console = screen;
-    this.o.consoleSelector = this.o.consoleSelector + ' .context';
-    console.log(this.o.consoleSelector)
-    screen.parentNode.insertBefore(inputElement, screen.nextSibling);
-    //this.console.appendChild(inputElement);
-
-  }
-  executeConsole(action) {
-    this.history.push(action);
-    this.history = [...new Set(this.history)];
-    setCookie("lbz_history", JSON.stringify(this.history), 90);
-    this.historyCursor = this.history.length;
-    let params = this.consoleParser(action);
-    console.log(params);
-    this.displayConsole("> " + action);
-    switch (params.command) {
-      case 'clear':
-        this.console.innerHTML = '';
-        break;
-      case 'load':
-        this.loadHtml(params.arguments, params.options);
-        break;
-      case 'language':
-        this.changeLanguage(params.arguments);
-        break;
-      case 'count':
-        this.count(params.arguments, params.options);
-        break;
-      case 'freq':
-        this.freq(params.arguments, params.options);
-        break;
-      case 'stem':
-        this.stem(params.arguments, params.options);
-        break;
-      case 'ngrams':
-        this.ngrams(params.arguments, params.options);
-        break;
-
-      default:
-        this.displayConsole('unknown command \'' + params.command + '\'');
-        break;
-    }
-    //this.displayConsole(action);
-  }
-  displayConsole(...args) {
-    if (this.console) {
-      args.forEach(e => {
-        let consoleElement = document.createElement('p');
-        let consoleInstruction = document.createTextNode(e);
-        if (e.charAt(0) == ">") {
-          consoleElement.style.color = 'green';
-        }
-        else if (e.charAt(0) == "!") {
-          consoleElement.style.color = 'red';
-        }
-        consoleElement.appendChild(consoleInstruction);
-        this.console.appendChild(consoleElement);
-
-      });
-
-      this.console.scrollTop = this.console.scrollHeight - this.console.clientHeight;
-    }
-    else {
-      console.log(...args);
-    }
-  }
   repl(node) {
+    if (node.className === undefined || node.nodeName == "CODE" || node.nodeName == "PRE") return
+
+    let classNames = node.className.split(" ");
+
+    if (classNames.includes("mw-editsection")
+      || classNames.includes("plainlinks")
+      || classNames.includes("references-small")) return;
     var nodes = node.childNodes;
 
     for (var i = 0, m = nodes.length; i < m; i++) {
@@ -235,7 +133,19 @@ export default class Labelizer {
 
       if (n.nodeType == n.TEXT_NODE) {
 
-        let toks = n.textContent.split(/([A-zÀ-ù0-9]*)/gu).filter(x => x !== '');
+        let toks = n.textContent.split(/([A-zÀ-ü0-9\-\.]*)/gu).filter(x => (x));
+        let i = 0;
+        while (toks[i]) {
+          if (/^[^\.]*\.$/gm.test(toks[i])) {
+
+            toks[i] = toks[i].substring(0, toks[i].length - 1);
+            toks.splice(i + 1, 0, '.');
+            i++;
+          }
+          i++;
+        }
+
+        //console.log(toks);
         let newHTML = '';
         toks.forEach(el => {
           this.indexToken++;
@@ -253,100 +163,108 @@ export default class Labelizer {
         this.repl(n);
       }
     }
-  }
-  // Console parser
 
-  consoleParser(str) {
-    const regex = /"(.+)"|([A-zÀ-ù0-9\-]+)/gum;
-    //const str = `load "slkj lkj" -f lkljl --serei mlk 12`;
-    let m;
-    let tokens = [];
-    while ((m = regex.exec(str)) !== null) {
-      // This is necessary to avoid infinite loops with zero-width matches
-      if (m.index === regex.lastIndex) {
-        regex.lastIndex++;
-      }
-
-      // The result can be accessed through the `m`-variable.
-      m.forEach((match, groupIndex) => {
-        //console.log(`Found match, group ${groupIndex}: ${match}`);
-        if (groupIndex == 0) {
-          tokens.push(match)
-        }
-      });
-    }
-    let parser = {};
-    parser.command = tokens[0];
-    parser.options = [];
-    parser.arguments = [];
-    for (let i = 1; i < tokens.length; i++) {
-      if (/^--\w*$/u.test(tokens[i])) {
-        console.log(tokens[i]);
-        parser.options.push(tokens[i].substring(2));
-      }
-      else if (/^-\w*/u.test(tokens[i])) {
-        let opt = tokens[i].substring(1).split('');
-        parser.options = [...parser.options, ...opt];
-      }
-      else if (/^".*"$/u.test(tokens[i])) {
-        parser.arguments.push(tokens[i].substring(1, tokens[i].length - 1));
-      }
-      else {
-        parser.arguments.push(tokens[i]);
-      }
-    }
-    parser.options = [...new Set(parser.options)];
-    return parser;
   }
+
   // Commands Console
   ngrams(args, opts) {
     let selector = " .token";
-    let r = new RegExp("^[A-zÀ-ù0-9\-]+$");
+    let r = new RegExp("^[A-zÀ-ü0-9\-]+$");
     if (opts.includes("selection") || opts.includes("s")) {
       selector += ".selected";
     }
-    let tokensEl = document.querySelectorAll(this.selector + selector);
-    let i = 0, lastIndex = 0;
-    let n = parseInt(args[0] || '3');      // Default ngrams(3)
-
+    let n = parseInt(args[0]); // || '3');      // Default ngrams(3)
     let ngrams = {};
-    while (tokensEl[i]) {
-      //console.log(tokensEl[i].innerText);
-      if (r.test(tokensEl[i].innerText)) {
-        lastIndex = i;
-        let ng = '';
-        let cursor = 1;
+    let tokensEl = document.querySelectorAll(this.selector + selector);
+    let mask = Array(tokensEl.length).fill(true);
+    let insensitive = false;
+    let recursive = n;
+    let minimumLength = 3;
+    let stem = false;
+    if (opts.includes("R") || opts.includes('recursive')) {
+      recursive = 1;
+    }
+    if (opts.includes("i") || opts.includes("insensitive")) {
+      insensitive = true;
+    }
+    if (opts.includes("t") || opts.includes("stem")) {
+      stem = true;
+    }
+    while (n >= recursive) {
+      let i = 0, lastIndex = 0;
+      while (tokensEl[i]) {
+        //console.log(tokensEl[i].innerText);
+        if (r.test(tokensEl[i].innerText)) {
+          lastIndex = i;
+          let ng = '';
+          let ngStemmed = '';
+          let cursor = 1;
 
-        while (cursor <= n && tokensEl[i]) {
-          let text = tokensEl[i].innerText
-          if (/^[\,\.\(\)\;\-\:\[\]\|·\(\)]$/.test(text)) {
-            break;
+          while (cursor <= n && tokensEl[i]) {
+            if (!mask[i]) break;
+            let text = tokensEl[i].innerText
+            if (/^[\,\.\(\)\;\:\[\]\|·\(\)]$/.test(text)) {
+              break;
+            }
+            if (isStopWord(text, this.language)) {
+              if (cursor == 1 || cursor == n) break;
+            }
+
+            if (r.test(text)) {
+              if (cursor > 1 && ng.substring(ng.length - 1) !== ' ') {
+                break;
+              }
+              cursor++;
+            }
+            ngStemmed += carry(text);
+            ng += text;
+            i++;
           }
-          if (isStopWord(text)) {
-            console.log(ng);
-            if (cursor == 1 || cursor == n) break;
+          i = lastIndex;
+          if (cursor == n + 1) {
+            if (insensitive) {
+              ng = ng.toLowerCase();
+              ngStemmed = ngStemmed.toLowerCase();
+            }
+            if (stem) {
+              if (!ngrams[ngStemmed]) {
+                ngrams[ngStemmed] = { 'weight': 1, 'forms': new Set([ng]) };
+
+              }
+              else {
+
+                ngrams[ngStemmed].weight += n;
+                ngrams[ngStemmed].forms.add(ng);
+                for (let x = i; x <= i + n; x++) {
+                  mask[x] = false;
+                }
+              }
+            }
+            else {
+              if (!ngrams[ng]) {
+                ngrams[ng] = { weight: 1 };
+              }
+              else {
+                ngrams[ng].weight += n;
+                for (let x = i; x <= i + n; x++) {
+                  mask[x] = false;
+                }
+              }
+            }
+
 
           }
-          ng += text;
-          if (r.test(text)) cursor++;
-          i++;
+
         }
-        if (cursor == n + 1) {
-          if (!ngrams[ng]) {
-            ngrams[ng] = 1;
-          }
-          else {
-            ngrams[ng]++;
-          }
 
-        }
-        i = lastIndex;
+        i++;
       }
 
-      i++;
+      n--;
     }
-    ngrams = Object.keys(ngrams).map(key => [key, ngrams[key]]);
-    console.log(ngrams);
+
+    ngrams = Object.keys(ngrams).map(key => [key, ngrams[key].weight, ngrams[key].forms]);
+
     if (opts.includes("r") || opts.includes("rsort")) {
       ngrams.sort((a, b) => a[1] > b[1]);
     }
@@ -354,13 +272,27 @@ export default class Labelizer {
       ngrams.sort((a, b) => a[1] < b[1]);
     }
 
-    this.displayConsole(ngrams.map(x => x[0] + ' (' + x[1] + ')').join(' - '));
+    this.terminal.log(
+      ngrams
+        .filter(x => x[1] > 1 && x[0].length >= minimumLength)
+        .map(x => {
+          if (x[2]) {
+            return Array.from(x[2]).join('/') + ' (' + x[1] + ')';
+          }
+          else {
+            return x[0] + ' (' + x[1] + ')'
+          }
+
+
+        })
+        .join('<br/>')
+    );
     //console.log(ngrams);
   }
   stem(args, opts) {
     let selector = " .token";
     let sensitive = true;
-    let r = new RegExp("^[A-zÀ-ù0-9\-]+$");
+    let r = new RegExp("^[A-zÀ-ü0-9\-]+$");
     if (opts.includes("selection") || opts.includes("s")) {
       selector += ".selected";
     }
@@ -383,7 +315,7 @@ export default class Labelizer {
     let sensitive = true;
     let stem = false;
 
-    let r = new RegExp("^[A-zÀ-ù0-9\-]+$");
+    let r = new RegExp("^[A-zÀ-ü0-9\-]+$");
     if (opts.includes("stem") || opts.includes("t")) {
       //console.log(opts);
       stem = true;
@@ -421,10 +353,10 @@ export default class Labelizer {
     }
 
     if (opts.includes("p")) {
-      this.displayConsole(words.map(x => x[0] + ' (' + this.digits2((x[1] / wordsCount) * 100) + '%)').join(" - "));
+      this.terminal.log(words.map(x => x[0] + ' (' + this.digits2((x[1] / wordsCount) * 100) + '%)').join(" - "));
     }
     else {
-      this.displayConsole(words.map(x => x[0] + ' (' + x[1] + ')').join(" - "));
+      this.terminal.log(words.map(x => x[0] + ' (' + x[1] + ')').join(" - "));
     }
   }
   digits2(num) {
@@ -432,7 +364,7 @@ export default class Labelizer {
   }
   count(args, opts) {
     let selector = " .token";
-    let r = new RegExp("^[A-zÀ-ù0-9\-]+$");
+    let r = new RegExp("^[A-zÀ-ü0-9\-]+$");
     if (opts.includes("selection") || opts.includes("s")) {
       selector += ".selected";
     }
@@ -471,35 +403,35 @@ export default class Labelizer {
       }
     }
     if (opts.includes("list") || opts.includes("l")) {
-      this.displayConsole(words.join(" - "));
+      this.terminal.log(words.join(" - "));
     }
 
     wordCounts = words.length;
 
-    this.displayConsole("Words count : " + wordCounts);
+    this.terminal.log("Words count : " + wordCounts);
     return;
   }
   changeLanguage(args) {
     let label = args[0].toLowerCase();
     if (!label) {
-      this.displayConsole("! Argument 'language' is missing");
+      this.terminal.error("Argument 'language' is missing");
       return false;
     }
     if (!['en', 'fr', 'de', 'es', 'ja', 'ru', 'it', 'zh', 'pt', 'ar', 'fa', 'pl', 'nl', 'id', 'uk', 'he', 'sv', 'cs', 'ko', 'vi', 'ca'].includes(label)) {
-      this.displayConsole("Language not supported");
+      this.terminal.error("Language not supported");
       return false;
     }
-    this.displayConsole("Environnement language set to '" + label + "'");
+    this.terminal.log("Environnement language set to '" + label + "'");
     this.language = label;
   }
   loadHtml(args, options = []) {
     //(e || window.event).preventDefault();
     let label = args[0];
     if (!label) {
-      this.displayConsole("Argument 'url' is missing");
+      this.terminal.log("Argument 'url' is missing");
       return false;
     }
-    this.displayConsole("Loading Wikipedia page '" + label + "'...");
+    this.terminal.log("Loading Wikipedia page '" + label + "'...");
     var myHeaders = new Headers();
     let el = this.el;
     myHeaders.append("Content-Type", "application/json");
@@ -507,11 +439,11 @@ export default class Labelizer {
       .then((response) => response.json())
       .then(text => {
         if (text.error) {
-          this.displayConsole("! " + text.error.info);
+          this.terminal.error(text.error.info);
         }
         else {
           console.log(text);
-          this.displayConsole("Page loaded!");
+          this.terminal.log("Page loaded!");
           let html = text.parse.text['*'];
           el.innerHTML = html;
           this.init();
@@ -520,7 +452,7 @@ export default class Labelizer {
       })
 
       .catch((error) => {
-        this.displayConsole("! " + error);
+        this.terminal.log("! " + error);
         console.warn(error);
       });
   }

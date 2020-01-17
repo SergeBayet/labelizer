@@ -224,10 +224,339 @@
     return "";
   }
 
-  var stop = ["alors", "a", "à", "au", "aucuns", "aussi", "autre", "avant", "avec", "avoir", "bon", "car", "ce", "cela", "ces", "ceux", "chaque", "ci", "comme", "comment", "dans", "de", "d", "des", "du", "dedans", "dehors", "depuis", "devrait", "doit", "donc", "dos", "début", "elle", "elles", "en", "encore", "essai", "est", "et", "eu", "fait", "faites", "fois", "font", "hors", "ici", "il", "ils", "je", "juste", "l", "la", "le", "les", "leur", "là", "ma", "maintenant", "mais", "mes", "mine", "moins", "mon", "mot", "même", "ni", "nommés", "notre", "nous", "ou", "où", "par", "parce", "pas", "peut", "peu", "plupart", "pour", "pourquoi", "quand", "qu", "que", "quel", "quelle", "quelles", "quels", "qui", "sa", "sans", "ses", "seulement", "s", "si", "sien", "son", "sont", "sous", "soyez", "sujet", "sur", "ta", "tandis", "tellement", "tels", "tes", "ton", "tous", "tout", "trop", "très", "t", "tu", "voient", "vont", "votre", "vous", "vu", "ça", "étaient", "état", "étions", "été", "être"];
+  var stop = {
+    "fr": ["un", "une", "se", "cette", "oui", "non", "on", "aux", "n", "plus", "moins", "alors", "a", "à", "au", "aucuns", "aussi", "autre", "avant", "avec", "avoir", "bon", "car", "ce", "cela", "ces", "ceux", "chaque", "ci", "comme", "comment", "dans", "de", "d", "des", "du", "dedans", "dehors", "depuis", "devrait", "doit", "donc", "dos", "début", "elle", "elles", "en", "encore", "essai", "est", "et", "eu", "fait", "faites", "fois", "font", "hors", "ici", "il", "ils", "je", "juste", "l", "la", "le", "les", "leur", "là", "ma", "maintenant", "mais", "mes", "mine", "moins", "mon", "mot", "même", "ni", "nommés", "notre", "nous", "ou", "où", "par", "parce", "pas", "peut", "peu", "plupart", "pour", "pourquoi", "quand", "qu", "que", "quel", "quelle", "quelles", "quels", "qui", "sa", "sans", "ses", "seulement", "s", "si", "sien", "son", "sont", "sous", "soyez", "sujet", "sur", "ta", "tandis", "tellement", "tels", "tes", "ton", "tous", "tout", "trop", "très", "t", "tu", "voient", "vont", "votre", "vous", "vu", "ça", "étaient", "état", "étions", "été", "être", "soit"],
+    "en": ["a", "able", "about", "above", "abst", "accordance", "according", "accordingly", "across", "act", "actually", "added", "adj", "affected", "affecting", "affects", "after", "afterwards", "again", "against", "ah", "all", "almost", "alone", "along", "already", "also", "although", "always", "am", "among", "amongst", "an", "and", "announce", "another", "any", "anybody", "anyhow", "anymore", "anyone", "anything", "anyway", "anyways", "anywhere", "apparently", "approximately", "are", "aren", "arent", "arise", "around", "as", "aside", "ask", "asking", "at", "auth", "available", "away", "awfully", "b", "back", "be", "became", "because", "become", "becomes", "becoming", "been", "before", "beforehand", "begin", "beginning", "beginnings", "begins", "behind", "being", "believe", "below", "beside", "besides", "between", "beyond", "biol", "both", "brief", "briefly", "but", "by", "c", "ca", "came", "can", "cannot", "can't", "cause", "causes", "certain", "certainly", "co", "com", "come", "comes", "contain", "containing", "contains", "could", "couldnt", "d", "date", "did", "didn't", "different", "do", "does", "doesn't", "doing", "done", "don't", "down", "downwards", "due", "during", "e", "each", "ed", "edu", "effect", "eg", "eight", "eighty", "either", "else", "elsewhere", "end", "ending", "enough", "especially", "et", "et-al", "etc", "even", "ever", "every", "everybody", "everyone", "everything", "everywhere", "ex", "except", "f", "far", "few", "ff", "fifth", "first", "five", "fix", "followed", "following", "follows", "for", "former", "formerly", "forth", "found", "four", "from", "further", "furthermore", "g", "gave", "get", "gets", "getting", "give", "given", "gives", "giving", "go", "goes", "gone", "got", "gotten", "h", "had", "happens", "hardly", "has", "hasn't", "have", "haven't", "having", "he", "hed", "hence", "her", "here", "hereafter", "hereby", "herein", "heres", "hereupon", "hers", "herself", "hes", "hi", "hid", "him", "himself", "his", "hither", "home", "how", "howbeit", "however", "hundred", "i", "id", "ie", "if", "i'll", "im", "immediate", "immediately", "importance", "important", "in", "inc", "indeed", "index", "information", "instead", "into", "invention", "inward", "is", "isn't", "it", "itd", "it'll", "its", "itself", "i've", "j", "just", "k", "keep \tkeeps", "kept", "kg", "km", "know", "known", "knows", "l", "largely", "last", "lately", "later", "latter", "latterly", "least", "less", "lest", "let", "lets", "like", "liked", "likely", "line", "little", "'ll", "look", "looking", "looks", "ltd", "m", "made", "mainly", "make", "makes", "many", "may", "maybe", "me", "mean", "means", "meantime", "meanwhile", "merely", "mg", "might", "million", "miss", "ml", "more", "moreover", "most", "mostly", "mr", "mrs", "much", "mug", "must", "my", "myself", "n", "na", "name", "namely", "nay", "nd", "near", "nearly", "necessarily", "necessary", "need", "needs", "neither", "never", "nevertheless", "new", "next", "nine", "ninety", "no", "nobody", "non", "none", "nonetheless", "noone", "nor", "normally", "nos", "not", "noted", "nothing", "now", "nowhere", "o", "obtain", "obtained", "obviously", "of", "off", "often", "oh", "ok", "okay", "old", "omitted", "on", "once", "one", "ones", "only", "onto", "or", "ord", "other", "others", "otherwise", "ought", "our", "ours", "ourselves", "out", "outside", "over", "overall", "owing", "own", "p", "page", "pages", "part", "particular", "particularly", "past", "per", "perhaps", "placed", "please", "plus", "poorly", "possible", "possibly", "potentially", "pp", "predominantly", "present", "previously", "primarily", "probably", "promptly", "proud", "provides", "put", "q", "que", "quickly", "quite", "qv", "r", "ran", "rather", "rd", "re", "readily", "really", "recent", "recently", "ref", "refs", "regarding", "regardless", "regards", "related", "relatively", "research", "respectively", "resulted", "resulting", "results", "right", "run", "s", "said", "same", "saw", "say", "saying", "says", "sec", "section", "see", "seeing", "seem", "seemed", "seeming", "seems", "seen", "self", "selves", "sent", "seven", "several", "shall", "she", "shed", "she'll", "shes", "should", "shouldn't", "show", "showed", "shown", "showns", "shows", "significant", "significantly", "similar", "similarly", "since", "six", "slightly", "so", "some", "somebody", "somehow", "someone", "somethan", "something", "sometime", "sometimes", "somewhat", "somewhere", "soon", "sorry", "specifically", "specified", "specify", "specifying", "still", "stop", "strongly", "sub", "substantially", "successfully", "such", "sufficiently", "suggest", "sup", "sure \tt", "take", "taken", "taking", "tell", "tends", "th", "than", "thank", "thanks", "thanx", "that", "that'll", "thats", "that've", "the", "their", "theirs", "them", "themselves", "then", "thence", "there", "thereafter", "thereby", "thered", "therefore", "therein", "there'll", "thereof", "therere", "theres", "thereto", "thereupon", "there've", "these", "they", "theyd", "they'll", "theyre", "they've", "think", "this", "those", "thou", "though", "thoughh", "thousand", "throug", "through", "throughout", "thru", "thus", "til", "tip", "to", "together", "too", "took", "toward", "towards", "tried", "tries", "truly", "try", "trying", "ts", "twice", "two", "u", "un", "under", "unfortunately", "unless", "unlike", "unlikely", "until", "unto", "up", "upon", "ups", "us", "use", "used", "useful", "usefully", "usefulness", "uses", "using", "usually", "v", "value", "various", "'ve", "very", "via", "viz", "vol", "vols", "vs", "w", "want", "wants", "was", "wasnt", "way", "we", "wed", "welcome", "we'll", "went", "were", "werent", "we've", "what", "whatever", "what'll", "whats", "when", "whence", "whenever", "where", "whereafter", "whereas", "whereby", "wherein", "wheres", "whereupon", "wherever", "whether", "which", "while", "whim", "whither", "who", "whod", "whoever", "whole", "who'll", "whom", "whomever", "whos", "whose", "why", "widely", "willing", "wish", "with", "within", "without", "wont", "words", "world", "would", "wouldnt", "www", "x", "y", "yes", "yet", "you", "youd", "you'll", "your", "youre", "yours", "yourself", "yourselves", "you've", "z", "zero"]
+  };
   function isStopWord(word) {
-    return stop.includes(word.toLowerCase());
+    var lang = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "fr";
+    return stop[lang].includes(word.toLowerCase());
   }
+
+  var terminalConfig = {
+    'commands': [{
+      'name': 'ngrams',
+      'method': 'ngrams',
+      'args': [{
+        'name': 'n',
+        'info': 'number of contiguous items',
+        'type': 'int',
+        'filter': [1, 15],
+        'default': 3
+      }],
+      'opts': [{
+        'name': 'selection',
+        'abbr': 's',
+        'info': "Retrieve ngrams only in the selection"
+      }, {
+        'name': 'recursive',
+        'abbr': 'r',
+        'info': "Find all the n-grams from n to 1 recursively"
+      }, {
+        'name': 'insensitive',
+        'abbr': 'i',
+        'info': "Case insensitive"
+      }, {
+        'name': 'stemming',
+        'abbr': 't',
+        'info': "Group ngrams by stemming tokens"
+      }, {
+        'name': 'rsort',
+        'abbr': 'r',
+        'info': "Reverse sorting"
+      }, {
+        'name': 'asort',
+        'abbr': 'a',
+        'info': "Ascendant sorting"
+      }],
+      'info': "Retrieving ngrams...",
+      'help': "In the fields of computational linguistics and probability, an n-gram is a contiguous sequence of n items from a given sample of text or speech. The items can be phonemes, syllables, letters, words or base pairs according to the application. The n-grams typically are collected from a text or speech corpus. When the items are words, n-grams may also be called shingles"
+    }, {
+      'name': 'loadwiki',
+      'method': 'loadHtml',
+      'args': [{
+        'name': 'wikipage',
+        'info': 'name of Wikipedia page (case sensitive)',
+        'type': 'string',
+        'filter': new RegExp("^.*$"),
+        'transform': function transform(str) {
+          return str.replace(' ', '_');
+        }
+      }],
+      'info': "Retrieving wikipedia page '$1'..."
+    }]
+  };
+
+  var Terminal =
+  /*#__PURE__*/
+  function () {
+    function Terminal(commandsNamespace, terminalSelector) {
+      _classCallCheck(this, Terminal);
+
+      this.commandsNamespace = commandsNamespace;
+      this.selector = terminalSelector;
+      this.DOMelement = document.querySelector(this.selector);
+      this.initialized = false;
+      this.history = [];
+      var cookie = getCookie("lbz_history");
+
+      if (cookie != '') {
+        this.history = JSON.parse(cookie);
+      }
+
+      this.historyCursor = this.history.length;
+      this.init();
+    }
+
+    _createClass(Terminal, [{
+      key: "init",
+      value: function init() {
+        var _this = this;
+
+        if (this.initialized) return false;
+        this.initialized = true;
+        var inputElement = document.createElement('input');
+        inputElement.setAttribute('rows', '1');
+        inputElement.setAttribute('type', 'text');
+        inputElement.style.position = 'static';
+        inputElement.style.bottom = '0px';
+        inputElement.style.width = '100%';
+        inputElement.style.backgroundColor = '#111';
+        inputElement.style.color = '#EEE';
+        inputElement.autofocus = true;
+        inputElement.addEventListener('keydown', function (e) {
+          switch (e.keyCode) {
+            case 13:
+              _this.execute(e.target.value);
+
+              inputElement.value = '';
+              break;
+
+            case 38:
+              if (_this.history.length > 0) {
+                if (_this.historyCursor == _this.history.length) {
+                  _this.history.push(e.target.value);
+                }
+
+                _this.historyCursor--;
+                if (_this.historyCursor < 0) _this.historyCursor = 0;
+                e.target.value = _this.history[_this.historyCursor];
+              }
+
+              break;
+
+            case 40:
+              if (_this.history.length > 0) {
+                _this.historyCursor++;
+                if (_this.historyCursor > _this.history.length - 1) _this.historyCursor = _this.history.length - 1;
+                e.target.value = _this.history[_this.historyCursor];
+              }
+
+              break;
+
+            default:
+              _this.historyCursor = _this.history.length;
+          }
+        });
+        var screen = document.createElement('div');
+        screen.setAttribute('class', 'context');
+        this.DOMelement.appendChild(screen);
+        this.DOMelement = screen;
+        this.selector = this.selector + ' .context';
+        screen.parentNode.insertBefore(inputElement, screen.nextSibling);
+      }
+    }, {
+      key: "execute",
+      value: function execute(str) {
+        var _this2 = this;
+
+        str = str.trim();
+        if (str == '') return false;
+
+        if (this.historyCursor < this.history.length) {
+          this.history.splice(this.historyCursor, 1);
+        }
+
+        this.history.push(str);
+        this.history = _toConsumableArray(new Set(this.history));
+        setCookie("lbz_history", JSON.stringify(this.history), 90);
+        this.historyCursor = this.history.length;
+        var regex = /"((?:[\0-\t\x0B\f\x0E-\u2027\u202A-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+)"|([\x2D0-9A-z\xC0-\xFC]+)/gm; // Display the command in the terminal
+
+        this.info(str);
+        var m;
+        var tokens = [];
+
+        while ((m = regex.exec(str)) !== null) {
+          if (m.index === regex.lastIndex) {
+            regex.lastIndex++;
+          }
+
+          m.forEach(function (match, groupIndex) {
+            if (groupIndex == 0) {
+              tokens.push(match);
+            }
+          });
+        }
+
+        var parser = {};
+        parser.command = tokens[0];
+        var definition = terminalConfig.commands.filter(function (command) {
+          return command.name == parser.command;
+        })[0] || [];
+
+        if (definition.length == 0) {
+          this.error("Unknown command : " + parser.command);
+          return false;
+        }
+
+        parser.options = [];
+        parser.arguments = [];
+
+        for (var i = 1; i < tokens.length; i++) {
+          if (/^\x2D\x2D[0-9A-Z_a-z]*$/.test(tokens[i])) {
+            parser.options.push(tokens[i].substring(2));
+          } else if (/^\x2D[0-9A-Z_a-z]*/.test(tokens[i])) {
+            var opt = tokens[i].substring(1).split('');
+            parser.options = [].concat(_toConsumableArray(parser.options), _toConsumableArray(opt));
+          } else if (/^"(?:[\0-\t\x0B\f\x0E-\u2027\u202A-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])*"$/.test(tokens[i])) {
+            parser.arguments.push(tokens[i].substring(1, tokens[i].length - 1));
+          } else {
+            parser.arguments.push(tokens[i]);
+          }
+        } // Filter unique options
+
+
+        parser.options = _toConsumableArray(new Set(parser.options)); // Check arguments
+
+        console.log(definition);
+        var args = definition.args;
+        var checkResult = true;
+        args.forEach(function (arg, i) {
+          console.log(arg);
+
+          if (parser.arguments[i]) {
+            switch (arg.type) {
+              case 'int':
+                if (!Number.isInteger(parseFloat(arg)) && !_this2.checkFilter(parser.arguments[i], arg.filter)) {
+                  _this2.error("argument <em>" + arg.name + " (" + arg.info + ")</em> must be an integer " + _this2.humanizeFilter(arg.filter));
+
+                  checkResult = false;
+                }
+
+                break;
+
+              case 'string':
+                if (!_this2.checkFilter(parser.arguments[i], arg.filter)) {
+                  _this2.error("argument <em>" + arg.name + " (" + arg.info + ")</em> must be a string " + _this2.humanizeFilter(arg.filter));
+
+                  checkResult = false;
+                }
+
+                break;
+            }
+
+            if (arg.transform) {
+              parser.arguments[i] = arg.transform(parser.arguments[i]);
+            }
+          } else {
+            if (arg["default"]) {
+              parser.arguments.push(arg["default"]);
+            }
+          }
+        });
+        if (!checkResult) return false;
+        this.log(definition.info.replace(/\$(\d)/, function (x, i) {
+          return parser.arguments[i - 1] || '[undefined]';
+        })); // Help manager
+
+        if (parser.arguments && parser.arguments[0] == 'help') {
+          this.log(this.explain(parser));
+          this.log(definition.help || 'Sorry, no help defined for this command');
+          return true;
+        } // Call the user method with arguments and options
+
+
+        this.commandsNamespace[definition.method](parser.arguments, parser.options);
+        return true;
+      }
+    }, {
+      key: "checkFilter",
+      value: function checkFilter(value, filter) {
+        if (!filter) return true;
+
+        if (Array.isArray(filter) && filter.every(function (x) {
+          return !isNaN(x);
+        }) && filter.length == 2) {
+          return value >= filter[0] && value <= filter[1];
+        } else if (filter instanceof RegExp) {
+          return filter.test(value);
+        }
+
+        this.error('Filter <em>' + filter.toString() + '</em> not supported');
+        return true;
+      }
+    }, {
+      key: "humanizeFilter",
+      value: function humanizeFilter(filter) {
+        if (Array.isArray(filter) && filter.every(function (x) {
+          return !isNaN(x);
+        }) && filter.length == 2) {
+          return "between ".concat(filter[0], " and ").concat(filter[1]);
+        } else if (filter instanceof RegExp) {
+          return 'matching the regular expression : ' + filter.toString();
+        }
+
+        return '';
+      }
+    }, {
+      key: "explain",
+      value: function explain(parser) {
+        var str = 'Usage : ' + parser.command + ' ';
+        return str;
+      }
+    }, {
+      key: "error",
+      value: function error(str) {
+        if (this.initialized) {
+          var consoleElement = document.createElement('p');
+          consoleElement.innerHTML = str;
+          consoleElement.style.color = 'red';
+          this.DOMelement.appendChild(consoleElement);
+          this.DOMelement.scrollTop = this.DOMelement.scrollHeight - this.DOMelement.clientHeight;
+        } else {
+          console.error(str);
+        }
+      }
+    }, {
+      key: "info",
+      value: function info(str) {
+        if (this.initialized) {
+          var consoleElement = document.createElement('p');
+          consoleElement.innerHTML = str;
+          consoleElement.style.color = 'green';
+          this.DOMelement.appendChild(consoleElement);
+          this.DOMelement.scrollTop = this.DOMelement.scrollHeight - this.DOMelement.clientHeight;
+        } else {
+          console.log(str);
+        }
+      }
+    }, {
+      key: "log",
+      value: function log(str) {
+        if (this.initialized) {
+          var consoleElement = document.createElement('p');
+          consoleElement.innerHTML = str;
+          this.DOMelement.appendChild(consoleElement);
+          this.DOMelement.scrollTop = this.DOMelement.scrollHeight - this.DOMelement.clientHeight;
+        } else {
+          console.log(str);
+        }
+      }
+    }]);
+
+    return Terminal;
+  }();
 
   var Labelizer =
   /*#__PURE__*/
@@ -237,20 +566,13 @@
 
       _classCallCheck(this, Labelizer);
 
+      this.terminal = new Terminal(this, options.consoleSelector);
       this.selector = selector;
       this.el = document.querySelector(selector);
       this.o = options;
       this.indexToken = 0;
       this.consoleInitialized = false;
       this.language = 'fr';
-      this.history = [];
-      var h = getCookie("lbz_history");
-
-      if (h != '') {
-        this.history = JSON.parse(h);
-      }
-
-      this.historyCursor = this.history.length;
       this.init();
     }
 
@@ -265,16 +587,10 @@
             return e.preventDefault();
           });
         });
-        this.console = document.querySelector(this.o.consoleSelector);
-
-        if (this.console) {
-          this.initConsole();
-        }
-
         this.lastSelected = false;
 
         if (!this.el) {
-          this.displayConsole("DOM selector must be provided!");
+          this.terminal.log("DOM selector must be provided!");
           return false;
         }
 
@@ -294,18 +610,18 @@
         var tokensEl = document.querySelectorAll(this.selector + " .token");
         tokensEl.forEach(function (el) {
           el.addEventListener("click", function (e) {
-            // this.displayConsole('id : ' + el.getAttribute('data-id'));
+            // this.terminal.log('id : ' + el.getAttribute('data-id'));
             if (window.event.ctrlKey) {
               if (!el.classList.contains("selected")) {
                 el.classList = "token selected";
                 _this.lastSelected = el.getAttribute('data-id');
 
-                _this.displayConsole("'" + e.target.innerText + "' selected");
+                _this.terminal.log("'" + e.target.innerText + "' selected");
               } else {
                 el.classList = "token";
                 _this.lastSelected = false;
 
-                _this.displayConsole("'" + e.target.innerText + "' unselected");
+                _this.terminal.log("'" + e.target.innerText + "' unselected");
               }
             } else if (window.event.shiftKey) {
               var idSelected = el.getAttribute('data-id');
@@ -313,7 +629,7 @@
               if (!_this.lastSelected) {
                 el.classList = "token selected";
 
-                _this.displayConsole("'" + e.target.innerText + "' selected");
+                _this.terminal.log("'" + e.target.innerText + "' selected");
               } else if (_this.lastSelected < idSelected) {
                 var selectedText = [];
 
@@ -323,7 +639,7 @@
                   selectedText.push(t.innerText);
                 }
 
-                _this.displayConsole("'" + selectedText.join('') + "' selected");
+                _this.terminal.log("'" + selectedText.join('') + "' selected");
               } else {
                 var _selectedText = [];
 
@@ -335,7 +651,7 @@
                   _selectedText.push(_t.innerText);
                 }
 
-                _this.displayConsole("'" + _selectedText.reverse().join('') + "' selected");
+                _this.terminal.log("'" + _selectedText.reverse().join('') + "' selected");
               }
 
               _this.lastSelected = idSelected;
@@ -347,160 +663,54 @@
                 el.classList = "token selected";
                 _this.lastSelected = el.getAttribute('data-id');
 
-                _this.displayConsole("'" + e.target.innerText + "' selected");
+                _this.terminal.log("'" + e.target.innerText + "' selected");
               } else {
                 tokensEl.forEach(function (x) {
                   x.classList = "token";
                 });
                 _this.lastSelected = false;
 
-                _this.displayConsole("'" + e.target.innerText + "' unselected");
+                _this.terminal.log("'" + e.target.innerText + "' unselected");
               }
             }
           });
         });
-        this.displayConsole("Labelizer intialized.");
-      }
-    }, {
-      key: "initConsole",
-      value: function initConsole() {
-        var _this2 = this;
-
-        if (this.consoleInitialized) return false;
-        this.consoleInitialized = true;
-        var inputElement = document.createElement('input');
-        inputElement.setAttribute('rows', '1');
-        inputElement.setAttribute('type', 'text');
-        inputElement.style.position = 'static';
-        inputElement.style.bottom = '0px';
-        inputElement.style.width = '100%';
-        inputElement.style.backgroundColor = '#111';
-        inputElement.style.color = '#EEE';
-        inputElement.autofocus = true;
-        inputElement.addEventListener('keydown', function (e) {
-          if (e.keyCode == 13) {
-            _this2.executeConsole(e.target.value);
-
-            inputElement.value = '';
-          } else if (e.keyCode == 38) {
-            if (_this2.history.length > 0) {
-              _this2.historyCursor--;
-              if (_this2.historyCursor < 0) _this2.historyCursor = 0;
-              e.target.value = _this2.history[_this2.historyCursor];
-            }
-          } else if (e.keyCode == 40) {
-            if (_this2.history.length > 0) {
-              _this2.historyCursor++;
-              if (_this2.historyCursor > _this2.history.length - 1) _this2.historyCursor = _this2.history.length - 1;
-              e.target.value = _this2.history[_this2.historyCursor];
-            }
-          } else {
-            _this2.historyCursor = _this2.history.length;
-          }
-        });
-        var screen = document.createElement('div');
-        screen.setAttribute('class', 'context');
-        this.console.appendChild(screen);
-        this.console = screen;
-        this.o.consoleSelector = this.o.consoleSelector + ' .context';
-        console.log(this.o.consoleSelector);
-        screen.parentNode.insertBefore(inputElement, screen.nextSibling); //this.console.appendChild(inputElement);
-      }
-    }, {
-      key: "executeConsole",
-      value: function executeConsole(action) {
-        this.history.push(action);
-        this.history = _toConsumableArray(new Set(this.history));
-        setCookie("lbz_history", JSON.stringify(this.history), 90);
-        this.historyCursor = this.history.length;
-        var params = this.consoleParser(action);
-        console.log(params);
-        this.displayConsole("> " + action);
-
-        switch (params.command) {
-          case 'clear':
-            this.console.innerHTML = '';
-            break;
-
-          case 'load':
-            this.loadHtml(params.arguments, params.options);
-            break;
-
-          case 'language':
-            this.changeLanguage(params.arguments);
-            break;
-
-          case 'count':
-            this.count(params.arguments, params.options);
-            break;
-
-          case 'freq':
-            this.freq(params.arguments, params.options);
-            break;
-
-          case 'stem':
-            this.stem(params.arguments, params.options);
-            break;
-
-          case 'ngrams':
-            this.ngrams(params.arguments, params.options);
-            break;
-
-          default:
-            this.displayConsole('unknown command \'' + params.command + '\'');
-            break;
-        } //this.displayConsole(action);
-
-      }
-    }, {
-      key: "displayConsole",
-      value: function displayConsole() {
-        var _this3 = this;
-
-        for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-          args[_key] = arguments[_key];
-        }
-
-        if (this.console) {
-          args.forEach(function (e) {
-            var consoleElement = document.createElement('p');
-            var consoleInstruction = document.createTextNode(e);
-
-            if (e.charAt(0) == ">") {
-              consoleElement.style.color = 'green';
-            } else if (e.charAt(0) == "!") {
-              consoleElement.style.color = 'red';
-            }
-
-            consoleElement.appendChild(consoleInstruction);
-
-            _this3.console.appendChild(consoleElement);
-          });
-          this.console.scrollTop = this.console.scrollHeight - this.console.clientHeight;
-        } else {
-          var _console;
-
-          (_console = console).log.apply(_console, args);
-        }
+        this.terminal.info("Labelizer initialized.");
       }
     }, {
       key: "repl",
       value: function repl(node) {
-        var _this4 = this;
+        var _this2 = this;
 
+        if (node.className === undefined || node.nodeName == "CODE" || node.nodeName == "PRE") return;
+        var classNames = node.className.split(" ");
+        if (classNames.includes("mw-editsection") || classNames.includes("plainlinks") || classNames.includes("references-small")) return;
         var nodes = node.childNodes;
 
         for (var i = 0, m = nodes.length; i < m; i++) {
           var n = nodes[i];
 
           if (n.nodeType == n.TEXT_NODE) {
-            var toks = n.textContent.split(/([0-9A-z\xC0-\xF9]*)/g).filter(function (x) {
-              return x !== '';
+            var toks = n.textContent.split(/([\x2D\.0-9A-z\xC0-\xFC]*)/g).filter(function (x) {
+              return x;
             });
+            var _i2 = 0;
+
+            while (toks[_i2]) {
+              if (/^[^\.]*\.$/gm.test(toks[_i2])) {
+                toks[_i2] = toks[_i2].substring(0, toks[_i2].length - 1);
+                toks.splice(_i2 + 1, 0, '.');
+                _i2++;
+              }
+
+              _i2++;
+            } //console.log(toks);
+
+
             var newHTML = '';
             toks.forEach(function (el) {
-              _this4.indexToken++;
-              newHTML += '<span class="token" data-id="' + _this4.indexToken + '">' + el + '</span>';
+              _this2.indexToken++;
+              newHTML += '<span class="token" data-id="' + _this2.indexToken + '">' + el + '</span>';
             }); // do some swappy text to html here?
 
             var replacementNode = document.createElement('span');
@@ -511,113 +721,124 @@
             this.repl(n);
           }
         }
-      } // Console parser
-
-    }, {
-      key: "consoleParser",
-      value: function consoleParser(str) {
-        var regex = /"((?:[\0-\t\x0B\f\x0E-\u2027\u202A-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+)"|([\x2D0-9A-z\xC0-\xF9]+)/gm; //const str = `load "slkj lkj" -f lkljl --serei mlk 12`;
-
-        var m;
-        var tokens = [];
-
-        while ((m = regex.exec(str)) !== null) {
-          // This is necessary to avoid infinite loops with zero-width matches
-          if (m.index === regex.lastIndex) {
-            regex.lastIndex++;
-          } // The result can be accessed through the `m`-variable.
-
-
-          m.forEach(function (match, groupIndex) {
-            //console.log(`Found match, group ${groupIndex}: ${match}`);
-            if (groupIndex == 0) {
-              tokens.push(match);
-            }
-          });
-        }
-
-        var parser = {};
-        parser.command = tokens[0];
-        parser.options = [];
-        parser.arguments = [];
-
-        for (var i = 1; i < tokens.length; i++) {
-          if (/^\x2D\x2D[0-9A-Z_a-z]*$/.test(tokens[i])) {
-            console.log(tokens[i]);
-            parser.options.push(tokens[i].substring(2));
-          } else if (/^\x2D[0-9A-Z_a-z]*/.test(tokens[i])) {
-            var opt = tokens[i].substring(1).split('');
-            parser.options = [].concat(_toConsumableArray(parser.options), _toConsumableArray(opt));
-          } else if (/^"(?:[\0-\t\x0B\f\x0E-\u2027\u202A-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])*"$/.test(tokens[i])) {
-            parser.arguments.push(tokens[i].substring(1, tokens[i].length - 1));
-          } else {
-            parser.arguments.push(tokens[i]);
-          }
-        }
-
-        parser.options = _toConsumableArray(new Set(parser.options));
-        return parser;
       } // Commands Console
 
     }, {
       key: "ngrams",
       value: function ngrams(args, opts) {
         var selector = " .token";
-        var r = new RegExp("^[A-zÀ-ù0-9\-]+$");
+        var r = new RegExp("^[A-zÀ-ü0-9\-]+$");
 
         if (opts.includes("selection") || opts.includes("s")) {
           selector += ".selected";
         }
 
-        var tokensEl = document.querySelectorAll(this.selector + selector);
-        var i = 0,
-            lastIndex = 0;
-        var n = parseInt(args[0] || '3'); // Default ngrams(3)
+        var n = parseInt(args[0]); // || '3');      // Default ngrams(3)
 
         var ngrams = {};
+        var tokensEl = document.querySelectorAll(this.selector + selector);
+        var mask = Array(tokensEl.length).fill(true);
+        var insensitive = false;
+        var recursive = n;
+        var minimumLength = 3;
+        var stem = false;
 
-        while (tokensEl[i]) {
-          //console.log(tokensEl[i].innerText);
-          if (r.test(tokensEl[i].innerText)) {
-            lastIndex = i;
-            var ng = '';
-            var cursor = 1;
+        if (opts.includes("R") || opts.includes('recursive')) {
+          recursive = 1;
+        }
 
-            while (cursor <= n && tokensEl[i]) {
-              var text = tokensEl[i].innerText;
+        if (opts.includes("i") || opts.includes("insensitive")) {
+          insensitive = true;
+        }
 
-              if (/^[\,\.\(\)\;\-\:\[\]\|·\(\)]$/.test(text)) {
-                break;
+        if (opts.includes("t") || opts.includes("stem")) {
+          stem = true;
+        }
+
+        while (n >= recursive) {
+          var i = 0,
+              lastIndex = 0;
+
+          while (tokensEl[i]) {
+            //console.log(tokensEl[i].innerText);
+            if (r.test(tokensEl[i].innerText)) {
+              lastIndex = i;
+              var ng = '';
+              var ngStemmed = '';
+              var cursor = 1;
+
+              while (cursor <= n && tokensEl[i]) {
+                if (!mask[i]) break;
+                var text = tokensEl[i].innerText;
+
+                if (/^[\,\.\(\)\;\:\[\]\|·\(\)]$/.test(text)) {
+                  break;
+                }
+
+                if (isStopWord(text, this.language)) {
+                  if (cursor == 1 || cursor == n) break;
+                }
+
+                if (r.test(text)) {
+                  if (cursor > 1 && ng.substring(ng.length - 1) !== ' ') {
+                    break;
+                  }
+
+                  cursor++;
+                }
+
+                ngStemmed += carry(text);
+                ng += text;
+                i++;
               }
 
-              if (isStopWord(text)) {
-                console.log(ng);
-                if (cursor == 1 || cursor == n) break;
-              }
+              i = lastIndex;
 
-              ng += text;
-              if (r.test(text)) cursor++;
-              i++;
+              if (cursor == n + 1) {
+                if (insensitive) {
+                  ng = ng.toLowerCase();
+                  ngStemmed = ngStemmed.toLowerCase();
+                }
+
+                if (stem) {
+                  if (!ngrams[ngStemmed]) {
+                    ngrams[ngStemmed] = {
+                      'weight': 1,
+                      'forms': new Set([ng])
+                    };
+                  } else {
+                    ngrams[ngStemmed].weight += n;
+                    ngrams[ngStemmed].forms.add(ng);
+
+                    for (var x = i; x <= i + n; x++) {
+                      mask[x] = false;
+                    }
+                  }
+                } else {
+                  if (!ngrams[ng]) {
+                    ngrams[ng] = {
+                      weight: 1
+                    };
+                  } else {
+                    ngrams[ng].weight += n;
+
+                    for (var _x = i; _x <= i + n; _x++) {
+                      mask[_x] = false;
+                    }
+                  }
+                }
+              }
             }
 
-            if (cursor == n + 1) {
-              if (!ngrams[ng]) {
-                ngrams[ng] = 1;
-              } else {
-                ngrams[ng]++;
-              }
-            }
-
-            i = lastIndex;
+            i++;
           }
 
-          i++;
+          n--;
         }
 
         ngrams = Object.keys(ngrams).map(function (key) {
-          return [key, ngrams[key]];
+          return [key, ngrams[key].weight, ngrams[key].forms];
         });
-        console.log(ngrams);
 
         if (opts.includes("r") || opts.includes("rsort")) {
           ngrams.sort(function (a, b) {
@@ -629,15 +850,21 @@
           });
         }
 
-        this.displayConsole(ngrams.map(function (x) {
-          return x[0] + ' (' + x[1] + ')';
-        }).join(' - ')); //console.log(ngrams);
+        this.terminal.log(ngrams.filter(function (x) {
+          return x[1] > 1 && x[0].length >= minimumLength;
+        }).map(function (x) {
+          if (x[2]) {
+            return Array.from(x[2]).join('/') + ' (' + x[1] + ')';
+          } else {
+            return x[0] + ' (' + x[1] + ')';
+          }
+        }).join('<br/>')); //console.log(ngrams);
       }
     }, {
       key: "stem",
       value: function stem(args, opts) {
         var selector = " .token";
-        var r = new RegExp("^[A-zÀ-ù0-9\-]+$");
+        var r = new RegExp("^[A-zÀ-ü0-9\-]+$");
 
         if (opts.includes("selection") || opts.includes("s")) {
           selector += ".selected";
@@ -657,12 +884,12 @@
     }, {
       key: "freq",
       value: function freq(args, opts) {
-        var _this5 = this;
+        var _this3 = this;
 
         var selector = " .token";
         var sensitive = true;
         var stem = false;
-        var r = new RegExp("^[A-zÀ-ù0-9\-]+$");
+        var r = new RegExp("^[A-zÀ-ü0-9\-]+$");
 
         if (opts.includes("stem") || opts.includes("t")) {
           //console.log(opts);
@@ -711,11 +938,11 @@
         }
 
         if (opts.includes("p")) {
-          this.displayConsole(words.map(function (x) {
-            return x[0] + ' (' + _this5.digits2(x[1] / wordsCount * 100) + '%)';
+          this.terminal.log(words.map(function (x) {
+            return x[0] + ' (' + _this3.digits2(x[1] / wordsCount * 100) + '%)';
           }).join(" - "));
         } else {
-          this.displayConsole(words.map(function (x) {
+          this.terminal.log(words.map(function (x) {
             return x[0] + ' (' + x[1] + ')';
           }).join(" - "));
         }
@@ -729,7 +956,7 @@
       key: "count",
       value: function count(args, opts) {
         var selector = " .token";
-        var r = new RegExp("^[A-zÀ-ù0-9\-]+$");
+        var r = new RegExp("^[A-zÀ-ü0-9\-]+$");
 
         if (opts.includes("selection") || opts.includes("s")) {
           selector += ".selected";
@@ -779,11 +1006,11 @@
         }
 
         if (opts.includes("list") || opts.includes("l")) {
-          this.displayConsole(words.join(" - "));
+          this.terminal.log(words.join(" - "));
         }
 
         wordCounts = words.length;
-        this.displayConsole("Words count : " + wordCounts);
+        this.terminal.log("Words count : " + wordCounts);
         return;
       }
     }, {
@@ -792,31 +1019,31 @@
         var label = args[0].toLowerCase();
 
         if (!label) {
-          this.displayConsole("! Argument 'language' is missing");
+          this.terminal.error("Argument 'language' is missing");
           return false;
         }
 
         if (!['en', 'fr', 'de', 'es', 'ja', 'ru', 'it', 'zh', 'pt', 'ar', 'fa', 'pl', 'nl', 'id', 'uk', 'he', 'sv', 'cs', 'ko', 'vi', 'ca'].includes(label)) {
-          this.displayConsole("Language not supported");
+          this.terminal.error("Language not supported");
           return false;
         }
 
-        this.displayConsole("Environnement language set to '" + label + "'");
+        this.terminal.log("Environnement language set to '" + label + "'");
         this.language = label;
       }
     }, {
       key: "loadHtml",
       value: function loadHtml(args) {
-        var _this6 = this;
+        var _this4 = this;
         //(e || window.event).preventDefault();
         var label = args[0];
 
         if (!label) {
-          this.displayConsole("Argument 'url' is missing");
+          this.terminal.log("Argument 'url' is missing");
           return false;
         }
 
-        this.displayConsole("Loading Wikipedia page '" + label + "'...");
+        this.terminal.log("Loading Wikipedia page '" + label + "'...");
         var myHeaders = new Headers();
         var el = this.el;
         myHeaders.append("Content-Type", "application/json");
@@ -826,19 +1053,19 @@
           return response.json();
         }).then(function (text) {
           if (text.error) {
-            _this6.displayConsole("! " + text.error.info);
+            _this4.terminal.error(text.error.info);
           } else {
             console.log(text);
 
-            _this6.displayConsole("Page loaded!");
+            _this4.terminal.log("Page loaded!");
 
             var html = text.parse.text['*'];
             el.innerHTML = html;
 
-            _this6.init();
+            _this4.init();
           }
         })["catch"](function (error) {
-          _this6.displayConsole("! " + error);
+          _this4.terminal.log("! " + error);
 
           console.warn(error);
         });
