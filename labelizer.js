@@ -234,58 +234,84 @@
   }
 
   var terminalConfig = {
-    'commands': [{
-      'name': 'ngrams',
-      'method': 'ngrams',
-      'args': [{
-        'name': 'n',
-        'info': 'number of contiguous items',
-        'type': 'int',
-        'filter': [1, 15],
-        'default': 3
+    history: {
+      cookies: true,
+      cookieName: "lbz_history",
+      expire: 90
+    },
+    css: {
+      input: {
+        position: "static",
+        bottom: "0px",
+        width: "100%",
+        backgroundColor: "#111",
+        color: "#EEE"
+      }
+    },
+    errors: {
+      unknown: "unknown command '${command}'",
+      helpUnknownCommand: "unknown command '${args[1]}'",
+      noHelp: "No help defined for this command '${command}'"
+    },
+    help: "Some global help here!",
+    commands: [{
+      name: "ngrams",
+      method: "ngrams",
+      args: [{
+        name: "n",
+        info: "number of contiguous items",
+        type: "int",
+        filter: [1, 15],
+        "default": 3,
+        error: "n (${info}) must be an integer between 1 and 15"
       }],
-      'opts': [{
-        'name': 'selection',
-        'abbr': 's',
-        'info': "Retrieve ngrams only in the selection"
+      opts: [{
+        name: "selection",
+        abbr: "s",
+        info: "Retrieve ngrams only in the selection"
       }, {
-        'name': 'recursive',
-        'abbr': 'r',
-        'info': "Find all the n-grams from n to 1 recursively"
+        name: "recursive",
+        abbr: "r",
+        info: "Find all the n-grams from n to 1 recursively"
       }, {
-        'name': 'insensitive',
-        'abbr': 'i',
-        'info': "Case insensitive"
+        name: "insensitive",
+        abbr: "i",
+        info: "Case insensitive"
       }, {
-        'name': 'stemming',
-        'abbr': 't',
-        'info': "Group ngrams by stemming tokens"
+        name: "stemming",
+        abbr: "t",
+        info: "Group ngrams by stemming tokens"
       }, {
-        'name': 'rsort',
-        'abbr': 'r',
-        'info': "Reverse sorting"
+        name: "rsort",
+        abbr: "r",
+        info: "Reverse sorting"
       }, {
-        'name': 'asort',
-        'abbr': 'a',
-        'info': "Ascendant sorting"
+        name: "asort",
+        abbr: "a",
+        info: "Ascendant sorting"
       }],
-      'info': "Retrieving ngrams...",
-      'help': "In the fields of computational linguistics and probability, an n-gram is a contiguous sequence of n items from a given sample of text or speech. The items can be phonemes, syllables, letters, words or base pairs according to the application. The n-grams typically are collected from a text or speech corpus. When the items are words, n-grams may also be called shingles"
+      info: "Retrieving ngrams...",
+      help: "In the fields of computational linguistics and probability, an n-gram is a contiguous sequence of n items from a given sample of text or speech. The items can be phonemes, syllables, letters, words or base pairs according to the application. The n-grams typically are collected from a text or speech corpus. When the items are words, n-grams may also be called shingles"
     }, {
-      'name': 'loadwiki',
-      'method': 'loadHtml',
-      'args': [{
-        'name': 'wikipage',
-        'info': 'name of Wikipedia page (case sensitive)',
-        'type': 'string',
-        'filter': new RegExp("^.*$"),
-        'transform': function transform(str) {
-          return str.replace(' ', '_');
-        }
+      name: "loadwiki",
+      method: "loadHtml",
+      args: [{
+        name: "wikipage",
+        info: "name of Wikipedia page (case sensitive)",
+        type: "string",
+        filter: new RegExp("^.*$"),
+        transform: function transform(str) {
+          return str.replace(" ", "_");
+        },
+        error: "wikipage (${info}) must be a string"
       }],
-      'info': "Retrieving wikipedia page '$1'..."
+      info: "Retrieving wikipedia page '${args[1]}'..."
     }]
   };
+
+  var ARROW_DOWN = 40;
+  var ARROW_UP = 38;
+  var ENTER = 13;
 
   var Terminal =
   /*#__PURE__*/
@@ -298,89 +324,151 @@
       this.DOMelement = document.querySelector(this.selector);
       this.initialized = false;
       this.history = [];
-      var cookie = getCookie("lbz_history");
-
-      if (cookie != '') {
-        this.history = JSON.parse(cookie);
-      }
-
-      this.historyCursor = this.history.length;
+      this.historyCursor = 0;
+      this.initHistory();
       this.init();
     }
 
     _createClass(Terminal, [{
-      key: "init",
-      value: function init() {
-        var _this = this;
+      key: "initHistory",
+      value: function initHistory() {
+        // If cookies are enabled in config.js, retrieve history
+        {
+          var cookie = getCookie(terminalConfig.history.cookieName );
 
-        if (this.initialized) return false;
-        this.initialized = true;
-        var inputElement = document.createElement('input');
-        inputElement.setAttribute('rows', '1');
-        inputElement.setAttribute('type', 'text');
-        inputElement.style.position = 'static';
-        inputElement.style.bottom = '0px';
-        inputElement.style.width = '100%';
-        inputElement.style.backgroundColor = '#111';
-        inputElement.style.color = '#EEE';
-        inputElement.autofocus = true;
-        inputElement.addEventListener('keydown', function (e) {
-          switch (e.keyCode) {
-            case 13:
-              _this.execute(e.target.value);
-
-              inputElement.value = '';
-              break;
-
-            case 38:
-              if (_this.history.length > 0) {
-                if (_this.historyCursor == _this.history.length) {
-                  _this.history.push(e.target.value);
-                }
-
-                _this.historyCursor--;
-                if (_this.historyCursor < 0) _this.historyCursor = 0;
-                e.target.value = _this.history[_this.historyCursor];
-              }
-
-              break;
-
-            case 40:
-              if (_this.history.length > 0) {
-                _this.historyCursor++;
-                if (_this.historyCursor > _this.history.length - 1) _this.historyCursor = _this.history.length - 1;
-                e.target.value = _this.history[_this.historyCursor];
-              }
-
-              break;
-
-            default:
-              _this.historyCursor = _this.history.length;
+          if (cookie != "") {
+            this.history = JSON.parse(cookie);
           }
-        });
-        var screen = document.createElement('div');
-        screen.setAttribute('class', 'context');
-        this.DOMelement.appendChild(screen);
-        this.DOMelement = screen;
-        this.selector = this.selector + ' .context';
-        screen.parentNode.insertBefore(inputElement, screen.nextSibling);
+        } // Initialize cursor at the end of the history.
+
+
+        this.historyCursor = this.history.length;
       }
     }, {
-      key: "execute",
-      value: function execute(str) {
-        var _this2 = this;
+      key: "upHistory",
+      value: function upHistory(element) {
+        var command = element.target.value;
 
-        str = str.trim();
-        if (str == '') return false;
+        if (this.history.length > 0) {
+          if (this.historyCursor == this.history.length) {
+            this.history.push(command);
+          }
+
+          this.historyCursor--;
+          if (this.historyCursor < 0) this.historyCursor = 0;
+          element.target.value = this.history[this.historyCursor];
+        }
+      }
+    }, {
+      key: "downHistory",
+      value: function downHistory(element) {
+        if (this.history.length > 0) {
+          this.historyCursor++;
+          if (this.historyCursor > this.history.length - 1) this.historyCursor = this.history.length - 1;
+          element.target.value = this.history[this.historyCursor];
+        }
+      }
+    }, {
+      key: "addHistory",
+      value: function addHistory(str) {
+        if (str.trim() == "") return false;
 
         if (this.historyCursor < this.history.length) {
           this.history.splice(this.historyCursor, 1);
         }
 
-        this.history.push(str);
-        this.history = _toConsumableArray(new Set(this.history));
-        setCookie("lbz_history", JSON.stringify(this.history), 90);
+        if (this.history[this.history.length - 1] !== str) {
+          this.history.push(str);
+        }
+
+        this.history = this.history.filter(function (x) {
+          return x;
+        });
+        setCookie(terminalConfig.history.cookieName , JSON.stringify(this.history), terminalConfig.history.expire );
         this.historyCursor = this.history.length;
+      }
+    }, {
+      key: "init",
+      value: function init() {
+        var _this2 = this;
+
+        // Initialize terminal only one time
+        if (this.initialized) return false;
+        this.initialized = true; // Create input element for the terminal with css rules from "config.js"
+
+        var inputElement = document.createElement("input");
+        inputElement.setAttribute("type", "text");
+
+        if (terminalConfig.css.input) {
+          var rules = Object.entries(terminalConfig.css.input);
+
+          for (var _i = 0, _rules = rules; _i < _rules.length; _i++) {
+            var _rules$_i = _slicedToArray(_rules[_i], 2),
+                property = _rules$_i[0],
+                value = _rules$_i[1];
+
+            inputElement.style[property] = value;
+          }
+        }
+
+        inputElement.autofocus = true; // Managing keyboard events
+
+        inputElement.addEventListener("keydown", function (e) {
+          switch (e.keyCode) {
+            case ENTER:
+              _this2.execute(e.target.value);
+
+              inputElement.value = "";
+              break;
+
+            case ARROW_UP:
+              _this2.upHistory(e);
+
+              break;
+
+            case ARROW_DOWN:
+              _this2.downHistory(e);
+
+              break;
+
+            default:
+              _this2.historyCursor = _this2.history.length;
+          }
+        }); // Add input element in the DOM
+
+        var screen = document.createElement("div");
+        screen.setAttribute("class", "context");
+        this.DOMelement.appendChild(screen);
+        this.DOMelement = screen;
+        this.selector = this.selector + " .context";
+        screen.parentNode.insertBefore(inputElement, screen.nextSibling);
+      }
+    }, {
+      key: "interpolation",
+      value: function interpolation(str, context) {
+        if (str == undefined) return false;
+
+        var _this = this;
+
+        var parsed = str.replace(/(\$\{command\})/, function (x, i) {
+          return _this.history[_this.history.length - 1] || "[command undefined]";
+        });
+        parsed = parsed.replace(/(\$\{info\})/, function (x, i) {
+          return context.info || "[info undefined]";
+        });
+        parsed = parsed.replace(/\$\{args\[(\d+)\]\}/, function (x, i) {
+          return context.arguments[i - 1] || "[argument undefined]";
+        });
+        return parsed;
+      }
+    }, {
+      key: "execute",
+      value: function execute(str) {
+        var _this3 = this;
+
+        str = str.trim();
+        if (str == "") return false;
+        this.addHistory(str);
         var regex = /"((?:[\0-\t\x0B\f\x0E-\u2027\u202A-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+)"|([\x2D0-9A-z\xC0-\xFC]+)/gm; // Display the command in the terminal
 
         this.info(str);
@@ -404,9 +492,10 @@
         var definition = terminalConfig.commands.filter(function (command) {
           return command.name == parser.command;
         })[0] || [];
+        var context = {};
 
-        if (definition.length == 0) {
-          this.error("Unknown command : " + parser.command);
+        if (definition.length == 0 && parser.command !== "help") {
+          this.error(this.interpolation(terminalConfig.errors.unknown, context) || "Command not found : " + parser.command);
           return false;
         }
 
@@ -417,7 +506,7 @@
           if (/^\x2D\x2D[0-9A-Z_a-z]*$/.test(tokens[i])) {
             parser.options.push(tokens[i].substring(2));
           } else if (/^\x2D[0-9A-Z_a-z]*/.test(tokens[i])) {
-            var opt = tokens[i].substring(1).split('');
+            var opt = tokens[i].substring(1).split("");
             parser.options = [].concat(_toConsumableArray(parser.options), _toConsumableArray(opt));
           } else if (/^"(?:[\0-\t\x0B\f\x0E-\u2027\u202A-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])*"$/.test(tokens[i])) {
             parser.arguments.push(tokens[i].substring(1, tokens[i].length - 1));
@@ -427,28 +516,44 @@
         } // Filter unique options
 
 
-        parser.options = _toConsumableArray(new Set(parser.options)); // Check arguments
+        parser.options = _toConsumableArray(new Set(parser.options)); // Help management
 
-        console.log(definition);
+        if (parser.command == "help") {
+          definition = terminalConfig.commands.filter(function (command) {
+            return command.name == parser.arguments[0];
+          })[0] || [];
+
+          if (parser.arguments[0] && definition.length == 0) {
+            this.error(this.interpolation(terminalConfig.errors.helpUnknownCommand , parser));
+          } else if (definition.length == 0) {
+            this.log(this.interpolation(terminalConfig.help , context));
+          } else {
+            this.log(this.interpolation(definition.help || terminalConfig.noHelp || "No help for this command", context));
+          } // this.log(this.explain(parser));
+          // this.log(definition.help || "Sorry, no help defined for this command");
+
+
+          return true;
+        } // Check arguments
+
+
         var args = definition.args;
         var checkResult = true;
         args.forEach(function (arg, i) {
-          console.log(arg);
-
           if (parser.arguments[i]) {
             switch (arg.type) {
-              case 'int':
-                if (!Number.isInteger(parseFloat(arg)) && !_this2.checkFilter(parser.arguments[i], arg.filter)) {
-                  _this2.error("argument <em>" + arg.name + " (" + arg.info + ")</em> must be an integer " + _this2.humanizeFilter(arg.filter));
+              case "int":
+                if (!Number.isInteger(parseFloat(arg)) && !_this3.checkFilter(parser.arguments[i], arg.filter)) {
+                  _this3.error(_this3.interpolation(arg.error, arg) || "Argument error");
 
                   checkResult = false;
                 }
 
                 break;
 
-              case 'string':
-                if (!_this2.checkFilter(parser.arguments[i], arg.filter)) {
-                  _this2.error("argument <em>" + arg.name + " (" + arg.info + ")</em> must be a string " + _this2.humanizeFilter(arg.filter));
+              case "string":
+                if (!_this3.checkFilter(parser.arguments[i], arg.filter)) {
+                  _this3.error(_this3.interpolation(arg.error, arg) || "Argument error");
 
                   checkResult = false;
                 }
@@ -466,16 +571,7 @@
           }
         });
         if (!checkResult) return false;
-        this.log(definition.info.replace(/\$(\d)/, function (x, i) {
-          return parser.arguments[i - 1] || '[undefined]';
-        })); // Help manager
-
-        if (parser.arguments && parser.arguments[0] == 'help') {
-          this.log(this.explain(parser));
-          this.log(definition.help || 'Sorry, no help defined for this command');
-          return true;
-        } // Call the user method with arguments and options
-
+        this.log(this.interpolation(definition.info, parser) || ""); // Call the user method with arguments and options
 
         this.commandsNamespace[definition.method](parser.arguments, parser.options);
         return true;
@@ -493,7 +589,7 @@
           return filter.test(value);
         }
 
-        this.error('Filter <em>' + filter.toString() + '</em> not supported');
+        this.error("Filter <em>" + filter.toString() + "</em> not supported");
         return true;
       }
     }, {
@@ -504,24 +600,24 @@
         }) && filter.length == 2) {
           return "between ".concat(filter[0], " and ").concat(filter[1]);
         } else if (filter instanceof RegExp) {
-          return 'matching the regular expression : ' + filter.toString();
+          return "matching the regular expression : " + filter.toString();
         }
 
-        return '';
+        return "";
       }
     }, {
       key: "explain",
       value: function explain(parser) {
-        var str = 'Usage : ' + parser.command + ' ';
+        var str = "Usage : " + parser.command + " ";
         return str;
       }
     }, {
       key: "error",
       value: function error(str) {
         if (this.initialized) {
-          var consoleElement = document.createElement('p');
+          var consoleElement = document.createElement("p");
           consoleElement.innerHTML = str;
-          consoleElement.style.color = 'red';
+          consoleElement.style.color = "red";
           this.DOMelement.appendChild(consoleElement);
           this.DOMelement.scrollTop = this.DOMelement.scrollHeight - this.DOMelement.clientHeight;
         } else {
@@ -532,9 +628,9 @@
       key: "info",
       value: function info(str) {
         if (this.initialized) {
-          var consoleElement = document.createElement('p');
+          var consoleElement = document.createElement("p");
           consoleElement.innerHTML = str;
-          consoleElement.style.color = 'green';
+          consoleElement.style.color = "green";
           this.DOMelement.appendChild(consoleElement);
           this.DOMelement.scrollTop = this.DOMelement.scrollHeight - this.DOMelement.clientHeight;
         } else {
@@ -545,7 +641,7 @@
       key: "log",
       value: function log(str) {
         if (this.initialized) {
-          var consoleElement = document.createElement('p');
+          var consoleElement = document.createElement("p");
           consoleElement.innerHTML = str;
           this.DOMelement.appendChild(consoleElement);
           this.DOMelement.scrollTop = this.DOMelement.scrollHeight - this.DOMelement.clientHeight;
