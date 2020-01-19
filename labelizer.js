@@ -251,14 +251,15 @@
     errors: {
       unknown: "unknown command '${command}'",
       helpUnknownCommand: "unknown command '${args[1]}'",
-      noHelp: "No help defined for this command '${command}'"
+      noHelp: "No help defined for this command '${command}'",
+      invalidOption: "Invalid option '${option}'"
     },
     help: "Some global help here!",
     commands: [{
       name: "ngrams",
       method: "ngrams",
       args: [{
-        name: "n",
+        name: "N",
         info: "number of contiguous items",
         type: "int",
         filter: [1, 15],
@@ -266,12 +267,22 @@
         error: "n (${info}) must be an integer between 1 and 15"
       }],
       opts: [{
+        name: "minNgram",
+        abbr: "m",
+        info: "When recursive option is on, stop at 'minNgram'. Must be less than 'n' argument.",
+        arg: {
+          name: "NUM",
+          type: "int",
+          filter: [1, 14],
+          mandatory: true
+        }
+      }, {
         name: "selection",
         abbr: "s",
         info: "Retrieve ngrams only in the selection"
       }, {
         name: "recursive",
-        abbr: "r",
+        abbr: "R",
         info: "Find all the n-grams from n to 1 recursively"
       }, {
         name: "insensitive",
@@ -291,7 +302,8 @@
         info: "Ascendant sorting"
       }],
       info: "Retrieving ngrams...",
-      help: "In the fields of computational linguistics and probability, an n-gram is a contiguous sequence of n items from a given sample of text or speech. The items can be phonemes, syllables, letters, words or base pairs according to the application. The n-grams typically are collected from a text or speech corpus. When the items are words, n-grams may also be called shingles"
+      shortDescription: "Retrieve n-grams",
+      description: "In the fields of computational linguistics and probability, an n-gram is a contiguous sequence of n items from a given sample of text or speech. The items can be phonemes, syllables, letters, words or base pairs according to the application. The n-grams typically are collected from a text or speech corpus. When the items are words, n-grams may also be called shingles"
     }, {
       name: "loadwiki",
       method: "loadHtml",
@@ -323,6 +335,8 @@
       this.selector = terminalSelector;
       this.DOMelement = document.querySelector(this.selector);
       this.initialized = false;
+      this.currentOption = "";
+      this.currentCommand = "";
       this.history = [];
       this.historyCursor = 0;
       this.initHistory();
@@ -451,7 +465,10 @@
         var _this = this;
 
         var parsed = str.replace(/(\$\{command\})/, function (x, i) {
-          return _this.history[_this.history.length - 1] || "[command undefined]";
+          return _this.currentCommand || "[command undefined]";
+        });
+        parsed = parsed.replace(/(\$\{option\})/, function (x, i) {
+          return _this.currentOption || "[option undefined]";
         });
         parsed = parsed.replace(/(\$\{info\})/, function (x, i) {
           return context.info || "[info undefined]";
@@ -462,6 +479,132 @@
         return parsed;
       }
     }, {
+      key: "parserCli",
+      value: function parserCli(str) {
+        var parser = {
+          command: "",
+          arguments: [],
+          options: []
+        };
+        var i = 0;
+        var currentChar;
+        var context = "normal";
+        var token = "";
+        var escaped = false;
+        var currentOption = "";
+
+        while (i <= str.length) {
+          currentChar = str.charAt(i) || " ";
+
+          switch (context) {
+            case "normal":
+              switch (currentChar) {
+                case " ":
+                  if (parser.command == "") {
+                    parser.command = token;
+                  } else {
+                    if (currentOption == "") {
+                      parser.arguments.push(token);
+                    } else {
+                      parser.options[parser.options.length - 1].argument = token;
+                    }
+                  }
+
+                  token = "";
+                  break;
+
+                case '"':
+                  context = "quoted";
+
+                  if (context == "quoted" && token !== "") {
+                    return "error";
+                  }
+
+                  break;
+
+                case "-":
+                  if (token == "" && (str.charAt(i + 1) || "") == "-") {
+                    context = "option";
+                    i++;
+                  } else if (token == "") {
+                    context = "abbreviated option";
+                  } else {
+                    token += currentChar;
+                  }
+
+                  break;
+
+                default:
+                  token += currentChar;
+                  break;
+              }
+
+              break;
+
+            case "option":
+              switch (currentChar) {
+                case "=":
+                  parser.options.push({
+                    name: token,
+                    argument: ""
+                  });
+                  currentOption = token;
+                  token = "";
+                  context = "normal";
+                  break;
+
+                default:
+                  token += currentChar;
+                  break;
+              }
+
+              break;
+
+            case "abbreviated option":
+              switch (currentChar) {
+                case " ":
+                  context = "normal";
+                  break;
+
+                default:
+                  parser.options.push({
+                    name: currentChar,
+                    argument: ""
+                  });
+                  currentOption = currentChar;
+                  break;
+              }
+
+              break;
+
+            case "quoted":
+              switch (currentChar) {
+                case '"':
+                  if (!escaped) {
+                    context = "normal";
+                  } else {
+                    escaped = false;
+                    token += currentChar;
+                  }
+
+                  break;
+
+                case "\\":
+                  escaped = true;
+                  break;
+
+                default:
+                  token += currentChar;
+                  break;
+              }
+          }
+
+          i++;
+        }
+
+        return parser;
+      }
+    }, {
       key: "execute",
       value: function execute(str) {
         var _this3 = this;
@@ -469,54 +612,20 @@
         str = str.trim();
         if (str == "") return false;
         this.addHistory(str);
-        var regex = /"((?:[\0-\t\x0B\f\x0E-\u2027\u202A-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])+)"|([\x2D0-9A-z\xC0-\xFC]+)/gm; // Display the command in the terminal
+        var parser = this.parserCli(str); // Display the command in the terminal
 
         this.info(str);
-        var m;
-        var tokens = [];
-
-        while ((m = regex.exec(str)) !== null) {
-          if (m.index === regex.lastIndex) {
-            regex.lastIndex++;
-          }
-
-          m.forEach(function (match, groupIndex) {
-            if (groupIndex == 0) {
-              tokens.push(match);
-            }
-          });
-        }
-
-        var parser = {};
-        parser.command = tokens[0];
         var definition = terminalConfig.commands.filter(function (command) {
           return command.name == parser.command;
         })[0] || [];
         var context = {};
+        this.currentCommand = parser.command;
 
         if (definition.length == 0 && parser.command !== "help") {
           this.error(this.interpolation(terminalConfig.errors.unknown, context) || "Command not found : " + parser.command);
           return false;
-        }
+        } // Help management
 
-        parser.options = [];
-        parser.arguments = [];
-
-        for (var i = 1; i < tokens.length; i++) {
-          if (/^\x2D\x2D[0-9A-Z_a-z]*$/.test(tokens[i])) {
-            parser.options.push(tokens[i].substring(2));
-          } else if (/^\x2D[0-9A-Z_a-z]*/.test(tokens[i])) {
-            var opt = tokens[i].substring(1).split("");
-            parser.options = [].concat(_toConsumableArray(parser.options), _toConsumableArray(opt));
-          } else if (/^"(?:[\0-\t\x0B\f\x0E-\u2027\u202A-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])*"$/.test(tokens[i])) {
-            parser.arguments.push(tokens[i].substring(1, tokens[i].length - 1));
-          } else {
-            parser.arguments.push(tokens[i]);
-          }
-        } // Filter unique options
-
-
-        parser.options = _toConsumableArray(new Set(parser.options)); // Help management
 
         if (parser.command == "help") {
           definition = terminalConfig.commands.filter(function (command) {
@@ -528,7 +637,7 @@
           } else if (definition.length == 0) {
             this.log(this.interpolation(terminalConfig.help , context));
           } else {
-            this.log(this.interpolation(definition.help || terminalConfig.noHelp || "No help for this command", context));
+            this.log(this.explain(definition));
           } // this.log(this.explain(parser));
           // this.log(definition.help || "Sorry, no help defined for this command");
 
@@ -570,10 +679,37 @@
             }
           }
         });
-        if (!checkResult) return false;
-        this.log(this.interpolation(definition.info, parser) || ""); // Call the user method with arguments and options
+        if (!checkResult) return false; // Check Options
 
-        this.commandsNamespace[definition.method](parser.arguments, parser.options);
+        var opts = definition.opts;
+        parser.options.forEach(function (parsedOpt, index) {
+          var validOption = false;
+          _this3.currentOption = parsedOpt.name;
+          opts.forEach(function (opt, i) {
+            if (opt.name == parsedOpt.name || opt.abbr == parsedOpt.name) {
+              parser.options[index].name = opt.name;
+
+              if (opt.argument !== "") ;
+
+              validOption = true;
+            }
+          });
+
+          if (!validOption) {
+            _this3.error(_this3.interpolation(terminalConfig.errors.invalidOption, parser) || "Invalid option");
+          }
+        });
+        console.log(parser);
+        this.log(this.interpolation(definition.info, parser) || "");
+
+        var _this = this; // Call the user method with arguments and options
+
+
+        var promise = new Promise(function (resolve, reject) {
+          resolve(_this.commandsNamespace[definition.method](parser.arguments, parser.options));
+        });
+        promise.then();
+        console.log("in progress...");
         return true;
       }
     }, {
@@ -607,16 +743,78 @@
       }
     }, {
       key: "explain",
-      value: function explain(parser) {
-        var str = "Usage : " + parser.command + " ";
+      value: function explain(definition) {
+        console.log(definition);
+        var str = "<dl>";
+        str += "<dt>NAME</dt>";
+        str += "<dd>" + definition.name + " - " + (definition.shortDescription || "") + "</dd><br/>";
+        str += "<dt>SYNOPSIS</dt>";
+        str += "<dd>" + definition.name + " " + this.synopsis(definition) + "</dd><br/>";
+        str += "<dt>DESCRIPTION</dt>";
+        str += "<dd>" + (definition.description || "no description for this command") + "</dd><br/>";
+
+        if (definition.opts) {
+          str += "<dt>OPTIONS</dt>";
+          (definition.args || []).forEach(function (x) {
+            var name = x.name;
+            if (x["default"]) name += "=" + x["default"];
+            str += "<dd>&lt;" + name + "&gt;</dd>";
+            str += "<dd>&nbsp;&nbsp;&nbsp;&nbsp;" + x.info + "</dd>";
+            str += "<br/>";
+          });
+          definition.opts.forEach(function (x) {
+            var arg = "";
+
+            if (x.arg) {
+              arg = "=&lt;<u>" + x.arg.name + "</u>&gt;";
+
+              if (!x.arg.mandatory) {
+                arg = "[" + arg + "]";
+              }
+            }
+
+            var options = [x.abbr ? "-" + x.abbr + arg.replace("=", " ") : "", "--" + x.name + arg].filter(function (a) {
+              return a;
+            }).join(", ");
+            str += "<dd>" + options + "</dd>";
+            str += "<dd>&nbsp;&nbsp;&nbsp;&nbsp;" + x.info + "</dd>";
+            str += "<br/>";
+          });
+        }
+
+        str += "</dl>";
         return str;
+      }
+    }, {
+      key: "synopsis",
+      value: function synopsis(definition) {
+        var str = [];
+        (definition.args || []).forEach(function (x) {
+          var name = x.name;
+          if (x["default"]) name += "=" + x["default"];
+          str.push("&lt;" + name + "&gt;");
+        });
+        (definition.opts || []).forEach(function (x) {
+          var arg = "";
+
+          if (x.arg) {
+            arg = "=&lt;<u>" + x.arg.name + "</u>&gt;";
+
+            if (!x.arg.mandatory) {
+              arg = "[" + arg + "]";
+            }
+          }
+
+          str.push("[-" + (x.abbr || "-" + x.name) + arg + "]");
+        });
+        return str.join(" ");
       }
     }, {
       key: "error",
       value: function error(str) {
         if (this.initialized) {
           var consoleElement = document.createElement("p");
-          consoleElement.innerHTML = str;
+          consoleElement.innerHTML = "! " + str;
           consoleElement.style.color = "red";
           this.DOMelement.appendChild(consoleElement);
           this.DOMelement.scrollTop = this.DOMelement.scrollHeight - this.DOMelement.clientHeight;
@@ -629,7 +827,7 @@
       value: function info(str) {
         if (this.initialized) {
           var consoleElement = document.createElement("p");
-          consoleElement.innerHTML = str;
+          consoleElement.innerHTML = "> " + str;
           consoleElement.style.color = "green";
           this.DOMelement.appendChild(consoleElement);
           this.DOMelement.scrollTop = this.DOMelement.scrollHeight - this.DOMelement.clientHeight;
@@ -668,7 +866,7 @@
       this.o = options;
       this.indexToken = 0;
       this.consoleInitialized = false;
-      this.language = 'fr';
+      this.language = "fr";
       this.init();
     }
 
@@ -677,7 +875,7 @@
       value: function init() {
         var _this = this;
 
-        var as = document.querySelectorAll(this.selector + ' a');
+        var as = document.querySelectorAll(this.selector + " a");
         as.forEach(function (a) {
           a.addEventListener("click", function (e) {
             return e.preventDefault();
@@ -692,9 +890,9 @@
 
         this.indexToken = 0;
         this.repl(this.el);
-        var css = '.token:hover{ background-color: ' + (this.o.tokenColorBgHover || '#00FF00') + ' ; color: ' + (this.o.tokenColorFgHover || '#FF00FF') + ' ; cursor:pointer ; -webkit-user-select: none ; -moz-user-select: none; -ms-user-select: none; user-select: none; } ';
-        css += ' .token.selected { background-color : green }';
-        var style = document.createElement('style');
+        var css = ".token:hover{ background-color: " + (this.o.tokenColorBgHover || "#00FF00") + " ; color: " + (this.o.tokenColorFgHover || "#FF00FF") + " ; cursor:pointer ; -webkit-user-select: none ; -moz-user-select: none; -ms-user-select: none; user-select: none; } ";
+        css += " .token.selected { background-color : green }";
+        var style = document.createElement("style");
 
         if (style.styleSheet) {
           style.styleSheet.cssText = css;
@@ -702,7 +900,7 @@
           style.appendChild(document.createTextNode(css));
         }
 
-        document.getElementsByTagName('head')[0].appendChild(style);
+        document.getElementsByTagName("head")[0].appendChild(style);
         var tokensEl = document.querySelectorAll(this.selector + " .token");
         tokensEl.forEach(function (el) {
           el.addEventListener("click", function (e) {
@@ -710,7 +908,7 @@
             if (window.event.ctrlKey) {
               if (!el.classList.contains("selected")) {
                 el.classList = "token selected";
-                _this.lastSelected = el.getAttribute('data-id');
+                _this.lastSelected = el.getAttribute("data-id");
 
                 _this.terminal.log("'" + e.target.innerText + "' selected");
               } else {
@@ -720,7 +918,7 @@
                 _this.terminal.log("'" + e.target.innerText + "' unselected");
               }
             } else if (window.event.shiftKey) {
-              var idSelected = el.getAttribute('data-id');
+              var idSelected = el.getAttribute("data-id");
 
               if (!_this.lastSelected) {
                 el.classList = "token selected";
@@ -735,7 +933,7 @@
                   selectedText.push(t.innerText);
                 }
 
-                _this.terminal.log("'" + selectedText.join('') + "' selected");
+                _this.terminal.log("'" + selectedText.join("") + "' selected");
               } else {
                 var _selectedText = [];
 
@@ -747,17 +945,17 @@
                   _selectedText.push(_t.innerText);
                 }
 
-                _this.terminal.log("'" + _selectedText.reverse().join('') + "' selected");
+                _this.terminal.log("'" + _selectedText.reverse().join("") + "' selected");
               }
 
               _this.lastSelected = idSelected;
             } else {
-              if (!el.classList.contains('selected')) {
+              if (!el.classList.contains("selected")) {
                 tokensEl.forEach(function (x) {
                   x.classList = "token";
                 });
                 el.classList = "token selected";
-                _this.lastSelected = el.getAttribute('data-id');
+                _this.lastSelected = el.getAttribute("data-id");
 
                 _this.terminal.log("'" + e.target.innerText + "' selected");
               } else {
@@ -795,7 +993,7 @@
             while (toks[_i2]) {
               if (/^[^\.]*\.$/gm.test(toks[_i2])) {
                 toks[_i2] = toks[_i2].substring(0, toks[_i2].length - 1);
-                toks.splice(_i2 + 1, 0, '.');
+                toks.splice(_i2 + 1, 0, ".");
                 _i2++;
               }
 
@@ -803,13 +1001,13 @@
             } //console.log(toks);
 
 
-            var newHTML = '';
+            var newHTML = "";
             toks.forEach(function (el) {
               _this2.indexToken++;
-              newHTML += '<span class="token" data-id="' + _this2.indexToken + '">' + el + '</span>';
+              newHTML += '<span class="token" data-id="' + _this2.indexToken + '">' + el + "</span>";
             }); // do some swappy text to html here?
 
-            var replacementNode = document.createElement('span');
+            var replacementNode = document.createElement("span");
             replacementNode.innerHTML = newHTML;
             n.parentNode.insertBefore(replacementNode, n);
             n.parentNode.removeChild(n);
@@ -823,9 +1021,9 @@
       key: "ngrams",
       value: function ngrams(args, opts) {
         var selector = " .token";
-        var r = new RegExp("^[A-zÀ-ü0-9\-]+$");
+        var r = new RegExp("^[A-zÀ-ü0-9-]+$");
 
-        if (opts.includes("selection") || opts.includes("s")) {
+        if (opts.includes("selection")) {
           selector += ".selected";
         }
 
@@ -839,15 +1037,19 @@
         var minimumLength = 3;
         var stem = false;
 
-        if (opts.includes("R") || opts.includes('recursive')) {
+        if (opts.includes("recursive")) {
           recursive = 1;
+
+          if (opts.includes("minNgram")) {
+            console.log(opts["minGram"]); //recursive =
+          }
         }
 
-        if (opts.includes("i") || opts.includes("insensitive")) {
+        if (opts.includes("insensitive")) {
           insensitive = true;
         }
 
-        if (opts.includes("t") || opts.includes("stem")) {
+        if (opts.includes("stemming")) {
           stem = true;
         }
 
@@ -859,8 +1061,8 @@
             //console.log(tokensEl[i].innerText);
             if (r.test(tokensEl[i].innerText)) {
               lastIndex = i;
-              var ng = '';
-              var ngStemmed = '';
+              var ng = "";
+              var ngStemmed = "";
               var cursor = 1;
 
               while (cursor <= n && tokensEl[i]) {
@@ -876,7 +1078,7 @@
                 }
 
                 if (r.test(text)) {
-                  if (cursor > 1 && ng.substring(ng.length - 1) !== ' ') {
+                  if (cursor > 1 && ng.substring(ng.length - 1) !== " ") {
                     break;
                   }
 
@@ -899,8 +1101,8 @@
                 if (stem) {
                   if (!ngrams[ngStemmed]) {
                     ngrams[ngStemmed] = {
-                      'weight': 1,
-                      'forms': new Set([ng])
+                      weight: 1,
+                      forms: new Set([ng])
                     };
                   } else {
                     ngrams[ngStemmed].weight += n;
@@ -936,7 +1138,7 @@
           return [key, ngrams[key].weight, ngrams[key].forms];
         });
 
-        if (opts.includes("r") || opts.includes("rsort")) {
+        if (opts.includes("rsort")) {
           ngrams.sort(function (a, b) {
             return a[1] > b[1];
           });
@@ -950,17 +1152,17 @@
           return x[1] > 1 && x[0].length >= minimumLength;
         }).map(function (x) {
           if (x[2]) {
-            return Array.from(x[2]).join('/') + ' (' + x[1] + ')';
+            return Array.from(x[2]).join("/") + " (" + x[1] + ")";
           } else {
-            return x[0] + ' (' + x[1] + ')';
+            return x[0] + " (" + x[1] + ")";
           }
-        }).join('<br/>')); //console.log(ngrams);
+        }).join("<br/>")); //console.log(ngrams);
       }
     }, {
       key: "stem",
       value: function stem(args, opts) {
         var selector = " .token";
-        var r = new RegExp("^[A-zÀ-ü0-9\-]+$");
+        var r = new RegExp("^[A-zÀ-ü0-9-]+$");
 
         if (opts.includes("selection") || opts.includes("s")) {
           selector += ".selected";
@@ -985,7 +1187,7 @@
         var selector = " .token";
         var sensitive = true;
         var stem = false;
-        var r = new RegExp("^[A-zÀ-ü0-9\-]+$");
+        var r = new RegExp("^[A-zÀ-ü0-9-]+$");
 
         if (opts.includes("stem") || opts.includes("t")) {
           //console.log(opts);
@@ -1035,11 +1237,11 @@
 
         if (opts.includes("p")) {
           this.terminal.log(words.map(function (x) {
-            return x[0] + ' (' + _this3.digits2(x[1] / wordsCount * 100) + '%)';
+            return x[0] + " (" + _this3.digits2(x[1] / wordsCount * 100) + "%)";
           }).join(" - "));
         } else {
           this.terminal.log(words.map(function (x) {
-            return x[0] + ' (' + x[1] + ')';
+            return x[0] + " (" + x[1] + ")";
           }).join(" - "));
         }
       }
@@ -1052,7 +1254,7 @@
       key: "count",
       value: function count(args, opts) {
         var selector = " .token";
-        var r = new RegExp("^[A-zÀ-ü0-9\-]+$");
+        var r = new RegExp("^[A-zÀ-ü0-9-]+$");
 
         if (opts.includes("selection") || opts.includes("s")) {
           selector += ".selected";
@@ -1119,7 +1321,7 @@
           return false;
         }
 
-        if (!['en', 'fr', 'de', 'es', 'ja', 'ru', 'it', 'zh', 'pt', 'ar', 'fa', 'pl', 'nl', 'id', 'uk', 'he', 'sv', 'cs', 'ko', 'vi', 'ca'].includes(label)) {
+        if (!["en", "fr", "de", "es", "ja", "ru", "it", "zh", "pt", "ar", "fa", "pl", "nl", "id", "uk", "he", "sv", "cs", "ko", "vi", "ca"].includes(label)) {
           this.terminal.error("Language not supported");
           return false;
         }
@@ -1155,7 +1357,7 @@
 
             _this4.terminal.log("Page loaded!");
 
-            var html = text.parse.text['*'];
+            var html = text.parse.text["*"];
             el.innerHTML = html;
 
             _this4.init();

@@ -11,6 +11,8 @@ class Terminal {
     this.selector = terminalSelector;
     this.DOMelement = document.querySelector(this.selector);
     this.initialized = false;
+    this.currentOption = "";
+    this.currentCommand = "";
     this.history = [];
     this.historyCursor = 0;
     this.initHistory();
@@ -116,45 +118,138 @@ class Terminal {
   interpolation(str, context) {
     if (str == undefined) return false;
     let _this = this;
+
     let parsed = str.replace(/(\$\{command\})/, function(x, i) {
-      return _this.history[_this.history.length - 1] || "[command undefined]";
+      return _this.currentCommand || "[command undefined]";
     });
+
+    parsed = parsed.replace(/(\$\{option\})/, function(x, i) {
+      return _this.currentOption || "[option undefined]";
+    });
+
     parsed = parsed.replace(/(\$\{info\})/, function(x, i) {
       return context.info || "[info undefined]";
     });
+
     parsed = parsed.replace(/\$\{args\[(\d+)\]\}/, function(x, i) {
       return context.arguments[i - 1] || "[argument undefined]";
     });
+
     return parsed;
+  }
+  parserCli(str) {
+    let parser = { command: "", arguments: [], options: [] };
+    let i = 0;
+    let currentChar;
+    let context = "normal";
+    let token = "";
+    let escaped = false;
+    let currentOption = "";
+    while (i <= str.length) {
+      currentChar = str.charAt(i) || " ";
+
+      switch (context) {
+        case "normal":
+          switch (currentChar) {
+            case " ":
+              if (parser.command == "") {
+                parser.command = token;
+              } else {
+                if (currentOption == "") {
+                  parser.arguments.push(token);
+                } else {
+                  parser.options[parser.options.length - 1].argument = token;
+                }
+              }
+              token = "";
+              break;
+            case '"':
+              context = "quoted";
+              if (context == "quoted" && token !== "") {
+                return "error";
+              }
+              break;
+            case "-":
+              if (token == "" && (str.charAt(i + 1) || "") == "-") {
+                context = "option";
+                i++;
+              } else if (token == "") {
+                context = "abbreviated option";
+              } else {
+                token += currentChar;
+              }
+              break;
+            default:
+              token += currentChar;
+              break;
+          }
+          break;
+        case "option":
+          switch (currentChar) {
+            case "=":
+              parser.options.push({ name: token, argument: "" });
+              currentOption = token;
+              token = "";
+              context = "normal";
+              break;
+            default:
+              token += currentChar;
+              break;
+          }
+          break;
+        case "abbreviated option":
+          switch (currentChar) {
+            case " ":
+              context = "normal";
+              break;
+            default:
+              parser.options.push({ name: currentChar, argument: "" });
+              currentOption = currentChar;
+              break;
+          }
+          break;
+        case "quoted":
+          switch (currentChar) {
+            case '"':
+              if (!escaped) {
+                context = "normal";
+              } else {
+                escaped = false;
+                token += currentChar;
+              }
+              break;
+            case "\\":
+              escaped = true;
+              break;
+            default:
+              token += currentChar;
+              break;
+          }
+        default:
+          break;
+      }
+      i++;
+    }
+
+    return parser;
   }
   execute(str) {
     str = str.trim();
     if (str == "") return false;
     this.addHistory(str);
-    const regex = /"(.+)"|([A-zÀ-ü0-9\-]+)/gmu;
+    let parser = this.parserCli(str);
+
     // Display the command in the terminal
 
     this.info(str);
-    let m;
-    let tokens = [];
-    while ((m = regex.exec(str)) !== null) {
-      if (m.index === regex.lastIndex) {
-        regex.lastIndex++;
-      }
-      m.forEach((match, groupIndex) => {
-        if (groupIndex == 0) {
-          tokens.push(match);
-        }
-      });
-    }
-    let parser = {};
-    parser.command = tokens[0];
+
     let definition =
       terminalConfig.commands.filter(
         command => command.name == parser.command
       )[0] || [];
 
     let context = {};
+    this.currentCommand = parser.command;
     if (definition.length == 0 && parser.command !== "help") {
       this.error(
         this.interpolation(terminalConfig.errors.unknown, context) ||
@@ -162,25 +257,6 @@ class Terminal {
       );
       return false;
     }
-
-    parser.options = [];
-    parser.arguments = [];
-    for (let i = 1; i < tokens.length; i++) {
-      if (/^--\w*$/u.test(tokens[i])) {
-        parser.options.push(tokens[i].substring(2));
-      } else if (/^-\w*/u.test(tokens[i])) {
-        let opt = tokens[i].substring(1).split("");
-        parser.options = [...parser.options, ...opt];
-      } else if (/^".*"$/u.test(tokens[i])) {
-        parser.arguments.push(tokens[i].substring(1, tokens[i].length - 1));
-      } else {
-        parser.arguments.push(tokens[i]);
-      }
-    }
-
-    // Filter unique options
-
-    parser.options = [...new Set(parser.options)];
 
     // Help management
 
@@ -201,14 +277,7 @@ class Terminal {
           this.interpolation(terminalConfig.help || "No global help", context)
         );
       } else {
-        this.log(
-          this.interpolation(
-            definition.help ||
-              terminalConfig.noHelp ||
-              "No help for this command",
-            context
-          )
-        );
+        this.log(this.explain(definition));
       }
       // this.log(this.explain(parser));
       // this.log(definition.help || "Sorry, no help defined for this command");
@@ -256,11 +325,43 @@ class Terminal {
       }
     });
     if (!checkResult) return false;
+
+    // Check Options
+
+    let opts = definition.opts;
+    parser.options.forEach((parsedOpt, index) => {
+      let validOption = false;
+      this.currentOption = parsedOpt.name;
+      opts.forEach((opt, i) => {
+        if (opt.name == parsedOpt.name || opt.abbr == parsedOpt.name) {
+          parser.options[index].name = opt.name;
+          if (opt.argument !== "") {
+            // todo : check argument of the option
+          }
+          validOption = true;
+        }
+      });
+      if (!validOption) {
+        this.error(
+          this.interpolation(terminalConfig.errors.invalidOption, parser) ||
+            "Invalid option"
+        );
+      }
+    });
+    console.log(parser);
     this.log(this.interpolation(definition.info, parser) || "");
-
+    let _this = this;
     // Call the user method with arguments and options
-
-    this.commandsNamespace[definition.method](parser.arguments, parser.options);
+    let promise = new Promise(function(resolve, reject) {
+      resolve(
+        _this.commandsNamespace[definition.method](
+          parser.arguments,
+          parser.options
+        )
+      );
+    });
+    promise.then();
+    console.log("in progress...");
     return true;
   }
   checkFilter(value, filter) {
@@ -289,14 +390,79 @@ class Terminal {
     }
     return "";
   }
-  explain(parser) {
-    let str = "Usage : " + parser.command + " ";
+  explain(definition) {
+    console.log(definition);
+    let str = "<dl>";
+    str += "<dt>NAME</dt>";
+    str +=
+      "<dd>" +
+      definition.name +
+      " - " +
+      (definition.shortDescription || "") +
+      "</dd><br/>";
+    str += "<dt>SYNOPSIS</dt>";
+    str +=
+      "<dd>" + definition.name + " " + this.synopsis(definition) + "</dd><br/>";
+    str += "<dt>DESCRIPTION</dt>";
+    str +=
+      "<dd>" +
+      (definition.description || "no description for this command") +
+      "</dd><br/>";
+    if (definition.opts) {
+      str += "<dt>OPTIONS</dt>";
+      (definition.args || []).forEach(x => {
+        let name = x.name;
+        if (x.default) name += "=" + x.default;
+        str += "<dd>&lt;" + name + "&gt;</dd>";
+        str += "<dd>&nbsp;&nbsp;&nbsp;&nbsp;" + x.info + "</dd>";
+        str += "<br/>";
+      });
+      definition.opts.forEach(x => {
+        let arg = "";
+        if (x.arg) {
+          arg = "=&lt;<u>" + x.arg.name + "</u>&gt;";
+          if (!x.arg.mandatory) {
+            arg = "[" + arg + "]";
+          }
+        }
+        let options = [
+          x.abbr ? "-" + x.abbr + arg.replace("=", " ") : "",
+          "--" + x.name + arg
+        ]
+          .filter(a => a)
+          .join(", ");
+        str += "<dd>" + options + "</dd>";
+        str += "<dd>&nbsp;&nbsp;&nbsp;&nbsp;" + x.info + "</dd>";
+        str += "<br/>";
+      });
+    }
+
+    str += "</dl>";
     return str;
+  }
+  synopsis(definition) {
+    let str = [];
+    (definition.args || []).forEach(x => {
+      let name = x.name;
+      if (x.default) name += "=" + x.default;
+      str.push("&lt;" + name + "&gt;");
+    });
+    (definition.opts || []).forEach(x => {
+      let arg = "";
+      if (x.arg) {
+        arg = "=&lt;<u>" + x.arg.name + "</u>&gt;";
+        if (!x.arg.mandatory) {
+          arg = "[" + arg + "]";
+        }
+      }
+      str.push("[-" + (x.abbr || "-" + x.name) + arg + "]");
+    });
+    return str.join(" ");
   }
   error(str) {
     if (this.initialized) {
       let consoleElement = document.createElement("p");
-      consoleElement.innerHTML = str;
+      consoleElement.innerHTML = "! " + str;
       consoleElement.style.color = "red";
       this.DOMelement.appendChild(consoleElement);
       this.DOMelement.scrollTop =
@@ -308,7 +474,7 @@ class Terminal {
   info(str) {
     if (this.initialized) {
       let consoleElement = document.createElement("p");
-      consoleElement.innerHTML = str;
+      consoleElement.innerHTML = "> " + str;
       consoleElement.style.color = "green";
       this.DOMelement.appendChild(consoleElement);
       this.DOMelement.scrollTop =

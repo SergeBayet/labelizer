@@ -5,7 +5,6 @@ import Terminal from "./terminal";
 const version = "0.0.1";
 
 export default class Labelizer {
-
   constructor(selector, options = {}) {
     this.terminal = new Terminal(this, options.consoleSelector);
 
@@ -14,29 +13,33 @@ export default class Labelizer {
     this.o = options;
     this.indexToken = 0;
     this.consoleInitialized = false;
-    this.language = 'fr';
+    this.language = "fr";
 
     this.init();
   }
 
   init() {
-
-    let as = document.querySelectorAll(this.selector + ' a');
+    let as = document.querySelectorAll(this.selector + " a");
     as.forEach(a => {
       a.addEventListener("click", e => e.preventDefault());
     });
 
     this.lastSelected = false;
-    if (!(this.el)) {
+    if (!this.el) {
       this.terminal.log("DOM selector must be provided!");
       return false;
     }
 
     this.indexToken = 0;
     this.repl(this.el);
-    let css = '.token:hover{ background-color: ' + (this.o.tokenColorBgHover || '#00FF00') + ' ; color: ' + (this.o.tokenColorFgHover || '#FF00FF') + ' ; cursor:pointer ; -webkit-user-select: none ; -moz-user-select: none; -ms-user-select: none; user-select: none; } ';
-    css += ' .token.selected { background-color : green }';
-    let style = document.createElement('style');
+    let css =
+      ".token:hover{ background-color: " +
+      (this.o.tokenColorBgHover || "#00FF00") +
+      " ; color: " +
+      (this.o.tokenColorFgHover || "#FF00FF") +
+      " ; cursor:pointer ; -webkit-user-select: none ; -moz-user-select: none; -ms-user-select: none; user-select: none; } ";
+    css += " .token.selected { background-color : green }";
+    let style = document.createElement("style");
 
     if (style.styleSheet) {
       style.styleSheet.cssText = css;
@@ -44,33 +47,27 @@ export default class Labelizer {
       style.appendChild(document.createTextNode(css));
     }
 
-    document.getElementsByTagName('head')[0].appendChild(style);
+    document.getElementsByTagName("head")[0].appendChild(style);
     let tokensEl = document.querySelectorAll(this.selector + " .token");
     tokensEl.forEach(el => {
-
       el.addEventListener("click", e => {
         // this.terminal.log('id : ' + el.getAttribute('data-id'));
         if (window.event.ctrlKey) {
-
           if (!el.classList.contains("selected")) {
             el.classList = "token selected";
-            this.lastSelected = el.getAttribute('data-id');
+            this.lastSelected = el.getAttribute("data-id");
             this.terminal.log("'" + e.target.innerText + "' selected");
-          }
-          else {
+          } else {
             el.classList = "token";
             this.lastSelected = false;
             this.terminal.log("'" + e.target.innerText + "' unselected");
           }
-
-        }
-        else if (window.event.shiftKey) {
-          let idSelected = el.getAttribute('data-id');
+        } else if (window.event.shiftKey) {
+          let idSelected = el.getAttribute("data-id");
           if (!this.lastSelected) {
             el.classList = "token selected";
             this.terminal.log("'" + e.target.innerText + "' selected");
-          }
-          else if (this.lastSelected < idSelected) {
+          } else if (this.lastSelected < idSelected) {
             let selectedText = [];
             for (let i = this.lastSelected; i <= idSelected; i++) {
               let t = document.querySelector('.token[data-id="' + i + '"]');
@@ -78,83 +75,89 @@ export default class Labelizer {
               t.classList = "token selected";
               selectedText.push(t.innerText);
             }
-            this.terminal.log("'" + selectedText.join('') + "' selected");
-          }
-          else {
+            this.terminal.log("'" + selectedText.join("") + "' selected");
+          } else {
             let selectedText = [];
             for (let i = this.lastSelected; i >= idSelected; i--) {
               let t = document.querySelector('.token[data-id="' + i + '"]');
 
               t.classList = "token selected";
               selectedText.push(t.innerText);
-
             }
-            this.terminal.log("'" + selectedText.reverse().join('') + "' selected");
+            this.terminal.log(
+              "'" + selectedText.reverse().join("") + "' selected"
+            );
           }
           this.lastSelected = idSelected;
-        }
-        else {
-          if (!el.classList.contains('selected')) {
+        } else {
+          if (!el.classList.contains("selected")) {
             tokensEl.forEach(x => {
               x.classList = "token";
             });
             el.classList = "token selected";
-            this.lastSelected = el.getAttribute('data-id');
+            this.lastSelected = el.getAttribute("data-id");
             this.terminal.log("'" + e.target.innerText + "' selected");
-          }
-          else {
+          } else {
             tokensEl.forEach(x => {
               x.classList = "token";
             });
             this.lastSelected = false;
             this.terminal.log("'" + e.target.innerText + "' unselected");
           }
-
         }
-
       });
     });
-    this.terminal.info("Labelizer initialized.")
+    this.terminal.info("Labelizer initialized.");
   }
 
-
   repl(node) {
-    if (node.className === undefined || node.nodeName == "CODE" || node.nodeName == "PRE") return
+    if (
+      node.className === undefined ||
+      node.nodeName == "CODE" ||
+      node.nodeName == "PRE"
+    )
+      return;
 
     let classNames = node.className.split(" ");
 
-    if (classNames.includes("mw-editsection")
-      || classNames.includes("plainlinks")
-      || classNames.includes("references-small")) return;
+    if (
+      classNames.includes("mw-editsection") ||
+      classNames.includes("plainlinks") ||
+      classNames.includes("references-small")
+    )
+      return;
     var nodes = node.childNodes;
 
     for (var i = 0, m = nodes.length; i < m; i++) {
       var n = nodes[i];
 
       if (n.nodeType == n.TEXT_NODE) {
-
-        let toks = n.textContent.split(/([A-zÀ-ü0-9\-\.]*)/gu).filter(x => (x));
+        let toks = n.textContent.split(/([A-zÀ-ü0-9\-\.]*)/gu).filter(x => x);
         let i = 0;
         while (toks[i]) {
           if (/^[^\.]*\.$/gm.test(toks[i])) {
-
             toks[i] = toks[i].substring(0, toks[i].length - 1);
-            toks.splice(i + 1, 0, '.');
+            toks.splice(i + 1, 0, ".");
             i++;
           }
           i++;
         }
 
         //console.log(toks);
-        let newHTML = '';
+        let newHTML = "";
         toks.forEach(el => {
           this.indexToken++;
 
-          newHTML += '<span class="token" data-id="' + this.indexToken + '">' + el + '</span>';
+          newHTML +=
+            '<span class="token" data-id="' +
+            this.indexToken +
+            '">' +
+            el +
+            "</span>";
         });
 
         // do some swappy text to html here?
-        var replacementNode = document.createElement('span');
+        var replacementNode = document.createElement("span");
 
         replacementNode.innerHTML = newHTML;
         n.parentNode.insertBefore(replacementNode, n);
@@ -163,14 +166,13 @@ export default class Labelizer {
         this.repl(n);
       }
     }
-
   }
 
   // Commands Console
   ngrams(args, opts) {
     let selector = " .token";
-    let r = new RegExp("^[A-zÀ-ü0-9\-]+$");
-    if (opts.includes("selection") || opts.includes("s")) {
+    let r = new RegExp("^[A-zÀ-ü0-9-]+$");
+    if (opts.includes("selection")) {
       selector += ".selected";
     }
     let n = parseInt(args[0]); // || '3');      // Default ngrams(3)
@@ -181,28 +183,33 @@ export default class Labelizer {
     let recursive = n;
     let minimumLength = 3;
     let stem = false;
-    if (opts.includes("R") || opts.includes('recursive')) {
+    if (opts.includes("recursive")) {
       recursive = 1;
+      if (opts.includes("minNgram")) {
+        console.log(opts["minGram"]);
+        //recursive =
+      }
     }
-    if (opts.includes("i") || opts.includes("insensitive")) {
+    if (opts.includes("insensitive")) {
       insensitive = true;
     }
-    if (opts.includes("t") || opts.includes("stem")) {
+    if (opts.includes("stemming")) {
       stem = true;
     }
     while (n >= recursive) {
-      let i = 0, lastIndex = 0;
+      let i = 0,
+        lastIndex = 0;
       while (tokensEl[i]) {
         //console.log(tokensEl[i].innerText);
         if (r.test(tokensEl[i].innerText)) {
           lastIndex = i;
-          let ng = '';
-          let ngStemmed = '';
+          let ng = "";
+          let ngStemmed = "";
           let cursor = 1;
 
           while (cursor <= n && tokensEl[i]) {
             if (!mask[i]) break;
-            let text = tokensEl[i].innerText
+            let text = tokensEl[i].innerText;
             if (/^[\,\.\(\)\;\:\[\]\|·\(\)]$/.test(text)) {
               break;
             }
@@ -211,7 +218,7 @@ export default class Labelizer {
             }
 
             if (r.test(text)) {
-              if (cursor > 1 && ng.substring(ng.length - 1) !== ' ') {
+              if (cursor > 1 && ng.substring(ng.length - 1) !== " ") {
                 break;
               }
               cursor++;
@@ -228,33 +235,25 @@ export default class Labelizer {
             }
             if (stem) {
               if (!ngrams[ngStemmed]) {
-                ngrams[ngStemmed] = { 'weight': 1, 'forms': new Set([ng]) };
-
-              }
-              else {
-
+                ngrams[ngStemmed] = { weight: 1, forms: new Set([ng]) };
+              } else {
                 ngrams[ngStemmed].weight += n;
                 ngrams[ngStemmed].forms.add(ng);
                 for (let x = i; x <= i + n; x++) {
                   mask[x] = false;
                 }
               }
-            }
-            else {
+            } else {
               if (!ngrams[ng]) {
                 ngrams[ng] = { weight: 1 };
-              }
-              else {
+              } else {
                 ngrams[ng].weight += n;
                 for (let x = i; x <= i + n; x++) {
                   mask[x] = false;
                 }
               }
             }
-
-
           }
-
         }
 
         i++;
@@ -263,12 +262,15 @@ export default class Labelizer {
       n--;
     }
 
-    ngrams = Object.keys(ngrams).map(key => [key, ngrams[key].weight, ngrams[key].forms]);
+    ngrams = Object.keys(ngrams).map(key => [
+      key,
+      ngrams[key].weight,
+      ngrams[key].forms
+    ]);
 
-    if (opts.includes("r") || opts.includes("rsort")) {
+    if (opts.includes("rsort")) {
       ngrams.sort((a, b) => a[1] > b[1]);
-    }
-    else {
+    } else {
       ngrams.sort((a, b) => a[1] < b[1]);
     }
 
@@ -277,22 +279,19 @@ export default class Labelizer {
         .filter(x => x[1] > 1 && x[0].length >= minimumLength)
         .map(x => {
           if (x[2]) {
-            return Array.from(x[2]).join('/') + ' (' + x[1] + ')';
+            return Array.from(x[2]).join("/") + " (" + x[1] + ")";
+          } else {
+            return x[0] + " (" + x[1] + ")";
           }
-          else {
-            return x[0] + ' (' + x[1] + ')'
-          }
-
-
         })
-        .join('<br/>')
+        .join("<br/>")
     );
     //console.log(ngrams);
   }
   stem(args, opts) {
     let selector = " .token";
     let sensitive = true;
-    let r = new RegExp("^[A-zÀ-ü0-9\-]+$");
+    let r = new RegExp("^[A-zÀ-ü0-9-]+$");
     if (opts.includes("selection") || opts.includes("s")) {
       selector += ".selected";
     }
@@ -310,12 +309,11 @@ export default class Labelizer {
     console.log(words);
   }
   freq(args, opts) {
-
     let selector = " .token";
     let sensitive = true;
     let stem = false;
 
-    let r = new RegExp("^[A-zÀ-ü0-9\-]+$");
+    let r = new RegExp("^[A-zÀ-ü0-9-]+$");
     if (opts.includes("stem") || opts.includes("t")) {
       //console.log(opts);
       stem = true;
@@ -338,8 +336,7 @@ export default class Labelizer {
         wordsCount++;
         if (!words[token]) {
           words[token] = 1;
-        }
-        else {
+        } else {
           words[token]++;
         }
       }
@@ -347,16 +344,20 @@ export default class Labelizer {
     words = Object.keys(words).map(key => [key, words[key]]);
     if (opts.includes("r") || opts.includes("rsort")) {
       words.sort((a, b) => a[1] > b[1]);
-    }
-    else {
+    } else {
       words.sort((a, b) => a[1] < b[1]);
     }
 
     if (opts.includes("p")) {
-      this.terminal.log(words.map(x => x[0] + ' (' + this.digits2((x[1] / wordsCount) * 100) + '%)').join(" - "));
-    }
-    else {
-      this.terminal.log(words.map(x => x[0] + ' (' + x[1] + ')').join(" - "));
+      this.terminal.log(
+        words
+          .map(
+            x => x[0] + " (" + this.digits2((x[1] / wordsCount) * 100) + "%)"
+          )
+          .join(" - ")
+      );
+    } else {
+      this.terminal.log(words.map(x => x[0] + " (" + x[1] + ")").join(" - "));
     }
   }
   digits2(num) {
@@ -364,7 +365,7 @@ export default class Labelizer {
   }
   count(args, opts) {
     let selector = " .token";
-    let r = new RegExp("^[A-zÀ-ü0-9\-]+$");
+    let r = new RegExp("^[A-zÀ-ü0-9-]+$");
     if (opts.includes("selection") || opts.includes("s")) {
       selector += ".selected";
     }
@@ -388,17 +389,13 @@ export default class Labelizer {
     if (opts.includes("asort") || opts.includes("a")) {
       if (args.includes("numbers")) {
         words.sort((a, b) => parseFloat(a) > parseFloat(b));
-      }
-      else {
+      } else {
         words.sort((a, b) => a > b);
       }
-
-    }
-    else if (opts.includes("rsort") || opts.includes("r")) {
+    } else if (opts.includes("rsort") || opts.includes("r")) {
       if (args.includes("numbers")) {
         words.sort((a, b) => parseFloat(a) < parseFloat(b));
-      }
-      else {
+      } else {
         words.sort((a, b) => a < b);
       }
     }
@@ -417,7 +414,31 @@ export default class Labelizer {
       this.terminal.error("Argument 'language' is missing");
       return false;
     }
-    if (!['en', 'fr', 'de', 'es', 'ja', 'ru', 'it', 'zh', 'pt', 'ar', 'fa', 'pl', 'nl', 'id', 'uk', 'he', 'sv', 'cs', 'ko', 'vi', 'ca'].includes(label)) {
+    if (
+      ![
+        "en",
+        "fr",
+        "de",
+        "es",
+        "ja",
+        "ru",
+        "it",
+        "zh",
+        "pt",
+        "ar",
+        "fa",
+        "pl",
+        "nl",
+        "id",
+        "uk",
+        "he",
+        "sv",
+        "cs",
+        "ko",
+        "vi",
+        "ca"
+      ].includes(label)
+    ) {
       this.terminal.error("Language not supported");
       return false;
     }
@@ -435,23 +456,28 @@ export default class Labelizer {
     var myHeaders = new Headers();
     let el = this.el;
     myHeaders.append("Content-Type", "application/json");
-    fetch("http://" + this.language + ".wikipedia.org/w/api.php?action=parse&page=" + label + "&format=json&redirects&origin=*", { headers: myHeaders })
-      .then((response) => response.json())
+    fetch(
+      "http://" +
+        this.language +
+        ".wikipedia.org/w/api.php?action=parse&page=" +
+        label +
+        "&format=json&redirects&origin=*",
+      { headers: myHeaders }
+    )
+      .then(response => response.json())
       .then(text => {
         if (text.error) {
           this.terminal.error(text.error.info);
-        }
-        else {
+        } else {
           console.log(text);
           this.terminal.log("Page loaded!");
-          let html = text.parse.text['*'];
+          let html = text.parse.text["*"];
           el.innerHTML = html;
           this.init();
         }
-
       })
 
-      .catch((error) => {
+      .catch(error => {
         this.terminal.log("! " + error);
         console.warn(error);
       });
