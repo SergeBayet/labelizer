@@ -15,6 +15,7 @@ class Terminal {
     this.currentCommand = "";
     this.history = [];
     this.historyCursor = 0;
+    this.searchField = '';
     this.initHistory();
     this.init();
   }
@@ -38,18 +39,45 @@ class Terminal {
     let command = element.target.value;
     if (this.history.length > 0) {
       if (this.historyCursor == this.history.length) {
+        this.searchField = command;
+
         this.history.push(command);
       }
-      this.historyCursor--;
-      if (this.historyCursor < 0) this.historyCursor = 0;
+
+      if (this.searchField == '') {
+        this.historyCursor--;
+        if (this.historyCursor < 0) this.historyCursor = 0;
+      }
+      else {
+        let i = this.historyCursor - 1;
+        while (i >= 0) {
+          if (~this.history[i].indexOf(this.searchField)) {
+            this.historyCursor = i;
+            break;
+          }
+          i--
+        }
+      }
       element.target.value = this.history[this.historyCursor];
     }
   }
   downHistory(element) {
     if (this.history.length > 0) {
-      this.historyCursor++;
-      if (this.historyCursor > this.history.length - 1)
-        this.historyCursor = this.history.length - 1;
+      if (this.searchField == '') {
+        this.historyCursor++;
+        if (this.historyCursor > this.history.length - 1)
+          this.historyCursor = this.history.length - 1;
+      }
+      else {
+        let i = this.historyCursor + 1;
+        while (i < this.history.length) {
+          if (~this.history[i].indexOf(this.searchField)) {
+            this.historyCursor = i;
+            break;
+          }
+          i++
+        }
+      }
       element.target.value = this.history[this.historyCursor];
     }
   }
@@ -90,6 +118,7 @@ class Terminal {
     // Managing keyboard events
 
     inputElement.addEventListener("keydown", e => {
+
       switch (e.keyCode) {
         case ENTER:
           this.execute(e.target.value);
@@ -119,19 +148,19 @@ class Terminal {
     if (str == undefined) return false;
     let _this = this;
 
-    let parsed = str.replace(/(\$\{command\})/, function(x, i) {
+    let parsed = str.replace(/(\$\{command\})/, function (x, i) {
       return _this.currentCommand || "[command undefined]";
     });
 
-    parsed = parsed.replace(/(\$\{option\})/, function(x, i) {
+    parsed = parsed.replace(/(\$\{option\})/, function (x, i) {
       return _this.currentOption || "[option undefined]";
     });
 
-    parsed = parsed.replace(/(\$\{info\})/, function(x, i) {
+    parsed = parsed.replace(/(\$\{info\})/, function (x, i) {
       return context.info || "[info undefined]";
     });
 
-    parsed = parsed.replace(/\$\{args\[(\d+)\]\}/, function(x, i) {
+    parsed = parsed.replace(/\$\{args\[(\d+)\]\}/, function (x, i) {
       return context.arguments[i - 1] || "[argument undefined]";
     });
 
@@ -230,7 +259,13 @@ class Terminal {
       }
       i++;
     }
-
+    parser.options.isOption = function (str) {
+      let opt = this.filter(
+        options => options.name == str
+      )[0] || [];
+      return opt.length == 0 ? false : opt;
+    }
+    parser.arguments.isArgument = parser.options.isOption;
     return parser;
   }
   execute(str) {
@@ -253,7 +288,7 @@ class Terminal {
     if (definition.length == 0 && parser.command !== "help") {
       this.error(
         this.interpolation(terminalConfig.errors.unknown, context) ||
-          "Command not found : " + parser.command
+        "Command not found : " + parser.command
       );
       return false;
     }
@@ -344,7 +379,7 @@ class Terminal {
       if (!validOption) {
         this.error(
           this.interpolation(terminalConfig.errors.invalidOption, parser) ||
-            "Invalid option"
+          "Invalid option"
         );
       }
     });
@@ -352,7 +387,7 @@ class Terminal {
     this.log(this.interpolation(definition.info, parser) || "");
     let _this = this;
     // Call the user method with arguments and options
-    let promise = new Promise(function(resolve, reject) {
+    let promise = new Promise(function (resolve, reject) {
       resolve(
         _this.commandsNamespace[definition.method](
           parser.arguments,

@@ -1,5 +1,4 @@
 import carry from "./carry";
-import { getCookie, setCookie } from "./cookies";
 import { isStopWord } from "./stopwords";
 import Terminal from "./terminal";
 const version = "0.0.1";
@@ -7,14 +6,12 @@ const version = "0.0.1";
 export default class Labelizer {
   constructor(selector, options = {}) {
     this.terminal = new Terminal(this, options.consoleSelector);
-
     this.selector = selector;
     this.el = document.querySelector(selector);
     this.o = options;
     this.indexToken = 0;
     this.consoleInitialized = false;
     this.language = "fr";
-
     this.init();
   }
 
@@ -170,12 +167,13 @@ export default class Labelizer {
 
   // Commands Console
   ngrams(args, opts) {
+
     let selector = " .token";
     let r = new RegExp("^[A-zÀ-ü0-9-]+$");
-    if (opts.includes("selection")) {
+    if (opts.isOption("selection")) {
       selector += ".selected";
     }
-    let n = parseInt(args[0]); // || '3');      // Default ngrams(3)
+    let n = parseInt(args[0]);
     let ngrams = {};
     let tokensEl = document.querySelectorAll(this.selector + selector);
     let mask = Array(tokensEl.length).fill(true);
@@ -183,17 +181,17 @@ export default class Labelizer {
     let recursive = n;
     let minimumLength = 3;
     let stem = false;
-    if (opts.includes("recursive")) {
+    if (opts.isOption("recursive")) {
+
       recursive = 1;
-      if (opts.includes("minNgram")) {
-        console.log(opts["minGram"]);
-        //recursive =
+      if (opts.isOption("minNgram")) {
+        recursive = opts.isOption("minNgram").argument;
       }
     }
-    if (opts.includes("insensitive")) {
+    if (opts.isOption("insensitive")) {
       insensitive = true;
     }
-    if (opts.includes("stemming")) {
+    if (opts.isOption("stemming")) {
       stem = true;
     }
     while (n >= recursive) {
@@ -268,7 +266,7 @@ export default class Labelizer {
       ngrams[key].forms
     ]);
 
-    if (opts.includes("rsort")) {
+    if (opts.isOption("rsort")) {
       ngrams.sort((a, b) => a[1] > b[1]);
     } else {
       ngrams.sort((a, b) => a[1] < b[1]);
@@ -292,7 +290,7 @@ export default class Labelizer {
     let selector = " .token";
     let sensitive = true;
     let r = new RegExp("^[A-zÀ-ü0-9-]+$");
-    if (opts.includes("selection") || opts.includes("s")) {
+    if (opts.isOption("selection") || opts.isOption("s")) {
       selector += ".selected";
     }
     let tokensEl = document.querySelectorAll(this.selector + selector);
@@ -314,14 +312,14 @@ export default class Labelizer {
     let stem = false;
 
     let r = new RegExp("^[A-zÀ-ü0-9-]+$");
-    if (opts.includes("stem") || opts.includes("t")) {
+    if (opts.isOption("stem")) {
       //console.log(opts);
       stem = true;
     }
-    if (opts.includes("selection") || opts.includes("s")) {
+    if (opts.isOption("selection")) {
       selector += ".selected";
     }
-    if (opts.includes("insensitive") || opts.includes("i")) {
+    if (opts.isOption("insensitive")) {
       sensitive = false;
     }
     let tokensEl = document.querySelectorAll(this.selector + selector);
@@ -342,13 +340,13 @@ export default class Labelizer {
       }
     });
     words = Object.keys(words).map(key => [key, words[key]]);
-    if (opts.includes("r") || opts.includes("rsort")) {
+    if (opts.isOption("r") || opts.isOption("rsort")) {
       words.sort((a, b) => a[1] > b[1]);
     } else {
       words.sort((a, b) => a[1] < b[1]);
     }
 
-    if (opts.includes("p")) {
+    if (opts.isOption("p")) {
       this.terminal.log(
         words
           .map(
@@ -366,13 +364,13 @@ export default class Labelizer {
   count(args, opts) {
     let selector = " .token";
     let r = new RegExp("^[A-zÀ-ü0-9-]+$");
-    if (opts.includes("selection") || opts.includes("s")) {
+    if (opts.isOption("selection") || opts.isOption("s")) {
       selector += ".selected";
     }
-    if (args.includes("numbers")) {
+    if (args.isArgument("numbers")) {
       r = new RegExp("^[0-9]+([,.][0-9]+)?$");
     }
-    console.log(opts, selector);
+
     let tokensEl = document.querySelectorAll(this.selector + selector);
     let wordCounts = 0;
     let words = [];
@@ -383,23 +381,23 @@ export default class Labelizer {
         words.push(token);
       }
     });
-    if (opts.includes("distinct") || opts.includes("d")) {
+    if (opts.isOption("distinct")) {
       words = [...new Set(words)];
     }
-    if (opts.includes("asort") || opts.includes("a")) {
-      if (args.includes("numbers")) {
+    if (opts.isOption("asort") || opts.isOption("a")) {
+      if (args.isArgument("numbers")) {
         words.sort((a, b) => parseFloat(a) > parseFloat(b));
       } else {
         words.sort((a, b) => a > b);
       }
-    } else if (opts.includes("rsort") || opts.includes("r")) {
-      if (args.includes("numbers")) {
+    } else if (opts.isOption("rsort")) {
+      if (args.isArgument("numbers")) {
         words.sort((a, b) => parseFloat(a) < parseFloat(b));
       } else {
         words.sort((a, b) => a < b);
       }
     }
-    if (opts.includes("list") || opts.includes("l")) {
+    if (opts.isOption("list")) {
       this.terminal.log(words.join(" - "));
     }
 
@@ -458,10 +456,10 @@ export default class Labelizer {
     myHeaders.append("Content-Type", "application/json");
     fetch(
       "http://" +
-        this.language +
-        ".wikipedia.org/w/api.php?action=parse&page=" +
-        label +
-        "&format=json&redirects&origin=*",
+      this.language +
+      ".wikipedia.org/w/api.php?action=parse&page=" +
+      label +
+      "&format=json&redirects&origin=*",
       { headers: myHeaders }
     )
       .then(response => response.json())
@@ -469,7 +467,7 @@ export default class Labelizer {
         if (text.error) {
           this.terminal.error(text.error.info);
         } else {
-          console.log(text);
+
           this.terminal.log("Page loaded!");
           let html = text.parse.text["*"];
           el.innerHTML = html;
@@ -478,8 +476,8 @@ export default class Labelizer {
       })
 
       .catch(error => {
-        this.terminal.log("! " + error);
-        console.warn(error);
+        this.terminal.error("! " + error);
+
       });
   }
 }
