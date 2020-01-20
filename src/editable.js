@@ -1,9 +1,10 @@
 class Editable {
-  constructor(element, syntaxHighlightCallback) {
+  constructor(element, syntaxHighlightCallback, context) {
     this.element = element;
     this.callback = syntaxHighlightCallback;
     this.oldAnchor = null;
     this.oldFocus = null;
+    this.context = context
     let _this = this;
     this.element.addEventListener('input', function () {
       _this.updateEditor();
@@ -44,8 +45,8 @@ class Editable {
       }
       currentIndex += text.length;
     });
-
-    this.element.innerHTML = this.callback(textContent);
+    console.log("'" + textContent + "'");
+    this.element.innerHTML = this.callback(textContent, this.context);
 
     this.restoreSelection(anchorIndex, focusIndex);
   }

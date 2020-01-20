@@ -123,7 +123,7 @@ class Terminal {
       }
     }
     inputElement.autofocus = true;
-    let editable = new Editable(inputElement, this.renderText);
+    let editable = new Editable(inputElement, this.renderText, this);
     // Managing keyboard events
 
     inputElement.addEventListener("keyup", e => {
@@ -131,6 +131,7 @@ class Terminal {
       switch (e.keyCode) {
         case ENTER:
           e.preventDefault();
+          console.log(e.target.innerText);
           this.execute(e.target.innerText.trim());
           inputElement.innerHTML = "";
           break;
@@ -157,8 +158,10 @@ class Terminal {
   }
 
 
-  renderText(text) {
-
+  renderText(text, context) {
+    console.log(this);
+    let ret = context.parserCli(text).colored;
+    return ret;
     const words = text.split(/(\s+)/);
     const output = words.map((word) => {
       if (word === 'bold') {
@@ -204,26 +207,37 @@ class Terminal {
     let token = "";
     let escaped = false;
     let currentOption = "";
+    let colored = "";
+    let openedTag = false;
     while (i <= str.length) {
-      currentChar = str.charAt(i) || " ";
+      currentChar = str.charAt(i) || "";
 
       switch (context) {
         case "normal":
           switch (currentChar) {
             case " ":
+            case "":
               if (parser.command == "") {
                 parser.command = token;
+                colored += "</span>" + currentChar;
+                openedTag = false;
               } else {
                 if (currentOption == "") {
                   parser.arguments.push(token);
+                  colored += "</span>" + currentChar;
+                  openedTag = false;
                 } else {
                   parser.options[parser.options.length - 1].argument = token;
+                  colored += "</span>" + currentChar;
+                  openedTag = false;
                 }
               }
               token = "";
               break;
             case '"':
               context = "quoted";
+              colored += "<span style='color:green'>\"";
+              openedTag = true;
               if (context == "quoted" && token !== "") {
                 return "error";
               }
@@ -231,14 +245,24 @@ class Terminal {
             case "-":
               if (token == "" && (str.charAt(i + 1) || "") == "-") {
                 context = "option";
+                colored += "<span style='color:blue'>--";
+                openedTag = true;
                 i++;
               } else if (token == "") {
                 context = "abbreviated option";
+                colored += "<span style='color:cyan'>-";
+                openedTag = true;
               } else {
+                colored += currentChar;
                 token += currentChar;
               }
               break;
             default:
+              if (token == '') {
+                colored += "<span style='color:white'>";
+                openedTag = true;
+              }
+              colored += currentChar;
               token += currentChar;
               break;
           }
@@ -246,12 +270,18 @@ class Terminal {
         case "option":
           switch (currentChar) {
             case "=":
+            case " ":
               parser.options.push({ name: token, argument: "" });
               currentOption = token;
+              colored += "</span>" + currentChar;
+              openedTag = false;
               token = "";
               context = "normal";
               break;
+
+
             default:
+              colored += currentChar;
               token += currentChar;
               break;
           }
@@ -260,9 +290,12 @@ class Terminal {
           switch (currentChar) {
             case " ":
               context = "normal";
+              colored += "</span> ";
+              openedTag = false;
               break;
             default:
               parser.options.push({ name: currentChar, argument: "" });
+              colored += currentChar;
               currentOption = currentChar;
               break;
           }
@@ -272,15 +305,21 @@ class Terminal {
             case '"':
               if (!escaped) {
                 context = "normal";
+                colored += "\"";
               } else {
                 escaped = false;
+                colored += "</span>";
+                openedTag = false;
                 token += currentChar;
               }
               break;
             case "\\":
               escaped = true;
+              colored += "<span style='color:orange'>\\";
+              openedTag = true;
               break;
             default:
+              colored += currentChar;
               token += currentChar;
               break;
           }
@@ -289,21 +328,25 @@ class Terminal {
       }
       i++;
     }
+    if (openedTag) {
+      colored += '</span>';
+    }
     parser.options.isOption = function (str) {
       let opt = this.filter(
         options => options.name == str
       )[0] || [];
       return opt.length == 0 ? false : opt;
     }
+    //console.log(parser);
     parser.arguments.isArgument = parser.options.isOption;
-    return parser;
+    return { parser, colored };
   }
   execute(str) {
     str = str.trim();
     if (str == "") return false;
     this.addHistory(str);
-    let parser = this.parserCli(str);
-
+    let parser = this.parserCli(str).parser;
+    console.log(this.parserCli(str).colored);
     // Display the command in the terminal
 
     this.info(str);
