@@ -1,5 +1,6 @@
 import { getCookie, setCookie } from "./cookies";
 import terminalConfig from "./config";
+import Editable from "./editable";
 
 const ARROW_DOWN = 40;
 const ARROW_UP = 38;
@@ -36,11 +37,11 @@ class Terminal {
     this.historyCursor = this.history.length;
   }
   upHistory(element) {
-    let command = element.target.value;
+    let command = element.target.innerText.trim();
     if (this.history.length > 0) {
       if (this.historyCursor == this.history.length) {
         this.searchField = command;
-
+        console.log(this.searchField);
         this.history.push(command);
       }
 
@@ -58,7 +59,7 @@ class Terminal {
           i--
         }
       }
-      element.target.value = this.history[this.historyCursor];
+      element.target.innerText = this.history[this.historyCursor];
     }
   }
   downHistory(element) {
@@ -78,7 +79,7 @@ class Terminal {
           i++
         }
       }
-      element.target.value = this.history[this.historyCursor];
+      element.target.innerText = this.history[this.historyCursor];
     }
   }
   addHistory(str) {
@@ -105,8 +106,16 @@ class Terminal {
 
     // Create input element for the terminal with css rules from "config.js"
 
-    let inputElement = document.createElement("input");
-    inputElement.setAttribute("type", "text");
+    let inputElement = document.createElement("div");
+    inputElement.setAttribute("contenteditable", "true");
+    inputElement.setAttribute("spellcheck", "false");
+    inputElement.style.whiteSpace = 'pre';
+
+    // white-space: pre-wrap;       /* css-3 */
+    // white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+    // white-space: -pre-wrap;      /* Opera 4-6 */
+    // white-space: -o-pre-wrap;    /* Opera 7 */
+    // word-wrap: break-word;       /* Internet Explorer 5.5+ */
     if (terminalConfig.css.input) {
       const rules = Object.entries(terminalConfig.css.input);
       for (const [property, value] of rules) {
@@ -114,15 +123,16 @@ class Terminal {
       }
     }
     inputElement.autofocus = true;
-
+    let editable = new Editable(inputElement, this.renderText);
     // Managing keyboard events
 
-    inputElement.addEventListener("keydown", e => {
+    inputElement.addEventListener("keyup", e => {
 
       switch (e.keyCode) {
         case ENTER:
-          this.execute(e.target.value);
-          inputElement.value = "";
+          e.preventDefault();
+          this.execute(e.target.innerText.trim());
+          inputElement.innerHTML = "";
           break;
         case ARROW_UP:
           this.upHistory(e);
@@ -131,6 +141,7 @@ class Terminal {
           this.downHistory(e);
           break;
         default:
+
           this.historyCursor = this.history.length;
       }
     });
@@ -143,6 +154,25 @@ class Terminal {
     this.DOMelement = screen;
     this.selector = this.selector + " .context";
     screen.parentNode.insertBefore(inputElement, screen.nextSibling);
+  }
+
+
+  renderText(text) {
+
+    const words = text.split(/(\s+)/);
+    const output = words.map((word) => {
+      if (word === 'bold') {
+        return `<strong>${word}</strong>`;
+      }
+      else if (word === 'red') {
+        return `<span style='color:red' contenteditable='true'>${word}</span>`;
+      }
+      else {
+        return word;
+      }
+    })
+    //console.log(output.join(''));
+    return output.join('');
   }
   interpolation(str, context) {
     if (str == undefined) return false;

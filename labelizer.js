@@ -242,6 +242,8 @@
     css: {
       input: {
         position: "static",
+        height: "30px",
+        border: "1px solid white",
         bottom: "0px",
         width: "100%",
         backgroundColor: "#111",
@@ -321,6 +323,141 @@
     }]
   };
 
+  var Editable =
+  /*#__PURE__*/
+  function () {
+    function Editable(element, syntaxHighlightCallback) {
+      _classCallCheck(this, Editable);
+
+      this.element = element;
+      this.callback = syntaxHighlightCallback;
+      this.oldAnchor = null;
+      this.oldFocus = null;
+
+      var _this = this;
+
+      this.element.addEventListener('input', function () {
+        _this.updateEditor();
+      });
+      this.updateEditor();
+    }
+
+    _createClass(Editable, [{
+      key: "getTextSegments",
+      value: function getTextSegments(element) {
+        var _this2 = this;
+
+        var textSegments = []; //console.log(Array.from(this.element.childNodes));
+
+        Array.from(element.childNodes).forEach(function (node) {
+          switch (node.nodeType) {
+            case node.TEXT_NODE:
+              textSegments.push({
+                text: node.nodeValue,
+                node: node
+              });
+              break;
+
+            case node.ELEMENT_NODE:
+              textSegments.splice.apply(textSegments, [textSegments.length, 0].concat(_toConsumableArray(_this2.getTextSegments(node))));
+              break;
+
+            default:
+              throw new Error("Unexpected node type: ".concat(node.nodeType));
+          }
+        }); //console.log(textSegments);
+
+        return textSegments;
+      }
+    }, {
+      key: "updateEditor",
+      value: function updateEditor() {
+        var sel = window.getSelection();
+        var textSegments = this.getTextSegments(this.element);
+        var textContent = textSegments.map(function (_ref) {
+          var text = _ref.text;
+          return text;
+        }).join('');
+        var anchorIndex = null;
+        var focusIndex = null;
+        var currentIndex = 0;
+        textSegments.forEach(function (_ref2) {
+          var text = _ref2.text,
+              node = _ref2.node;
+
+          if (node === sel.anchorNode) {
+            anchorIndex = currentIndex + sel.anchorOffset;
+          }
+
+          if (node === sel.focusNode) {
+            focusIndex = currentIndex + sel.focusOffset;
+          }
+
+          currentIndex += text.length;
+        });
+        this.element.innerHTML = this.callback(textContent);
+        this.restoreSelection(anchorIndex, focusIndex);
+      }
+    }, {
+      key: "restoreSelection",
+      value: function restoreSelection(absoluteAnchorIndex, absoluteFocusIndex) {
+        if (absoluteAnchorIndex == null) {
+          // Correcting a bug with window.getSelection...
+          this.placeCaretAtEnd(this.element);
+          return;
+        }
+
+        var sel = window.getSelection();
+        var textSegments = this.getTextSegments(this.element);
+        var anchorNode = this.element;
+        var anchorIndex = 0;
+        var focusNode = this.element;
+        var focusIndex = 0;
+        var currentIndex = 0;
+        textSegments.forEach(function (_ref3) {
+          var text = _ref3.text,
+              node = _ref3.node;
+          var startIndexOfNode = currentIndex;
+          var endIndexOfNode = startIndexOfNode + text.length;
+
+          if (startIndexOfNode <= absoluteAnchorIndex && absoluteAnchorIndex <= endIndexOfNode) {
+            anchorNode = node;
+            anchorIndex = absoluteAnchorIndex - startIndexOfNode;
+          }
+
+          if (startIndexOfNode <= absoluteFocusIndex && absoluteFocusIndex <= endIndexOfNode) {
+            focusNode = node;
+            focusIndex = absoluteFocusIndex - startIndexOfNode;
+          }
+
+          currentIndex += text.length;
+        });
+        sel.setBaseAndExtent(anchorNode, anchorIndex, focusNode, focusIndex);
+      }
+    }, {
+      key: "placeCaretAtEnd",
+      value: function placeCaretAtEnd(el) {
+        el.focus();
+
+        if (typeof window.getSelection != "undefined" && typeof document.createRange != "undefined") {
+          var range = document.createRange();
+          range.selectNodeContents(el);
+          range.collapse(false);
+          var sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+        } else if (typeof document.body.createTextRange != "undefined") {
+          var textRange = document.body.createTextRange();
+          textRange.moveToElementText(el);
+          textRange.collapse(false);
+          textRange.select();
+        }
+      }
+    }]);
+
+    return Editable;
+  }();
+
   var ARROW_DOWN = 40;
   var ARROW_UP = 38;
   var ENTER = 13;
@@ -362,11 +499,12 @@
     }, {
       key: "upHistory",
       value: function upHistory(element) {
-        var command = element.target.value;
+        var command = element.target.innerText.trim();
 
         if (this.history.length > 0) {
           if (this.historyCursor == this.history.length) {
             this.searchField = command;
+            console.log(this.searchField);
             this.history.push(command);
           }
 
@@ -386,7 +524,7 @@
             }
           }
 
-          element.target.value = this.history[this.historyCursor];
+          element.target.innerText = this.history[this.historyCursor];
         }
       }
     }, {
@@ -409,7 +547,7 @@
             }
           }
 
-          element.target.value = this.history[this.historyCursor];
+          element.target.innerText = this.history[this.historyCursor];
         }
       }
     }, {
@@ -440,8 +578,14 @@
         if (this.initialized) return false;
         this.initialized = true; // Create input element for the terminal with css rules from "config.js"
 
-        var inputElement = document.createElement("input");
-        inputElement.setAttribute("type", "text");
+        var inputElement = document.createElement("div");
+        inputElement.setAttribute("contenteditable", "true");
+        inputElement.setAttribute("spellcheck", "false");
+        inputElement.style.whiteSpace = 'pre'; // white-space: pre-wrap;       /* css-3 */
+        // white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+        // white-space: -pre-wrap;      /* Opera 4-6 */
+        // white-space: -o-pre-wrap;    /* Opera 7 */
+        // word-wrap: break-word;       /* Internet Explorer 5.5+ */
 
         if (terminalConfig.css.input) {
           var rules = Object.entries(terminalConfig.css.input);
@@ -455,14 +599,17 @@
           }
         }
 
-        inputElement.autofocus = true; // Managing keyboard events
+        inputElement.autofocus = true;
+        var editable = new Editable(inputElement, this.renderText); // Managing keyboard events
 
-        inputElement.addEventListener("keydown", function (e) {
+        inputElement.addEventListener("keyup", function (e) {
           switch (e.keyCode) {
             case ENTER:
-              _this2.execute(e.target.value);
+              e.preventDefault();
 
-              inputElement.value = "";
+              _this2.execute(e.target.innerText.trim());
+
+              inputElement.innerHTML = "";
               break;
 
             case ARROW_UP:
@@ -486,6 +633,22 @@
         this.DOMelement = screen;
         this.selector = this.selector + " .context";
         screen.parentNode.insertBefore(inputElement, screen.nextSibling);
+      }
+    }, {
+      key: "renderText",
+      value: function renderText(text) {
+        var words = text.split(/(\s+)/);
+        var output = words.map(function (word) {
+          if (word === 'bold') {
+            return "<strong>".concat(word, "</strong>");
+          } else if (word === 'red') {
+            return "<span style='color:red' contenteditable='true'>".concat(word, "</span>");
+          } else {
+            return word;
+          }
+        }); //console.log(output.join(''));
+
+        return output.join('');
       }
     }, {
       key: "interpolation",

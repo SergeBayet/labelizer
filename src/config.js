@@ -7,6 +7,8 @@ const terminalConfig = {
   css: {
     input: {
       position: "static",
+      height: "30px",
+      border: "1px solid white",
       bottom: "0px",
       width: "100%",
       backgroundColor: "#111",
