@@ -478,7 +478,7 @@
       this.currentCommand = "";
       this.history = [];
       this.historyCursor = 0;
-      this.searchField = '';
+      this.searchField = "";
       this.initHistory();
       this.init();
     }
@@ -510,7 +510,7 @@
             this.history.push(command);
           }
 
-          if (this.searchField == '') {
+          if (this.searchField == "") {
             this.historyCursor--;
             if (this.historyCursor < 0) this.historyCursor = 0;
           } else {
@@ -533,7 +533,7 @@
       key: "downHistory",
       value: function downHistory(element) {
         if (this.history.length > 0) {
-          if (this.searchField == '') {
+          if (this.searchField == "") {
             this.historyCursor++;
             if (this.historyCursor > this.history.length - 1) this.historyCursor = this.history.length - 1;
           } else {
@@ -583,7 +583,7 @@
         var inputElement = document.createElement("div");
         inputElement.setAttribute("contenteditable", "true");
         inputElement.setAttribute("spellcheck", "false");
-        inputElement.style.whiteSpace = 'pre'; // white-space: pre-wrap;       /* css-3 */
+        inputElement.style.whiteSpace = "pre"; // white-space: pre-wrap;       /* css-3 */
         // white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
         // white-space: -pre-wrap;      /* Opera 4-6 */
         // white-space: -o-pre-wrap;    /* Opera 7 */
@@ -666,6 +666,32 @@
         return parsed;
       }
     }, {
+      key: "unquote",
+      value: function unquote(str) {
+        return str.replace(/^"(.*)"$/, "$1").replace("\\", "");
+      }
+    }, {
+      key: "parserCli2",
+      value: function parserCli2(str) {
+        var parser = {
+          command: "",
+          arguments: [],
+          options: [],
+          highlighted: "",
+          autocomplete: []
+        };
+
+        parser.options.isOption = function (str) {
+          var opt = this.filter(function (options) {
+            return options.name == str;
+          })[0] || [];
+          return opt.length == 0 ? false : opt;
+        };
+
+        parser.arguments.isArgument = parser.options.isOption;
+        return parser;
+      }
+    }, {
       key: "parserCli",
       value: function parserCli(str) {
         var parser = {
@@ -738,7 +764,7 @@
                   break;
 
                 default:
-                  if (token == '') {
+                  if (token == "") {
                     colored += "<span style='color:white'>";
                     openedTag = true;
                   }
@@ -798,7 +824,7 @@
                 case '"':
                   if (!escaped) {
                     context = "normal";
-                    colored += "\"";
+                    colored += '"';
                   } else {
                     escaped = false;
                     colored += "</span>";
@@ -825,18 +851,9 @@
         }
 
         if (openedTag) {
-          colored += '</span>';
+          colored += "</span>";
         }
 
-        parser.options.isOption = function (str) {
-          var opt = this.filter(function (options) {
-            return options.name == str;
-          })[0] || [];
-          return opt.length == 0 ? false : opt;
-        }; //console.log(parser);
-
-
-        parser.arguments.isArgument = parser.options.isOption;
         return {
           parser: parser,
           colored: colored
@@ -850,8 +867,7 @@
         str = str.trim();
         if (str == "") return false;
         this.addHistory(str);
-        var parser = this.parserCli(str).parser;
-        console.log(this.parserCli(str).colored); // Display the command in the terminal
+        var parser = this.parserCli(str).parser; // Display the command in the terminal
 
         this.info(str);
         var definition = terminalConfig.commands.filter(function (command) {
@@ -938,7 +954,6 @@
             _this3.error(_this3.interpolation(terminalConfig.errors.invalidOption, parser) || "Invalid option");
           }
         });
-        console.log(parser);
         this.log(this.interpolation(definition.info, parser) || "");
 
         var _this = this; // Call the user method with arguments and options
