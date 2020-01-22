@@ -255,7 +255,8 @@
         option: "fuchsia",
         string: "yellow",
         optionArgument: "olive",
-        operator: "white"
+        operator: "white",
+        autocomplete: "grey"
       }
     },
     errors: {
@@ -266,6 +267,10 @@
     },
     help: "Some global help here!",
     commands: [{
+      name: "loadpage"
+    }, {
+      name: "nprint"
+    }, {
       name: "ngrams",
       method: "ngrams",
       args: [{
@@ -468,8 +473,64 @@
     return Editable;
   }();
 
+  var Autocomplete =
+  /*#__PURE__*/
+  function () {
+    function Autocomplete(element) {
+      _classCallCheck(this, Autocomplete);
+
+      this.hidden = true;
+      this.items = [];
+      this.element = element;
+      this.div = document.createElement("div");
+      this.div.setAttribute('class', 'autocomplete-items');
+      this.div.setAttribute('display', 'none');
+      this.element.parentNode.appendChild(this.div);
+    }
+
+    _createClass(Autocomplete, [{
+      key: "show",
+      value: function show() {
+        this.hidden = false;
+        this.div.setAttribute('display', 'block');
+      }
+    }, {
+      key: "update",
+      value: function update(data) {
+        var b, i;
+
+        for (i = 0; i < data.length; i++) {
+          /*check if the item starts with the same letters as the text field value:*/
+
+          /*create a DIV element for each matching element:*/
+          b = document.createElement("div");
+          /*make the matching letters bold:*/
+
+          b.innerHTML = data[i].name;
+          /*insert a input field that will hold the current array item's value:*/
+
+          b.innerHTML += "<input type='hidden' value='" + data[i].name + "'>";
+          /*execute a function when someone clicks on the item value (DIV element):*/
+
+          b.addEventListener("click", function (e) {
+            /*insert the value for the autocomplete text field:*/
+            inp.value = this.getElementsByTagName("input")[0].value;
+            /*close the list of autocompleted values,
+            (or any other open lists of autocompleted values:*/
+          });
+          this.div.appendChild(b);
+        }
+
+        this.show();
+      }
+    }]);
+
+    return Autocomplete;
+  }();
+
   var ARROW_DOWN = 40;
   var ARROW_UP = 38;
+  var ARROW_RIGHT = 39;
   var ENTER = 13;
 
   var Terminal =
@@ -495,8 +556,8 @@
       key: "initHistory",
       value: function initHistory() {
         // If cookies are enabled in config.js, retrieve history
-        {
-          var cookie = getCookie(terminalConfig.history.cookieName );
+        if (terminalConfig.history.cookies) {
+          var cookie = getCookie(terminalConfig.history.cookieName || "terminalCookie");
 
           if (cookie != "") {
             this.history = JSON.parse(cookie);
@@ -575,7 +636,7 @@
         this.history = this.history.filter(function (x) {
           return x;
         });
-        setCookie(terminalConfig.history.cookieName , JSON.stringify(this.history), terminalConfig.history.expire );
+        setCookie(terminalConfig.history.cookieName || "terminalCookie", JSON.stringify(this.history), terminalConfig.history.expire || 30);
         this.historyCursor = this.history.length;
       }
     }, {
@@ -610,7 +671,18 @@
 
         inputElement.autofocus = true;
         var editable = new Editable(inputElement, this.renderText, this); // Managing keyboard events
+        // Add input element in the DOM
 
+        var screen = document.createElement("div");
+        screen.setAttribute("class", "context");
+        this.DOMelement.appendChild(screen);
+        this.DOMelement = screen;
+        this.selector = this.selector + " .context";
+        var div = document.createElement("div");
+        screen.parentNode.insertBefore(div, screen.nextSibling);
+        div.appendChild(inputElement);
+        div.style.position = 'relative';
+        var ac = new Autocomplete(inputElement);
         inputElement.addEventListener("keyup", function (e) {
           switch (e.keyCode) {
             case ENTER:
@@ -631,17 +703,21 @@
 
               break;
 
+            case ARROW_RIGHT:
+              e.preventDefault();
+              e.target.innerHTML = _this2.renderText(e.target.innerText, _this2);
+              editable.placeCaretAtEnd(e.target);
+              break;
+
             default:
+              ac.update([{
+                'name': 'serge'
+              }], [{
+                'name': 'bayet'
+              }]);
               _this2.historyCursor = _this2.history.length;
           }
-        }); // Add input element in the DOM
-
-        var screen = document.createElement("div");
-        screen.setAttribute("class", "context");
-        this.DOMelement.appendChild(screen);
-        this.DOMelement = screen;
-        this.selector = this.selector + " .context";
-        screen.parentNode.insertBefore(inputElement, screen.nextSibling);
+        });
       }
     }, {
       key: "renderText",
@@ -671,6 +747,21 @@
         return parsed;
       }
     }, {
+      key: "autocomplete",
+      value: function autocomplete(source, str) {
+        var ac = terminalConfig[source].filter(function (command) {
+          return command.name.startsWith(str);
+        }).map(function (x) {
+          return {
+            name: x.name,
+            remaining: x.name.substring(str.length)
+          };
+        }).filter(function (x) {
+          return x.remaining;
+        });
+        return ac;
+      }
+    }, {
       key: "unquote",
       value: function unquote(str) {
         return str.replace(/^"(.*)"$/, "$1").replace(/\\/g, "");
@@ -683,7 +774,7 @@
           arguments: [],
           options: [],
           highlighted: "",
-          autocomplete: []
+          autocomplete: ""
         };
         str = str.replace(/>/g, "&gt;").replace(/</g, "&lt;");
         var regSeparator = new RegExp("^\\s+");
@@ -699,6 +790,7 @@
             {
               parser.command = m[0].trim();
               parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.command);
+              parser.autocomplete = this.autocomplete("commands", parser.command);
             } else {
             var token = m[0].trim();
 
@@ -761,6 +853,7 @@
         };
 
         parser.arguments.isArgument = parser.options.isOption;
+        console.log(parser.autocomplete);
         return parser;
       }
     }, {
@@ -797,9 +890,9 @@
           })[0] || [];
 
           if (parser.arguments[0] && definition.length == 0) {
-            this.error(this.interpolation(terminalConfig.errors.helpUnknownCommand , parser));
+            this.error(this.interpolation(terminalConfig.errors.helpUnknownCommand || "Command not found", parser));
           } else if (definition.length == 0) {
-            this.log(this.interpolation(terminalConfig.help , context));
+            this.log(this.interpolation(terminalConfig.help || "No global help", context));
           } else {
             this.log(this.explain(definition));
           } // this.log(this.explain(parser));

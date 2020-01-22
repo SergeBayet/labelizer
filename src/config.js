@@ -20,7 +20,8 @@ const terminalConfig = {
       option: "fuchsia",
       string: "yellow",
       optionArgument: "olive",
-      operator: "white"
+      operator: "white",
+      autocomplete: "grey"
     }
   },
   errors: {
@@ -31,6 +32,14 @@ const terminalConfig = {
   },
   help: "Some global help here!",
   commands: [
+    {
+      name: "loadpage",
+
+    },
+    {
+      name: "nprint",
+
+    },
     {
       name: "ngrams",
       method: "ngrams",

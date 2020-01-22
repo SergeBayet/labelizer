@@ -1,9 +1,12 @@
 import { getCookie, setCookie } from "./cookies";
 import terminalConfig from "./config";
 import Editable from "./editable";
+import Autocomplete from "./autocomplete";
 
 const ARROW_DOWN = 40;
 const ARROW_UP = 38;
+const ARROW_RIGHT = 39;
+const TAB = 39;
 const ENTER = 13;
 
 class Terminal {
@@ -123,6 +126,20 @@ class Terminal {
     let editable = new Editable(inputElement, this.renderText, this);
     // Managing keyboard events
 
+
+
+    // Add input element in the DOM
+
+    let screen = document.createElement("div");
+    screen.setAttribute("class", "context");
+    this.DOMelement.appendChild(screen);
+    this.DOMelement = screen;
+    this.selector = this.selector + " .context";
+    let div = document.createElement("div");
+    screen.parentNode.insertBefore(div, screen.nextSibling);
+    div.appendChild(inputElement);
+    div.style.position = 'relative';
+    let ac = new Autocomplete(inputElement);
     inputElement.addEventListener("keyup", e => {
       switch (e.keyCode) {
         case ENTER:
@@ -136,19 +153,16 @@ class Terminal {
         case ARROW_DOWN:
           this.downHistory(e);
           break;
+        case ARROW_RIGHT:
+          e.preventDefault();
+          e.target.innerHTML = this.renderText(e.target.innerText, this);
+          editable.placeCaretAtEnd(e.target);
+          break;
         default:
+          ac.update([{ 'name': 'serge' }], [{ 'name': 'bayet' }])
           this.historyCursor = this.history.length;
       }
     });
-
-    // Add input element in the DOM
-
-    let screen = document.createElement("div");
-    screen.setAttribute("class", "context");
-    this.DOMelement.appendChild(screen);
-    this.DOMelement = screen;
-    this.selector = this.selector + " .context";
-    screen.parentNode.insertBefore(inputElement, screen.nextSibling);
   }
 
   renderText(text, context) {
@@ -178,6 +192,16 @@ class Terminal {
 
     return parsed;
   }
+  autocomplete(source, str) {
+    let ac =
+      terminalConfig[source]
+        .filter(
+          command => command.name.startsWith(str)
+        )
+        .map(x => { return { name: x.name, remaining: x.name.substring(str.length) } })
+        .filter(x => x.remaining);
+    return ac;
+  }
   unquote(str) {
     return str.replace(/^"(.*)"$/, `$1`).replace(/\\/g, "");
   }
@@ -187,7 +211,7 @@ class Terminal {
       arguments: [],
       options: [],
       highlighted: "",
-      autocomplete: []
+      autocomplete: ""
     };
     str = str.replace(/>/g, "&gt;").replace(/</g, "&lt;");
     let regSeparator = new RegExp("^\\s+");
@@ -202,6 +226,7 @@ class Terminal {
       {
         parser.command = m[0].trim();
         parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.command);
+        parser.autocomplete = this.autocomplete("commands", parser.command);
       }
       else {
         let token = m[0].trim();
@@ -261,9 +286,11 @@ class Terminal {
     };
 
     parser.arguments.isArgument = parser.options.isOption;
+    console.log(parser.autocomplete);
     return parser;
   }
   highlight(str, color) {
+
     return `<span style="color:${color}">${str}</span>`;
   }
   execute(str) {

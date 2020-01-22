@@ -15,16 +15,20 @@ class Editable {
     const textSegments = [];
     //console.log(Array.from(this.element.childNodes));
     Array.from(element.childNodes).forEach((node) => {
+
       switch (node.nodeType) {
         case node.TEXT_NODE:
           textSegments.push({ text: node.nodeValue, node });
           break;
         case node.ELEMENT_NODE:
+
           textSegments.splice(textSegments.length, 0, ...(this.getTextSegments(node)));
+
           break;
         default:
           throw new Error(`Unexpected node type: ${node.nodeType}`);
       }
+
     });
     //console.log(textSegments);
     return textSegments;
