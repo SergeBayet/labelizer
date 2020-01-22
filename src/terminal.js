@@ -159,7 +159,7 @@ class Terminal {
           editable.placeCaretAtEnd(e.target);
           break;
         default:
-          ac.update([{ 'name': 'serge' }], [{ 'name': 'bayet' }])
+          ac.update([{ 'name': 'serge' }, { 'name': 'bayet' }])
           this.historyCursor = this.history.length;
       }
     });
