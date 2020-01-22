@@ -248,6 +248,14 @@
         width: "100%",
         backgroundColor: "#111",
         color: "#EEE"
+      },
+      highlight: {
+        command: "aqua",
+        argument: "lime",
+        option: "fuchsia",
+        string: "yellow",
+        optionArgument: "olive",
+        operator: "white"
       }
     },
     errors: {
@@ -395,8 +403,8 @@
           }
 
           currentIndex += text.length;
-        });
-        console.log("'" + textContent + "'");
+        }); //console.log("'" + textContent + "'");
+
         this.element.innerHTML = this.callback(textContent, this.context);
         this.restoreSelection(anchorIndex, focusIndex);
       }
@@ -506,7 +514,6 @@
         if (this.history.length > 0) {
           if (this.historyCursor == this.history.length) {
             this.searchField = command;
-            console.log(this.searchField);
             this.history.push(command);
           }
 
@@ -526,7 +533,7 @@
             }
           }
 
-          element.target.innerText = this.history[this.historyCursor];
+          element.target.innerHTML = this.renderText(this.history[this.historyCursor], this);
         }
       }
     }, {
@@ -549,7 +556,7 @@
             }
           }
 
-          element.target.innerText = this.history[this.historyCursor];
+          element.target.innerHTML = this.renderText(this.history[this.historyCursor], this);
         }
       }
     }, {
@@ -608,7 +615,6 @@
           switch (e.keyCode) {
             case ENTER:
               e.preventDefault();
-              console.log(e.target.innerText);
 
               _this2.execute(e.target.innerText.trim());
 
@@ -640,8 +646,7 @@
     }, {
       key: "renderText",
       value: function renderText(text, context) {
-        console.log(this);
-        var ret = context.parserCli(text).colored;
+        var ret = context.parserCli(text).highlighted;
         return ret;
       }
     }, {
@@ -668,11 +673,11 @@
     }, {
       key: "unquote",
       value: function unquote(str) {
-        return str.replace(/^"(.*)"$/, "$1").replace("\\", "");
+        return str.replace(/^"(.*)"$/, "$1").replace(/\\/g, "");
       }
     }, {
-      key: "parserCli2",
-      value: function parserCli2(str) {
+      key: "parserCli",
+      value: function parserCli(str) {
         var parser = {
           command: "",
           arguments: [],
@@ -680,6 +685,73 @@
           highlighted: "",
           autocomplete: []
         };
+        str = str.replace(/>/g, "&gt;").replace(/</g, "&lt;");
+        var regSeparator = new RegExp("^\\s+");
+        var regCommand = /^\s*\S+/;
+        var regString = new RegExp("^\"([^\\\\\"]|\\\\\")*\"?");
+        var regOption = /^(-{1,2})([^=\s]+)((=("([^\\"]|\\")*"?))|(=(\S+)))?/;
+        var index = 0;
+        var currentOption = '';
+        var m = regCommand.exec(str);
+
+        while (m !== null) {
+          if (index == 0) // command
+            {
+              parser.command = m[0].trim();
+              parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.command);
+            } else {
+            var token = m[0].trim();
+
+            if (token == '') // separator
+              {
+                parser.highlighted += m[0];
+              } else if (m.length <= 2) // argument
+              {
+                if (currentOption !== '') {
+                  parser.options[parser.options.length - 1].arguments.push(token);
+                  parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.optionArgument);
+                } else {
+                  parser.arguments.push(this.unquote(token.trim()));
+                  parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.argument);
+                }
+              } else {
+              // option
+              if (m[1] == "-") // abbreviated option
+                {
+                  m[2].split("").map(function (opt) {
+                    parser.options.push({
+                      name: opt,
+                      arguments: []
+                    });
+                    currentOption = opt;
+                  });
+                  parser.highlighted += this.highlight('-', terminalConfig.css.highlight.operator);
+                  parser.highlighted += this.highlight(m[2], terminalConfig.css.highlight.option);
+                } else if (m[1] == "--") // long option
+                {
+                  parser.highlighted += this.highlight('--', terminalConfig.css.highlight.operator);
+                  var arg = m[8] ? m[8] : m[5] ? m[5] : "";
+                  parser.options.push({
+                    name: m[2],
+                    arguments: [this.unquote(arg)]
+                  });
+                  parser.highlighted += this.highlight(m[2], terminalConfig.css.highlight.option);
+
+                  if (m[8]) {
+                    parser.highlighted += this.highlight('=', terminalConfig.css.highlight.operator);
+                    parser.highlighted += this.highlight(m[8], terminalConfig.css.highlight.optionArgument);
+                  } else if (m[5]) {
+                    parser.highlighted += this.highlight('=', terminalConfig.css.highlight.operator);
+                    parser.highlighted += this.highlight(m[5], terminalConfig.css.highlight.optionArgument);
+                  }
+                }
+            }
+          }
+
+          str = str.substring(m[0].length);
+          m = regSeparator.exec(str) || regString.exec(str) || regOption.exec(str) || regCommand.exec(str);
+          index++;
+        }
 
         parser.options.isOption = function (str) {
           var opt = this.filter(function (options) {
@@ -692,172 +764,9 @@
         return parser;
       }
     }, {
-      key: "parserCli",
-      value: function parserCli(str) {
-        var parser = {
-          command: "",
-          arguments: [],
-          options: []
-        };
-        var i = 0;
-        var currentChar;
-        var context = "normal";
-        var token = "";
-        var escaped = false;
-        var currentOption = "";
-        var colored = "";
-        var openedTag = false;
-
-        while (i <= str.length) {
-          currentChar = str.charAt(i) || "";
-
-          switch (context) {
-            case "normal":
-              switch (currentChar) {
-                case " ":
-                case "":
-                  if (parser.command == "") {
-                    parser.command = token;
-                    colored += "</span>" + currentChar;
-                    openedTag = false;
-                  } else {
-                    if (currentOption == "") {
-                      parser.arguments.push(token);
-                      colored += "</span>" + currentChar;
-                      openedTag = false;
-                    } else {
-                      parser.options[parser.options.length - 1].argument = token;
-                      colored += "</span>" + currentChar;
-                      openedTag = false;
-                    }
-                  }
-
-                  token = "";
-                  break;
-
-                case '"':
-                  context = "quoted";
-                  colored += "<span style='color:green'>\"";
-                  openedTag = true;
-
-                  if (context == "quoted" && token !== "") {
-                    return "error";
-                  }
-
-                  break;
-
-                case "-":
-                  if (token == "" && (str.charAt(i + 1) || "") == "-") {
-                    context = "option";
-                    colored += "<span style='color:blue'>--";
-                    openedTag = true;
-                    i++;
-                  } else if (token == "") {
-                    context = "abbreviated option";
-                    colored += "<span style='color:cyan'>-";
-                    openedTag = true;
-                  } else {
-                    colored += currentChar;
-                    token += currentChar;
-                  }
-
-                  break;
-
-                default:
-                  if (token == "") {
-                    colored += "<span style='color:white'>";
-                    openedTag = true;
-                  }
-
-                  colored += currentChar;
-                  token += currentChar;
-                  break;
-              }
-
-              break;
-
-            case "option":
-              switch (currentChar) {
-                case "=":
-                case " ":
-                  parser.options.push({
-                    name: token,
-                    argument: ""
-                  });
-                  currentOption = token;
-                  colored += "</span>" + currentChar;
-                  openedTag = false;
-                  token = "";
-                  context = "normal";
-                  break;
-
-                default:
-                  colored += currentChar;
-                  token += currentChar;
-                  break;
-              }
-
-              break;
-
-            case "abbreviated option":
-              switch (currentChar) {
-                case " ":
-                  context = "normal";
-                  colored += "</span> ";
-                  openedTag = false;
-                  break;
-
-                default:
-                  parser.options.push({
-                    name: currentChar,
-                    argument: ""
-                  });
-                  colored += currentChar;
-                  currentOption = currentChar;
-                  break;
-              }
-
-              break;
-
-            case "quoted":
-              switch (currentChar) {
-                case '"':
-                  if (!escaped) {
-                    context = "normal";
-                    colored += '"';
-                  } else {
-                    escaped = false;
-                    colored += "</span>";
-                    openedTag = false;
-                    token += currentChar;
-                  }
-
-                  break;
-
-                case "\\":
-                  escaped = true;
-                  colored += "<span style='color:orange'>\\";
-                  openedTag = true;
-                  break;
-
-                default:
-                  colored += currentChar;
-                  token += currentChar;
-                  break;
-              }
-          }
-
-          i++;
-        }
-
-        if (openedTag) {
-          colored += "</span>";
-        }
-
-        return {
-          parser: parser,
-          colored: colored
-        };
+      key: "highlight",
+      value: function highlight(str, color) {
+        return "<span style=\"color:".concat(color, "\">").concat(str, "</span>");
       }
     }, {
       key: "execute",
@@ -867,7 +776,7 @@
         str = str.trim();
         if (str == "") return false;
         this.addHistory(str);
-        var parser = this.parserCli(str).parser; // Display the command in the terminal
+        var parser = this.parserCli(str); // Display the command in the terminal
 
         this.info(str);
         var definition = terminalConfig.commands.filter(function (command) {
@@ -963,7 +872,6 @@
           resolve(_this.commandsNamespace[definition.method](parser.arguments, parser.options));
         });
         promise.then();
-        console.log("in progress...");
         return true;
       }
     }, {
@@ -998,7 +906,6 @@
     }, {
       key: "explain",
       value: function explain(definition) {
-        console.log(definition);
         var str = "<dl>";
         str += "<dt>NAME</dt>";
         str += "<dd>" + definition.name + " - " + (definition.shortDescription || "") + "</dd><br/>";
@@ -1429,8 +1336,7 @@
           if (r.test(token)) {
             words.push(carry(token));
           }
-        });
-        console.log(words);
+        }); //console.log(words);
       }
     }, {
       key: "freq",

@@ -304,7 +304,7 @@ export default class Labelizer {
         words.push(carry(token));
       }
     });
-    console.log(words);
+    //console.log(words);
   }
   freq(args, opts) {
     let selector = " .token";

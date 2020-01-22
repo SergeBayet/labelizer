@@ -45,7 +45,7 @@ class Editable {
       }
       currentIndex += text.length;
     });
-    console.log("'" + textContent + "'");
+    //console.log("'" + textContent + "'");
     this.element.innerHTML = this.callback(textContent, this.context);
 
     this.restoreSelection(anchorIndex, focusIndex);

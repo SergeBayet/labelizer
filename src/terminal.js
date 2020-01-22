@@ -41,7 +41,6 @@ class Terminal {
     if (this.history.length > 0) {
       if (this.historyCursor == this.history.length) {
         this.searchField = command;
-        console.log(this.searchField);
         this.history.push(command);
       }
 
@@ -58,7 +57,7 @@ class Terminal {
           i--;
         }
       }
-      element.target.innerText = this.history[this.historyCursor];
+      element.target.innerHTML = this.renderText(this.history[this.historyCursor], this);
     }
   }
   downHistory(element) {
@@ -77,7 +76,7 @@ class Terminal {
           i++;
         }
       }
-      element.target.innerText = this.history[this.historyCursor];
+      element.target.innerHTML = this.renderText(this.history[this.historyCursor], this);
     }
   }
   addHistory(str) {
@@ -128,7 +127,6 @@ class Terminal {
       switch (e.keyCode) {
         case ENTER:
           e.preventDefault();
-          console.log(e.target.innerText);
           this.execute(e.target.innerText.trim());
           inputElement.innerHTML = "";
           break;
@@ -154,48 +152,36 @@ class Terminal {
   }
 
   renderText(text, context) {
-    console.log(this);
-    let ret = context.parserCli(text).colored;
+    let ret = context.parserCli(text).highlighted;
     return ret;
-    const words = text.split(/(\s+)/);
-    const output = words.map(word => {
-      if (word === "bold") {
-        return `<strong>${word}</strong>`;
-      } else if (word === "red") {
-        return `<span style='color:red' contenteditable='true'>${word}</span>`;
-      } else {
-        return word;
-      }
-    });
-    //console.log(output.join(''));
-    return output.join("");
   }
+
   interpolation(str, context) {
     if (str == undefined) return false;
     let _this = this;
 
-    let parsed = str.replace(/(\$\{command\})/, function(x, i) {
+    let parsed = str.replace(/(\$\{command\})/, function (x, i) {
       return _this.currentCommand || "[command undefined]";
     });
 
-    parsed = parsed.replace(/(\$\{option\})/, function(x, i) {
+    parsed = parsed.replace(/(\$\{option\})/, function (x, i) {
       return _this.currentOption || "[option undefined]";
     });
 
-    parsed = parsed.replace(/(\$\{info\})/, function(x, i) {
+    parsed = parsed.replace(/(\$\{info\})/, function (x, i) {
       return context.info || "[info undefined]";
     });
 
-    parsed = parsed.replace(/\$\{args\[(\d+)\]\}/, function(x, i) {
+    parsed = parsed.replace(/\$\{args\[(\d+)\]\}/, function (x, i) {
       return context.arguments[i - 1] || "[argument undefined]";
     });
 
     return parsed;
   }
   unquote(str) {
-    return str.replace(/^"(.*)"$/, `$1`).replace("\\", "");
+    return str.replace(/^"(.*)"$/, `$1`).replace(/\\/g, "");
   }
-  parserCli2(str) {
+  parserCli(str) {
     let parser = {
       command: "",
       arguments: [],
@@ -203,8 +189,73 @@ class Terminal {
       highlighted: "",
       autocomplete: []
     };
+    str = str.replace(/>/g, "&gt;").replace(/</g, "&lt;");
+    let regSeparator = new RegExp("^\\s+");
+    let regCommand = /^\s*\S+/;
+    let regString = new RegExp("^\"([^\\\\\"]|\\\\\")*\"?");
+    let regOption = /^(-{1,2})([^=\s]+)((=("([^\\"]|\\")*"?))|(=(\S+)))?/;
+    let index = 0;
+    let currentOption = '';
+    let m = regCommand.exec(str);
+    while (m !== null) {
+      if (index == 0)        // command
+      {
+        parser.command = m[0].trim();
+        parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.command);
+      }
+      else {
+        let token = m[0].trim();
+        if (token == '')              // separator
+        {
+          parser.highlighted += m[0];
+        }
+        else if (m.length <= 2)       // argument
+        {
+          if (currentOption !== '') {
+            parser.options[parser.options.length - 1].arguments.push(token);
+            parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.optionArgument);
+          }
+          else {
+            parser.arguments.push(this.unquote(token.trim()));
+            parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.argument);
+          }
 
-    parser.options.isOption = function(str) {
+        }
+        else {                        // option
+          if (m[1] == "-")            // abbreviated option
+          {
+            m[2].split("").map(opt => {
+              parser.options.push({ name: opt, arguments: [] });
+              currentOption = opt;
+            });
+            parser.highlighted += this.highlight('-', terminalConfig.css.highlight.operator);
+            parser.highlighted += this.highlight(m[2], terminalConfig.css.highlight.option);
+          }
+          else if (m[1] == "--")      // long option
+          {
+            parser.highlighted += this.highlight('--', terminalConfig.css.highlight.operator);
+            let arg = m[8] ? m[8] : m[5] ? m[5] : "";
+            parser.options.push({ name: m[2], arguments: [this.unquote(arg)] });
+            parser.highlighted += this.highlight(m[2], terminalConfig.css.highlight.option);
+            if (m[8]) {
+              parser.highlighted += this.highlight('=', terminalConfig.css.highlight.operator);
+              parser.highlighted += this.highlight(m[8], terminalConfig.css.highlight.optionArgument);
+            }
+            else if (m[5]) {
+              parser.highlighted += this.highlight('=', terminalConfig.css.highlight.operator);
+              parser.highlighted += this.highlight(m[5], terminalConfig.css.highlight.optionArgument);
+            }
+          }
+
+        }
+      }
+      str = str.substring(m[0].length);
+      m = regSeparator.exec(str) || regString.exec(str) || regOption.exec(str) || regCommand.exec(str);
+
+      index++;
+    }
+
+    parser.options.isOption = function (str) {
       let opt = this.filter(options => options.name == str)[0] || [];
       return opt.length == 0 ? false : opt;
     };
@@ -212,146 +263,14 @@ class Terminal {
     parser.arguments.isArgument = parser.options.isOption;
     return parser;
   }
-  parserCli(str) {
-    let parser = { command: "", arguments: [], options: [] };
-    let i = 0;
-    let currentChar;
-    let context = "normal";
-    let token = "";
-    let escaped = false;
-    let currentOption = "";
-    let colored = "";
-    let openedTag = false;
-    while (i <= str.length) {
-      currentChar = str.charAt(i) || "";
-
-      switch (context) {
-        case "normal":
-          switch (currentChar) {
-            case " ":
-            case "":
-              if (parser.command == "") {
-                parser.command = token;
-                colored += "</span>" + currentChar;
-                openedTag = false;
-              } else {
-                if (currentOption == "") {
-                  parser.arguments.push(token);
-                  colored += "</span>" + currentChar;
-                  openedTag = false;
-                } else {
-                  parser.options[parser.options.length - 1].argument = token;
-                  colored += "</span>" + currentChar;
-                  openedTag = false;
-                }
-              }
-              token = "";
-              break;
-            case '"':
-              context = "quoted";
-              colored += "<span style='color:green'>\"";
-              openedTag = true;
-              if (context == "quoted" && token !== "") {
-                return "error";
-              }
-              break;
-            case "-":
-              if (token == "" && (str.charAt(i + 1) || "") == "-") {
-                context = "option";
-                colored += "<span style='color:blue'>--";
-                openedTag = true;
-                i++;
-              } else if (token == "") {
-                context = "abbreviated option";
-                colored += "<span style='color:cyan'>-";
-                openedTag = true;
-              } else {
-                colored += currentChar;
-                token += currentChar;
-              }
-              break;
-            default:
-              if (token == "") {
-                colored += "<span style='color:white'>";
-                openedTag = true;
-              }
-              colored += currentChar;
-              token += currentChar;
-              break;
-          }
-          break;
-        case "option":
-          switch (currentChar) {
-            case "=":
-            case " ":
-              parser.options.push({ name: token, argument: "" });
-              currentOption = token;
-              colored += "</span>" + currentChar;
-              openedTag = false;
-              token = "";
-              context = "normal";
-              break;
-
-            default:
-              colored += currentChar;
-              token += currentChar;
-              break;
-          }
-          break;
-        case "abbreviated option":
-          switch (currentChar) {
-            case " ":
-              context = "normal";
-              colored += "</span> ";
-              openedTag = false;
-              break;
-            default:
-              parser.options.push({ name: currentChar, argument: "" });
-              colored += currentChar;
-              currentOption = currentChar;
-              break;
-          }
-          break;
-        case "quoted":
-          switch (currentChar) {
-            case '"':
-              if (!escaped) {
-                context = "normal";
-                colored += '"';
-              } else {
-                escaped = false;
-                colored += "</span>";
-                openedTag = false;
-                token += currentChar;
-              }
-              break;
-            case "\\":
-              escaped = true;
-              colored += "<span style='color:orange'>\\";
-              openedTag = true;
-              break;
-            default:
-              colored += currentChar;
-              token += currentChar;
-              break;
-          }
-        default:
-          break;
-      }
-      i++;
-    }
-    if (openedTag) {
-      colored += "</span>";
-    }
-
-    return { parser, colored };
+  highlight(str, color) {
+    return `<span style="color:${color}">${str}</span>`;
   }
   execute(str) {
     str = str.trim();
     if (str == "") return false;
     this.addHistory(str);
-    let parser = this.parserCli(str).parser;
-
+    let parser = this.parserCli(str);
     // Display the command in the terminal
 
     this.info(str);
@@ -366,7 +285,7 @@ class Terminal {
     if (definition.length == 0 && parser.command !== "help") {
       this.error(
         this.interpolation(terminalConfig.errors.unknown, context) ||
-          "Command not found : " + parser.command
+        "Command not found : " + parser.command
       );
       return false;
     }
@@ -458,7 +377,7 @@ class Terminal {
       if (!validOption) {
         this.error(
           this.interpolation(terminalConfig.errors.invalidOption, parser) ||
-            "Invalid option"
+          "Invalid option"
         );
       }
     });
@@ -466,7 +385,7 @@ class Terminal {
     this.log(this.interpolation(definition.info, parser) || "");
     let _this = this;
     // Call the user method with arguments and options
-    let promise = new Promise(function(resolve, reject) {
+    let promise = new Promise(function (resolve, reject) {
       resolve(
         _this.commandsNamespace[definition.method](
           parser.arguments,
@@ -475,7 +394,6 @@ class Terminal {
       );
     });
     promise.then();
-    console.log("in progress...");
     return true;
   }
   checkFilter(value, filter) {
@@ -505,7 +423,6 @@ class Terminal {
     return "";
   }
   explain(definition) {
-    console.log(definition);
     let str = "<dl>";
     str += "<dt>NAME</dt>";
     str +=

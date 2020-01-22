@@ -13,6 +13,14 @@ const terminalConfig = {
       width: "100%",
       backgroundColor: "#111",
       color: "#EEE"
+    },
+    highlight: {
+      command: "aqua",
+      argument: "lime",
+      option: "fuchsia",
+      string: "yellow",
+      optionArgument: "olive",
+      operator: "white"
     }
   },
   errors: {
