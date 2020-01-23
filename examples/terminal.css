@@ -3,7 +3,8 @@
   border: 1px solid gray;
   border-radius: 2px;
   z-index: 99;
-  width: 100px;
+  min-width: 100px;
+  max-width: 400px;
   bottom: 100%;
   left: 0;
   right: 0;

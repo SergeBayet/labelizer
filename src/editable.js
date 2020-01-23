@@ -30,7 +30,7 @@ class Editable {
       }
 
     });
-    //console.log(textSegments);
+    console.log(textSegments);
     return textSegments;
   }
   updateEditor() {

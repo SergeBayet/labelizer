@@ -1,3 +1,4 @@
+import '../node_modules/@babel/polyfill/dist/polyfill.min.js';
 import carry from "./carry";
 import { isStopWord } from "./stopwords";
 import Terminal from "./terminal";
@@ -12,6 +13,7 @@ export default class Labelizer {
     this.indexToken = 0;
     this.consoleInitialized = false;
     this.language = "fr";
+    // this.autocompleteWiki('lomep');
     this.init();
   }
 
@@ -442,6 +444,30 @@ export default class Labelizer {
     }
     this.terminal.log("Environnement language set to '" + label + "'");
     this.language = label;
+  }
+  autocompleteWiki(str) {
+    return new Promise((resolve) => {
+      var myHeaders = new Headers();
+      myHeaders.append("Content-Type", "application/json");
+      fetch("https://" +
+        this.language +
+        ".wikipedia.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" +
+        str + "&namespace=0&limit=10&origin=*",
+
+        { headers: myHeaders }
+      )
+        .then(response => response.json())
+        .then(text => {
+          if (text.error) {
+            this.terminal.error(text.error.info);
+          } else {
+
+            resolve(text[1]);
+
+          }
+        })
+    });
+
   }
   loadHtml(args, options = []) {
     //(e || window.event).preventDefault();

@@ -111,11 +111,6 @@ class Terminal {
     inputElement.setAttribute("spellcheck", "false");
     inputElement.style.whiteSpace = "pre";
 
-    // white-space: pre-wrap;       /* css-3 */
-    // white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-    // white-space: -pre-wrap;      /* Opera 4-6 */
-    // white-space: -o-pre-wrap;    /* Opera 7 */
-    // word-wrap: break-word;       /* Internet Explorer 5.5+ */
     if (terminalConfig.css.input) {
       const rules = Object.entries(terminalConfig.css.input);
       for (const [property, value] of rules) {
@@ -124,9 +119,6 @@ class Terminal {
     }
     inputElement.autofocus = true;
     let editable = new Editable(inputElement, this.renderText, this);
-    // Managing keyboard events
-
-
 
     // Add input element in the DOM
 
@@ -140,7 +132,10 @@ class Terminal {
     div.appendChild(inputElement);
     div.style.position = 'relative';
     let ac = new Autocomplete(inputElement);
-    inputElement.addEventListener("keyup", e => {
+
+    // Managing keyboard events
+
+    inputElement.addEventListener("keyup", async e => {
       switch (e.keyCode) {
         case ENTER:
           e.preventDefault();
@@ -159,7 +154,18 @@ class Terminal {
           editable.placeCaretAtEnd(e.target);
           break;
         default:
-          ac.update([{ 'name': 'serge' }, { 'name': 'bayet' }])
+          let items = await this.parserCli(e.target.innerText).autocomplete;
+          console.log('items : ', items);
+          if (inputElement.lastChild !== null) {
+            const bodyRect = inputElement.getBoundingClientRect(),
+              elemRect = inputElement.lastChild.getBoundingClientRect(),
+              offset = elemRect.left - bodyRect.left;
+            ac.setPositionX(offset);
+            ac.setElementToUpdate(inputElement.lastChild);
+          }
+
+          ac.update(items, { label: items.label, value: items.label, info: items.info });
+
           this.historyCursor = this.history.length;
       }
     });
@@ -192,14 +198,56 @@ class Terminal {
 
     return parsed;
   }
-  autocomplete(source, str) {
-    let ac =
-      terminalConfig[source]
-        .filter(
-          command => command.name.startsWith(str)
-        )
-        .map(x => { return { name: x.name, remaining: x.name.substring(str.length) } })
-        .filter(x => x.remaining);
+  async autocomplete(source, property, info, str) {
+    source = source.split('>').map(x => x.trim());
+    //console.log(source);
+    const regex = /(.*)\[(.*)=["'](.*)["']\]/;
+    let tree = terminalConfig;
+    for (let i = 0; i < source.length; i++) {
+
+      let m;
+
+      if ((m = regex.exec(source[i])) !== null) {
+        // The result can be accessed through the `m`-variable.
+        //console.log(tree, m);
+        tree = tree[m[1]].filter(
+          root => root[m[2]] == m[3]
+        )[0] || undefined;
+      }
+      else {
+        tree = tree[source[i]];
+      }
+
+    }
+    console.log(tree);
+    let ac;
+    if (tree[0].hasOwnProperty('filter')) {
+      console.log("user autocomplete");
+      console.log(tree[0]['filter']);
+      ac = await this.commandsNamespace[tree[0]['filter']['callbackMethod']](str);
+      let ac2 = [];
+      for (let i = 0; i < ac.length; i++) {
+        ac2.push({ name: '"' + ac[i] + '"' });
+      }
+      ac2.label = property;
+      ac2.info = info;
+      console.log('autocomplete : ', ac2);
+      return ac2;
+
+
+    }
+    else {
+      ac =
+        tree
+          .filter(command =>
+            command[property].startsWith(str)
+          )
+    }
+
+
+    ac.label = property;
+    ac.info = info;
+    console.log(ac);
     return ac;
   }
   unquote(str) {
@@ -217,7 +265,7 @@ class Terminal {
     let regSeparator = new RegExp("^\\s+");
     let regCommand = /^\s*\S+/;
     let regString = new RegExp("^\"([^\\\\\"]|\\\\\")*\"?");
-    let regOption = /^(-{1,2})([^=\s]+)((=("([^\\"]|\\")*"?))|(=(\S+)))?/;
+    let regOption = /^(-{1,2})([^=\s]*)((=("([^\\"]|\\")*"?))|(=(\S+)))?/;
     let index = 0;
     let currentOption = '';
     let m = regCommand.exec(str);
@@ -226,42 +274,55 @@ class Terminal {
       {
         parser.command = m[0].trim();
         parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.command);
-        parser.autocomplete = this.autocomplete("commands", parser.command);
+        parser.autocomplete = this.autocomplete("commands", "name", "shortDescription", parser.command);
       }
       else {
         let token = m[0].trim();
         if (token == '')              // separator
         {
-          parser.highlighted += m[0];
+          parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.operator);
+          parser.autocomplete = [];
         }
         else if (m.length <= 2)       // argument
         {
           if (currentOption !== '') {
             parser.options[parser.options.length - 1].arguments.push(token);
             parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.optionArgument);
+
           }
           else {
             parser.arguments.push(this.unquote(token.trim()));
             parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.argument);
+            parser.autocomplete = this.autocomplete("commands[name='" + parser.command + "'] > args", "name", "info", this.unquote(token.trim()));
           }
 
         }
         else {                        // option
+
           if (m[1] == "-")            // abbreviated option
           {
+            parser.highlighted += this.highlight('-', terminalConfig.css.highlight.operator);
+
             m[2].split("").map(opt => {
               parser.options.push({ name: opt, arguments: [] });
+              parser.highlighted += this.highlight(opt, terminalConfig.css.highlight.option);
               currentOption = opt;
             });
-            parser.highlighted += this.highlight('-', terminalConfig.css.highlight.operator);
-            parser.highlighted += this.highlight(m[2], terminalConfig.css.highlight.option);
+
+
+            parser.autocomplete = this.autocomplete("commands[name='" + parser.command + "'] > opts", "abbr", "info", "");
+
           }
           else if (m[1] == "--")      // long option
           {
             parser.highlighted += this.highlight('--', terminalConfig.css.highlight.operator);
             let arg = m[8] ? m[8] : m[5] ? m[5] : "";
+
             parser.options.push({ name: m[2], arguments: [this.unquote(arg)] });
             parser.highlighted += this.highlight(m[2], terminalConfig.css.highlight.option);
+
+            parser.autocomplete = this.autocomplete("commands[name='" + parser.command + "'] > opts", "name", "info", m[2]);
+
             if (m[8]) {
               parser.highlighted += this.highlight('=', terminalConfig.css.highlight.operator);
               parser.highlighted += this.highlight(m[8], terminalConfig.css.highlight.optionArgument);
@@ -286,7 +347,6 @@ class Terminal {
     };
 
     parser.arguments.isArgument = parser.options.isOption;
-    console.log(parser.autocomplete);
     return parser;
   }
   highlight(str, color) {

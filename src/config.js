@@ -1,3 +1,5 @@
+
+
 const terminalConfig = {
   history: {
     cookies: true,
@@ -104,12 +106,15 @@ const terminalConfig = {
     {
       name: "loadwiki",
       method: "loadHtml",
+
       args: [
         {
           name: "wikipage",
           info: "name of Wikipedia page (case sensitive)",
           type: "string",
-          filter: new RegExp("^.*$"),
+          filter: {
+            callbackMethod: "autocompleteWiki"
+          },
           transform: str => str.replace(" ", "_"),
           error: "wikipage (${info}) must be a string"
         }
