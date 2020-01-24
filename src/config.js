@@ -35,7 +35,16 @@ const terminalConfig = {
   help: "Some global help here!",
   commands: [
     {
-      name: "loadpage",
+      name: "def",
+      method: "getDefinition",
+      args: [
+        {
+          name: "word",
+          info: "written form of the word (case sensitive)",
+          type: "string",
+          error: "word (${info}) must be a string"
+        }
+      ]
 
     },
     {

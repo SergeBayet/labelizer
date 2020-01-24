@@ -16,11 +16,7 @@ export default class Labelizer {
     this.language = "fr";
 
     this.init();
-    let w = new Wiktionary('goal');
-    w.getInfos().then(data => {
-      console.log('APRES');
-      this.terminal.log(data.join('\n'));
-    });
+
   }
 
 
@@ -175,6 +171,16 @@ export default class Labelizer {
   }
 
   // Commands Console
+  getDefinition(args, opts) {
+    let w = new Wiktionary(args[0]);
+    w.getInfos().then(data => {
+      let def = w.getDefinition(data);
+      def.forEach(x => {
+        this.terminal.log(x.join('<br/>'));
+      })
+
+    });
+  }
   ngrams(args, opts) {
 
     let selector = " .token";

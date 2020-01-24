@@ -7155,7 +7155,14 @@
     },
     help: "Some global help here!",
     commands: [{
-      name: "loadpage"
+      name: "def",
+      method: "getDefinition",
+      args: [{
+        name: "word",
+        info: "written form of the word (case sensitive)",
+        type: "string",
+        error: "word (${info}) must be a string"
+      }]
     }, {
       name: "nprint"
     }, {
@@ -8271,12 +8278,12 @@
 
                       currentDepth = depth;
                     } else {
-                      if (currentSection !== '') {
+                      if (currentSection !== '' && element !== '') {
                         cursor.content.push(element);
                       }
                     }
                   });
-                  return _context.abrupt("return", lines);
+                  return _context.abrupt("return", object);
 
                 case 11:
                 case "end":
@@ -8292,9 +8299,20 @@
 
         return getInfos;
       }()
-    }], [{
-      key: "getAlso",
-      value: function getAlso() {}
+    }, {
+      key: "getDefinition",
+      value: function getDefinition(wikiObject) {
+        var _this2 = this;
+
+        var pos = ['Noun', 'Adjective', 'Verb'];
+        var ret = [];
+        pos.forEach(function (p) {
+          if (wikiObject[_this2.lang].hasOwnProperty(p)) {
+            ret.push(wikiObject[_this2.lang][p].content);
+          }
+        });
+        return ret;
+      }
     }]);
 
     return Wiktionary;
@@ -8304,8 +8322,6 @@
   /*#__PURE__*/
   function () {
     function Labelizer(selector) {
-      var _this = this;
-
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
       _classCallCheck(this, Labelizer);
@@ -8318,18 +8334,12 @@
       this.consoleInitialized = false;
       this.language = "fr";
       this.init();
-      var w = new Wiktionary('goal');
-      w.getInfos().then(function (data) {
-        console.log('APRES');
-
-        _this.terminal.log(data.join('\n'));
-      });
     }
 
     _createClass(Labelizer, [{
       key: "init",
       value: function init() {
-        var _this2 = this;
+        var _this = this;
 
         var as = document.querySelectorAll(this.selector + " a");
         as.forEach(function (a) {
@@ -8364,36 +8374,36 @@
             if (window.event.ctrlKey) {
               if (!el.classList.contains("selected")) {
                 el.classList = "token selected";
-                _this2.lastSelected = el.getAttribute("data-id");
+                _this.lastSelected = el.getAttribute("data-id");
 
-                _this2.terminal.log("'" + e.target.innerText + "' selected");
+                _this.terminal.log("'" + e.target.innerText + "' selected");
               } else {
                 el.classList = "token";
-                _this2.lastSelected = false;
+                _this.lastSelected = false;
 
-                _this2.terminal.log("'" + e.target.innerText + "' unselected");
+                _this.terminal.log("'" + e.target.innerText + "' unselected");
               }
             } else if (window.event.shiftKey) {
               var idSelected = el.getAttribute("data-id");
 
-              if (!_this2.lastSelected) {
+              if (!_this.lastSelected) {
                 el.classList = "token selected";
 
-                _this2.terminal.log("'" + e.target.innerText + "' selected");
-              } else if (_this2.lastSelected < idSelected) {
+                _this.terminal.log("'" + e.target.innerText + "' selected");
+              } else if (_this.lastSelected < idSelected) {
                 var selectedText = [];
 
-                for (var i = _this2.lastSelected; i <= idSelected; i++) {
+                for (var i = _this.lastSelected; i <= idSelected; i++) {
                   var t = document.querySelector('.token[data-id="' + i + '"]');
                   t.classList = "token selected";
                   selectedText.push(t.innerText);
                 }
 
-                _this2.terminal.log("'" + selectedText.join("") + "' selected");
+                _this.terminal.log("'" + selectedText.join("") + "' selected");
               } else {
                 var _selectedText = [];
 
-                for (var _i = _this2.lastSelected; _i >= idSelected; _i--) {
+                for (var _i = _this.lastSelected; _i >= idSelected; _i--) {
                   var _t = document.querySelector('.token[data-id="' + _i + '"]');
 
                   _t.classList = "token selected";
@@ -8401,26 +8411,26 @@
                   _selectedText.push(_t.innerText);
                 }
 
-                _this2.terminal.log("'" + _selectedText.reverse().join("") + "' selected");
+                _this.terminal.log("'" + _selectedText.reverse().join("") + "' selected");
               }
 
-              _this2.lastSelected = idSelected;
+              _this.lastSelected = idSelected;
             } else {
               if (!el.classList.contains("selected")) {
                 tokensEl.forEach(function (x) {
                   x.classList = "token";
                 });
                 el.classList = "token selected";
-                _this2.lastSelected = el.getAttribute("data-id");
+                _this.lastSelected = el.getAttribute("data-id");
 
-                _this2.terminal.log("'" + e.target.innerText + "' selected");
+                _this.terminal.log("'" + e.target.innerText + "' selected");
               } else {
                 tokensEl.forEach(function (x) {
                   x.classList = "token";
                 });
-                _this2.lastSelected = false;
+                _this.lastSelected = false;
 
-                _this2.terminal.log("'" + e.target.innerText + "' unselected");
+                _this.terminal.log("'" + e.target.innerText + "' unselected");
               }
             }
           });
@@ -8430,7 +8440,7 @@
     }, {
       key: "repl",
       value: function repl(node) {
-        var _this3 = this;
+        var _this2 = this;
 
         if (node.className === undefined || node.nodeName == "CODE" || node.nodeName == "PRE") return;
         var classNames = node.className.split(" ");
@@ -8459,8 +8469,8 @@
 
             var newHTML = "";
             toks.forEach(function (el) {
-              _this3.indexToken++;
-              newHTML += '<span class="token" data-id="' + _this3.indexToken + '">' + el + "</span>";
+              _this2.indexToken++;
+              newHTML += '<span class="token" data-id="' + _this2.indexToken + '">' + el + "</span>";
             }); // do some swappy text to html here?
 
             var replacementNode = document.createElement("span");
@@ -8473,6 +8483,19 @@
         }
       } // Commands Console
 
+    }, {
+      key: "getDefinition",
+      value: function getDefinition(args, opts) {
+        var _this3 = this;
+
+        var w = new Wiktionary(args[0]);
+        w.getInfos().then(function (data) {
+          var def = w.getDefinition(data);
+          def.forEach(function (x) {
+            _this3.terminal.log(x.join('<br/>'));
+          });
+        });
+      }
     }, {
       key: "ngrams",
       value: function ngrams(args, opts) {

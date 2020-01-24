@@ -76,16 +76,27 @@ class Wiktionary {
         currentDepth = depth;
       }
       else {
-        if (currentSection !== '') {
+        if (currentSection !== '' && element !== '') {
           cursor.content.push(element);
         }
       }
     });
 
-    return lines;
+    return object;
   }
-  static getAlso() {
+  getDefinition(wikiObject) {
 
+    const pos = ['Noun', 'Adjective', 'Verb'];
+    let ret = [];
+
+    pos.forEach(p => {
+
+      if (wikiObject[this.lang].hasOwnProperty(p)) {
+        ret.push(wikiObject[this.lang][p].content);
+      }
+    });
+
+    return ret;
   }
 }
 export default Wiktionary;
