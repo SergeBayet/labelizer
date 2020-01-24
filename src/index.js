@@ -172,8 +172,9 @@ export default class Labelizer {
 
   // Commands Console
   getDefinition(args, opts) {
-    let w = new Wiktionary(args[0]);
+    let w = new Wiktionary(args[0], "English");
     w.getInfos().then(data => {
+      console.log(data);
       let def = w.getDefinition(data);
       def.forEach(x => {
         this.terminal.log(x.join('<br/>'));

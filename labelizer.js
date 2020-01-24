@@ -8488,8 +8488,9 @@
       value: function getDefinition(args, opts) {
         var _this3 = this;
 
-        var w = new Wiktionary(args[0]);
+        var w = new Wiktionary(args[0], "English");
         w.getInfos().then(function (data) {
+          console.log(data);
           var def = w.getDefinition(data);
           def.forEach(function (x) {
             _this3.terminal.log(x.join('<br/>'));
