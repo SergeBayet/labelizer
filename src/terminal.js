@@ -170,12 +170,10 @@ class Terminal {
       }
     });
   }
-
   renderText(text, context) {
     let ret = context.parserCli(text).highlighted;
     return ret;
   }
-
   interpolation(str, context) {
     if (str == undefined) return false;
     let _this = this;
@@ -219,7 +217,6 @@ class Terminal {
       }
 
     }
-    console.log(tree);
     let ac;
     if (tree[0].hasOwnProperty('filter')) {
       console.log("user autocomplete");
@@ -231,7 +228,6 @@ class Terminal {
       }
       ac2.label = property;
       ac2.info = info;
-      console.log('autocomplete : ', ac2);
       return ac2;
 
 

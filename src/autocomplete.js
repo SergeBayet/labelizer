@@ -1,5 +1,8 @@
+const defaultCssJson = {
+
+}
 class Autocomplete {
-  constructor(element) {
+  constructor(element, css = null) {
     this.hidden = true;
     this.items = [];
     this.element = element;
@@ -8,6 +11,16 @@ class Autocomplete {
     this.div.style.display = 'none';
     this.element.parentNode.appendChild(this.div);
     this.span = null;
+    this.css(css);
+  }
+  css(cssJson) {
+    const css = cssJson || defaultCssJson;
+
+    const rules = Object.entries(css);
+    for (const [property, value] of rules) {
+      this.element.style[property] = value;
+    }
+
   }
   setPositionX(x) {
     console.log(x);

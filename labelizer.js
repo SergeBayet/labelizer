@@ -7363,10 +7363,14 @@
     return Editable;
   }();
 
+  var defaultCssJson = {};
+
   var Autocomplete =
   /*#__PURE__*/
   function () {
     function Autocomplete(element) {
+      var css = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
       _classCallCheck(this, Autocomplete);
 
       this.hidden = true;
@@ -7377,9 +7381,24 @@
       this.div.style.display = 'none';
       this.element.parentNode.appendChild(this.div);
       this.span = null;
+      this.css(css);
     }
 
     _createClass(Autocomplete, [{
+      key: "css",
+      value: function css(cssJson) {
+        var css = cssJson || defaultCssJson;
+        var rules = Object.entries(css);
+
+        for (var _i = 0, _rules = rules; _i < _rules.length; _i++) {
+          var _rules$_i = _slicedToArray(_rules[_i], 2),
+              property = _rules$_i[0],
+              value = _rules$_i[1];
+
+          this.element.style[property] = value;
+        }
+      }
+    }, {
       key: "setPositionX",
       value: function setPositionX(x) {
         console.log(x);
@@ -7747,19 +7766,17 @@
                     _loop(i);
                   }
 
-                  console.log(tree);
-
                   if (!tree[0].hasOwnProperty('filter')) {
-                    _context2.next = 20;
+                    _context2.next = 18;
                     break;
                   }
 
                   console.log("user autocomplete");
                   console.log(tree[0]['filter']);
-                  _context2.next = 11;
+                  _context2.next = 10;
                   return this.commandsNamespace[tree[0]['filter']['callbackMethod']](str);
 
-                case 11:
+                case 10:
                   ac = _context2.sent;
                   ac2 = [];
 
@@ -7771,21 +7788,20 @@
 
                   ac2.label = property;
                   ac2.info = info;
-                  console.log('autocomplete : ', ac2);
                   return _context2.abrupt("return", ac2);
 
-                case 20:
+                case 18:
                   ac = tree.filter(function (command) {
                     return command[property].startsWith(str);
                   });
 
-                case 21:
+                case 19:
                   ac.label = property;
                   ac.info = info;
                   console.log(ac);
                   return _context2.abrupt("return", ac);
 
-                case 25:
+                case 23:
                 case "end":
                   return _context2.stop();
               }
@@ -8149,10 +8165,147 @@
     return Terminal;
   }();
 
+  var Wiktionary =
+  /*#__PURE__*/
+  function () {
+    function Wiktionary(word) {
+      var langDestination = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "French";
+
+      _classCallCheck(this, Wiktionary);
+
+      this.lang = langDestination;
+      this.word = word;
+    }
+
+    _createClass(Wiktionary, [{
+      key: "getPage",
+      value: function getPage(word) {
+        var _this = this;
+
+        return new Promise(function (resolve) {
+          var myHeaders = new Headers();
+          word = encodeURIComponent(word);
+          myHeaders.append("Content-Type", "application/json");
+          fetch("https://en.wiktionary.org/w/api.php?action=query&titles=".concat(word, "&rvslots=main&prop=revisions&rvprop=content&format=json&origin=*"), {
+            headers: myHeaders
+          }).then(function (response) {
+            return response.json();
+          }).then(function (json) {
+            if (json.error) ; else {
+              var page = _this.getNestedObject(json, "*");
+
+              resolve(page);
+            }
+          });
+        });
+      }
+    }, {
+      key: "getNestedObject",
+      value: function getNestedObject(obj, prop) {
+        for (var el in obj) {
+          if (el == prop) {
+            return obj[el];
+          }
+
+          if (_typeof(obj[el]) == "object") {
+            return this.getNestedObject(obj[el], prop);
+          }
+        }
+
+        return false;
+      }
+    }, {
+      key: "getDefinition",
+      value: function getDefinition() {}
+    }, {
+      key: "getInfos",
+      value: function () {
+        var _getInfos = _asyncToGenerator(
+        /*#__PURE__*/
+        regeneratorRuntime.mark(function _callee() {
+          var page, rPos, lines, stack, object, currentSection, currentDepth, cursor;
+          return regeneratorRuntime.wrap(function _callee$(_context) {
+            while (1) {
+              switch (_context.prev = _context.next) {
+                case 0:
+                  _context.next = 2;
+                  return this.getPage(this.word);
+
+                case 2:
+                  page = _context.sent;
+                  rPos = /^=+([^=]*)=+$/;
+                  lines = page.split('\n');
+                  stack = [];
+                  object = {};
+                  currentSection = '';
+                  currentDepth = -1;
+                  lines.forEach(function (element) {
+                    if (rPos.test(element)) {
+                      var depth = element.replace(/(^=+).*/, '$1').length - 2;
+                      currentSection = element.replace(rPos, '$1');
+
+                      if (depth > currentDepth) {
+                        stack.push(currentSection);
+                      } else if (depth < currentDepth) {
+                        for (var i = 0; i <= currentDepth - depth; i++) {
+                          stack.pop();
+                        }
+
+                        stack.push(currentSection);
+                      } else {
+                        stack.pop();
+                        stack.push(currentSection);
+                      }
+
+                      cursor = object;
+
+                      for (var _i = 0; _i < stack.length; _i++) {
+                        if (cursor[stack[_i]] === undefined) {
+                          cursor[stack[_i]] = {
+                            content: []
+                          };
+                        }
+
+                        cursor = cursor[stack[_i]];
+                      }
+
+                      currentDepth = depth;
+                    } else {
+                      if (currentSection !== '') {
+                        cursor.content.push(element);
+                      }
+                    }
+                  });
+                  return _context.abrupt("return", lines);
+
+                case 11:
+                case "end":
+                  return _context.stop();
+              }
+            }
+          }, _callee, this);
+        }));
+
+        function getInfos() {
+          return _getInfos.apply(this, arguments);
+        }
+
+        return getInfos;
+      }()
+    }], [{
+      key: "getAlso",
+      value: function getAlso() {}
+    }]);
+
+    return Wiktionary;
+  }();
+
   var Labelizer =
   /*#__PURE__*/
   function () {
     function Labelizer(selector) {
+      var _this = this;
+
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
       _classCallCheck(this, Labelizer);
@@ -8163,15 +8316,20 @@
       this.o = options;
       this.indexToken = 0;
       this.consoleInitialized = false;
-      this.language = "fr"; // this.autocompleteWiki('lomep');
-
+      this.language = "fr";
       this.init();
+      var w = new Wiktionary('goal');
+      w.getInfos().then(function (data) {
+        console.log('APRES');
+
+        _this.terminal.log(data.join('\n'));
+      });
     }
 
     _createClass(Labelizer, [{
       key: "init",
       value: function init() {
-        var _this = this;
+        var _this2 = this;
 
         var as = document.querySelectorAll(this.selector + " a");
         as.forEach(function (a) {
@@ -8206,36 +8364,36 @@
             if (window.event.ctrlKey) {
               if (!el.classList.contains("selected")) {
                 el.classList = "token selected";
-                _this.lastSelected = el.getAttribute("data-id");
+                _this2.lastSelected = el.getAttribute("data-id");
 
-                _this.terminal.log("'" + e.target.innerText + "' selected");
+                _this2.terminal.log("'" + e.target.innerText + "' selected");
               } else {
                 el.classList = "token";
-                _this.lastSelected = false;
+                _this2.lastSelected = false;
 
-                _this.terminal.log("'" + e.target.innerText + "' unselected");
+                _this2.terminal.log("'" + e.target.innerText + "' unselected");
               }
             } else if (window.event.shiftKey) {
               var idSelected = el.getAttribute("data-id");
 
-              if (!_this.lastSelected) {
+              if (!_this2.lastSelected) {
                 el.classList = "token selected";
 
-                _this.terminal.log("'" + e.target.innerText + "' selected");
-              } else if (_this.lastSelected < idSelected) {
+                _this2.terminal.log("'" + e.target.innerText + "' selected");
+              } else if (_this2.lastSelected < idSelected) {
                 var selectedText = [];
 
-                for (var i = _this.lastSelected; i <= idSelected; i++) {
+                for (var i = _this2.lastSelected; i <= idSelected; i++) {
                   var t = document.querySelector('.token[data-id="' + i + '"]');
                   t.classList = "token selected";
                   selectedText.push(t.innerText);
                 }
 
-                _this.terminal.log("'" + selectedText.join("") + "' selected");
+                _this2.terminal.log("'" + selectedText.join("") + "' selected");
               } else {
                 var _selectedText = [];
 
-                for (var _i = _this.lastSelected; _i >= idSelected; _i--) {
+                for (var _i = _this2.lastSelected; _i >= idSelected; _i--) {
                   var _t = document.querySelector('.token[data-id="' + _i + '"]');
 
                   _t.classList = "token selected";
@@ -8243,26 +8401,26 @@
                   _selectedText.push(_t.innerText);
                 }
 
-                _this.terminal.log("'" + _selectedText.reverse().join("") + "' selected");
+                _this2.terminal.log("'" + _selectedText.reverse().join("") + "' selected");
               }
 
-              _this.lastSelected = idSelected;
+              _this2.lastSelected = idSelected;
             } else {
               if (!el.classList.contains("selected")) {
                 tokensEl.forEach(function (x) {
                   x.classList = "token";
                 });
                 el.classList = "token selected";
-                _this.lastSelected = el.getAttribute("data-id");
+                _this2.lastSelected = el.getAttribute("data-id");
 
-                _this.terminal.log("'" + e.target.innerText + "' selected");
+                _this2.terminal.log("'" + e.target.innerText + "' selected");
               } else {
                 tokensEl.forEach(function (x) {
                   x.classList = "token";
                 });
-                _this.lastSelected = false;
+                _this2.lastSelected = false;
 
-                _this.terminal.log("'" + e.target.innerText + "' unselected");
+                _this2.terminal.log("'" + e.target.innerText + "' unselected");
               }
             }
           });
@@ -8272,7 +8430,7 @@
     }, {
       key: "repl",
       value: function repl(node) {
-        var _this2 = this;
+        var _this3 = this;
 
         if (node.className === undefined || node.nodeName == "CODE" || node.nodeName == "PRE") return;
         var classNames = node.className.split(" ");
@@ -8301,8 +8459,8 @@
 
             var newHTML = "";
             toks.forEach(function (el) {
-              _this2.indexToken++;
-              newHTML += '<span class="token" data-id="' + _this2.indexToken + '">' + el + "</span>";
+              _this3.indexToken++;
+              newHTML += '<span class="token" data-id="' + _this3.indexToken + '">' + el + "</span>";
             }); // do some swappy text to html here?
 
             var replacementNode = document.createElement("span");
@@ -8478,7 +8636,7 @@
     }, {
       key: "freq",
       value: function freq(args, opts) {
-        var _this3 = this;
+        var _this4 = this;
 
         var selector = " .token";
         var sensitive = true;
@@ -8533,7 +8691,7 @@
 
         if (opts.isOption("p")) {
           this.terminal.log(words.map(function (x) {
-            return x[0] + " (" + _this3.digits2(x[1] / wordsCount * 100) + "%)";
+            return x[0] + " (" + _this4.digits2(x[1] / wordsCount * 100) + "%)";
           }).join(" - "));
         } else {
           this.terminal.log(words.map(function (x) {
@@ -8627,18 +8785,18 @@
     }, {
       key: "autocompleteWiki",
       value: function autocompleteWiki(str) {
-        var _this4 = this;
+        var _this5 = this;
 
         return new Promise(function (resolve) {
           var myHeaders = new Headers();
           myHeaders.append("Content-Type", "application/json");
-          fetch("https://" + _this4.language + ".wikipedia.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" + str + "&namespace=0&limit=10&origin=*", {
+          fetch("https://" + _this5.language + ".wikipedia.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" + str + "&namespace=0&limit=10&origin=*", {
             headers: myHeaders
           }).then(function (response) {
             return response.json();
           }).then(function (text) {
             if (text.error) {
-              _this4.terminal.error(text.error.info);
+              _this5.terminal.error(text.error.info);
             } else {
               resolve(text[1]);
             }
@@ -8648,7 +8806,7 @@
     }, {
       key: "loadHtml",
       value: function loadHtml(args) {
-        var _this5 = this;
+        var _this6 = this;
         //(e || window.event).preventDefault();
         var label = args[0];
 
@@ -8667,17 +8825,17 @@
           return response.json();
         }).then(function (text) {
           if (text.error) {
-            _this5.terminal.error(text.error.info);
+            _this6.terminal.error(text.error.info);
           } else {
-            _this5.terminal.log("Page loaded!");
+            _this6.terminal.log("Page loaded!");
 
             var html = text.parse.text["*"];
             el.innerHTML = html;
 
-            _this5.init();
+            _this6.init();
           }
         })["catch"](function (error) {
-          _this5.terminal.error("! " + error);
+          _this6.terminal.error("! " + error);
         });
       }
     }]);

@@ -2,6 +2,7 @@ import '../node_modules/@babel/polyfill/dist/polyfill.min.js';
 import carry from "./carry";
 import { isStopWord } from "./stopwords";
 import Terminal from "./terminal";
+import Wiktionary from "./wikitionary";
 const version = "0.0.1";
 
 export default class Labelizer {
@@ -13,9 +14,15 @@ export default class Labelizer {
     this.indexToken = 0;
     this.consoleInitialized = false;
     this.language = "fr";
-    // this.autocompleteWiki('lomep');
+
     this.init();
+    let w = new Wiktionary('goal');
+    w.getInfos().then(data => {
+      console.log('APRES');
+      this.terminal.log(data.join('\n'));
+    });
   }
+
 
   init() {
     let as = document.querySelectorAll(this.selector + " a");
