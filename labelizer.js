@@ -7487,7 +7487,6 @@
 
   var ARROW_DOWN = 40;
   var ARROW_UP = 38;
-  var ARROW_RIGHT = 39;
   var ENTER = 13;
 
   var Terminal =
@@ -7633,7 +7632,7 @@
         var div = document.createElement("div");
         screen.parentNode.insertBefore(div, screen.nextSibling);
         div.appendChild(inputElement);
-        div.style.position = 'relative';
+        div.style.position = "relative";
         var ac = new Autocomplete(inputElement); // Managing keyboard events
 
         inputElement.addEventListener("keyup",
@@ -7648,40 +7647,39 @@
                 switch (_context.prev = _context.next) {
                   case 0:
                     _context.t0 = e.keyCode;
-                    _context.next = _context.t0 === ENTER ? 3 : _context.t0 === ARROW_UP ? 7 : _context.t0 === ARROW_DOWN ? 9 : _context.t0 === ARROW_RIGHT ? 11 : 15;
+                    _context.next = _context.t0 === ENTER ? 3 : _context.t0 === ARROW_UP ? 8 : _context.t0 === ARROW_DOWN ? 11 : 14;
                     break;
 
                   case 3:
                     e.preventDefault();
+                    ac.hide();
 
                     _this2.execute(e.target.innerText.trim());
 
                     inputElement.innerHTML = "";
-                    return _context.abrupt("break", 22);
+                    return _context.abrupt("break", 21);
 
-                  case 7:
+                  case 8:
+                    ac.hide();
+
                     _this2.upHistory(e);
 
-                    return _context.abrupt("break", 22);
-
-                  case 9:
-                    _this2.downHistory(e);
-
-                    return _context.abrupt("break", 22);
+                    return _context.abrupt("break", 21);
 
                   case 11:
-                    e.preventDefault();
-                    e.target.innerHTML = _this2.renderText(e.target.innerText, _this2);
-                    editable.placeCaretAtEnd(e.target);
-                    return _context.abrupt("break", 22);
+                    ac.hide();
 
-                  case 15:
-                    _context.next = 17;
+                    _this2.downHistory(e);
+
+                    return _context.abrupt("break", 21);
+
+                  case 14:
+                    _context.next = 16;
                     return _this2.parserCli(e.target.innerText).autocomplete;
 
-                  case 17:
+                  case 16:
                     items = _context.sent;
-                    console.log('items : ', items);
+                    console.log("items : ", items);
 
                     if (inputElement.lastChild !== null) {
                       bodyRect = inputElement.getBoundingClientRect(), elemRect = inputElement.lastChild.getBoundingClientRect(), offset = elemRect.left - bodyRect.left;
@@ -7696,7 +7694,7 @@
                     });
                     _this2.historyCursor = _this2.history.length;
 
-                  case 22:
+                  case 21:
                   case "end":
                     return _context.stop();
                 }
@@ -7748,7 +7746,7 @@
             while (1) {
               switch (_context2.prev = _context2.next) {
                 case 0:
-                  source = source.split('>').map(function (x) {
+                  source = source.split(">").map(function (x) {
                     return x.trim();
                   }); //console.log(source);
 
@@ -7773,15 +7771,15 @@
                     _loop(i);
                   }
 
-                  if (!tree[0].hasOwnProperty('filter')) {
+                  if (!tree[0].hasOwnProperty("filter")) {
                     _context2.next = 18;
                     break;
                   }
 
                   console.log("user autocomplete");
-                  console.log(tree[0]['filter']);
+                  console.log(tree[0]["filter"]);
                   _context2.next = 10;
-                  return this.commandsNamespace[tree[0]['filter']['callbackMethod']](str);
+                  return this.commandsNamespace[tree[0]["filter"]["callbackMethod"]](str);
 
                 case 10:
                   ac = _context2.sent;
@@ -7842,68 +7840,68 @@
         str = str.replace(/>/g, "&gt;").replace(/</g, "&lt;");
         var regSeparator = new RegExp("^\\s+");
         var regCommand = /^\s*\S+/;
-        var regString = new RegExp("^\"([^\\\\\"]|\\\\\")*\"?");
+        var regString = new RegExp('^"([^\\\\"]|\\\\")*"?');
         var regOption = /^(-{1,2})([^=\s]*)((=("([^\\"]|\\")*"?))|(=(\S+)))?/;
         var index = 0;
-        var currentOption = '';
+        var currentOption = "";
         var m = regCommand.exec(str);
 
         while (m !== null) {
-          if (index == 0) // command
-            {
-              parser.command = m[0].trim();
-              parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.command);
-              parser.autocomplete = this.autocomplete("commands", "name", "shortDescription", parser.command);
-            } else {
+          if (index == 0) {
+            // command
+            parser.command = m[0].trim();
+            parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.command);
+            parser.autocomplete = this.autocomplete("commands", "name", "shortDescription", parser.command);
+          } else {
             var token = m[0].trim();
 
-            if (token == '') // separator
-              {
-                parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.operator);
-                parser.autocomplete = [];
-              } else if (m.length <= 2) // argument
-              {
-                if (currentOption !== '') {
-                  parser.options[parser.options.length - 1].arguments.push(token);
-                  parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.optionArgument);
-                } else {
-                  parser.arguments.push(this.unquote(token.trim()));
-                  parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.argument);
-                  parser.autocomplete = this.autocomplete("commands[name='" + parser.command + "'] > args", "name", "info", this.unquote(token.trim()));
-                }
+            if (token == "") {
+              // separator
+              parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.operator);
+              parser.autocomplete = [];
+            } else if (m.length <= 2) {
+              // argument
+              if (currentOption !== "") {
+                parser.options[parser.options.length - 1].arguments.push(token);
+                parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.optionArgument);
               } else {
+                parser.arguments.push(this.unquote(token.trim()));
+                parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.argument);
+                parser.autocomplete = this.autocomplete("commands[name='" + parser.command + "'] > args", "name", "info", this.unquote(token.trim()));
+              }
+            } else {
               // option
-              if (m[1] == "-") // abbreviated option
-                {
-                  parser.highlighted += this.highlight('-', terminalConfig.css.highlight.operator);
-                  m[2].split("").map(function (opt) {
-                    parser.options.push({
-                      name: opt,
-                      arguments: []
-                    });
-                    parser.highlighted += _this3.highlight(opt, terminalConfig.css.highlight.option);
-                    currentOption = opt;
-                  });
-                  parser.autocomplete = this.autocomplete("commands[name='" + parser.command + "'] > opts", "abbr", "info", "");
-                } else if (m[1] == "--") // long option
-                {
-                  parser.highlighted += this.highlight('--', terminalConfig.css.highlight.operator);
-                  var arg = m[8] ? m[8] : m[5] ? m[5] : "";
+              if (m[1] == "-") {
+                // abbreviated option
+                parser.highlighted += this.highlight("-", terminalConfig.css.highlight.operator);
+                m[2].split("").map(function (opt) {
                   parser.options.push({
-                    name: m[2],
-                    arguments: [this.unquote(arg)]
+                    name: opt,
+                    arguments: []
                   });
-                  parser.highlighted += this.highlight(m[2], terminalConfig.css.highlight.option);
-                  parser.autocomplete = this.autocomplete("commands[name='" + parser.command + "'] > opts", "name", "info", m[2]);
+                  parser.highlighted += _this3.highlight(opt, terminalConfig.css.highlight.option);
+                  currentOption = opt;
+                });
+                parser.autocomplete = this.autocomplete("commands[name='" + parser.command + "'] > opts", "abbr", "info", "");
+              } else if (m[1] == "--") {
+                // long option
+                parser.highlighted += this.highlight("--", terminalConfig.css.highlight.operator);
+                var arg = m[8] ? m[8] : m[5] ? m[5] : "";
+                parser.options.push({
+                  name: m[2],
+                  arguments: [this.unquote(arg)]
+                });
+                parser.highlighted += this.highlight(m[2], terminalConfig.css.highlight.option);
+                parser.autocomplete = this.autocomplete("commands[name='" + parser.command + "'] > opts", "name", "info", m[2]);
 
-                  if (m[8]) {
-                    parser.highlighted += this.highlight('=', terminalConfig.css.highlight.operator);
-                    parser.highlighted += this.highlight(m[8], terminalConfig.css.highlight.optionArgument);
-                  } else if (m[5]) {
-                    parser.highlighted += this.highlight('=', terminalConfig.css.highlight.operator);
-                    parser.highlighted += this.highlight(m[5], terminalConfig.css.highlight.optionArgument);
-                  }
+                if (m[8]) {
+                  parser.highlighted += this.highlight("=", terminalConfig.css.highlight.operator);
+                  parser.highlighted += this.highlight(m[8], terminalConfig.css.highlight.optionArgument);
+                } else if (m[5]) {
+                  parser.highlighted += this.highlight("=", terminalConfig.css.highlight.operator);
+                  parser.highlighted += this.highlight(m[5], terminalConfig.css.highlight.optionArgument);
                 }
+              }
             }
           }
 
@@ -8172,6 +8170,104 @@
     return Terminal;
   }();
 
+  var WikiParser =
+  /*#__PURE__*/
+  function () {
+    function WikiParser() {
+      var head = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
+
+      _classCallCheck(this, WikiParser);
+
+      this.head = head;
+    }
+
+    _createClass(WikiParser, [{
+      key: "parse",
+      value: function parse(str) {
+        var ret = this.getTemplates(str);
+        console.log(ret);
+        return ret;
+      }
+    }, {
+      key: "getTemplates",
+      value: function getTemplates(str) {
+        var cursor = 0;
+        var lastAnchor = null;
+        var type = null;
+
+        while (cursor < str.length - 1) {
+          var anchor = str.substring(cursor, cursor + 2);
+
+          switch (anchor) {
+            case "{{":
+              type = "accolade";
+              cursor += 2;
+              lastAnchor = cursor;
+              break;
+
+            case "}}":
+              if (type == "accolade" && lastAnchor !== null) {
+                var inside = this.manageTemplate(str.substring(lastAnchor, cursor));
+                str = str.substring(0, lastAnchor - 2) + inside + str.substring(cursor + 2);
+                lastAnchor = null;
+                type = null;
+                cursor = 0;
+              } else {
+                return str;
+              }
+
+              break;
+
+            case "[[":
+              type = "bracket";
+              cursor += 2;
+              lastAnchor = cursor;
+              break;
+
+            case "]]":
+              if (type == "bracket" && lastAnchor !== null) {
+                var _inside = this.manageLink(str.substring(lastAnchor, cursor));
+                str = str.substring(0, lastAnchor - 2) + _inside + str.substring(cursor + 2);
+                lastAnchor = null;
+                type = null;
+                cursor = 0;
+              } else {
+                return str;
+              }
+
+              break;
+
+            default:
+              cursor++;
+          }
+        }
+
+        console.log(str);
+        return str;
+      }
+    }, {
+      key: "manageTemplate",
+      value: function manageTemplate(str) {
+        return str;
+      }
+    }, {
+      key: "manageLink",
+      value: function manageLink(str) {
+        var params = str.split("|");
+
+        if (params.length == 1) {
+          return '<span data-link="' + params[0].replace(" ", "_") + '">' + params[0] + "</span>";
+        } else if (params.length == 2) {
+          return '<span data-link="' + params[0].replace(" ", "_") + '">' + params[1] + "</span>";
+        }
+
+        return str;
+      }
+    }]);
+
+    return WikiParser;
+  }();
+
   var Wiktionary =
   /*#__PURE__*/
   function () {
@@ -8222,9 +8318,6 @@
         return false;
       }
     }, {
-      key: "getDefinition",
-      value: function getDefinition() {}
-    }, {
       key: "getInfos",
       value: function () {
         var _getInfos = _asyncToGenerator(
@@ -8241,15 +8334,15 @@
                 case 2:
                   page = _context.sent;
                   rPos = /^=+([^=]*)=+$/;
-                  lines = page.split('\n');
+                  lines = page.split("\n");
                   stack = [];
                   object = {};
-                  currentSection = '';
+                  currentSection = "";
                   currentDepth = -1;
                   lines.forEach(function (element) {
                     if (rPos.test(element)) {
-                      var depth = element.replace(/(^=+).*/, '$1').length - 2;
-                      currentSection = element.replace(rPos, '$1');
+                      var depth = element.replace(/(^=+).*/, "$1").length - 2;
+                      currentSection = element.replace(rPos, "$1");
 
                       if (depth > currentDepth) {
                         stack.push(currentSection);
@@ -8278,7 +8371,7 @@
 
                       currentDepth = depth;
                     } else {
-                      if (currentSection !== '' && element !== '') {
+                      if (currentSection !== "" && element !== "") {
                         cursor.content.push(element);
                       }
                     }
@@ -8304,13 +8397,22 @@
       value: function getDefinition(wikiObject) {
         var _this2 = this;
 
-        var pos = ['Noun', 'Adjective', 'Verb'];
+        var pos = ["Noun", "Adjective", "Verb"];
         var ret = [];
         pos.forEach(function (p) {
           if (wikiObject[_this2.lang].hasOwnProperty(p)) {
             ret.push(wikiObject[_this2.lang][p].content);
           }
         });
+        var wp = new WikiParser(this.word);
+
+        for (var i = 0; i < ret.length; i++) {
+          ret[i] = ret[i].map(function (el) {
+            return wp.parse(el);
+          });
+        }
+
+        console.log(ret);
         return ret;
       }
     }]);

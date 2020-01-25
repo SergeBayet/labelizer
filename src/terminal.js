@@ -60,7 +60,10 @@ class Terminal {
           i--;
         }
       }
-      element.target.innerHTML = this.renderText(this.history[this.historyCursor], this);
+      element.target.innerHTML = this.renderText(
+        this.history[this.historyCursor],
+        this
+      );
     }
   }
   downHistory(element) {
@@ -79,7 +82,10 @@ class Terminal {
           i++;
         }
       }
-      element.target.innerHTML = this.renderText(this.history[this.historyCursor], this);
+      element.target.innerHTML = this.renderText(
+        this.history[this.historyCursor],
+        this
+      );
     }
   }
   addHistory(str) {
@@ -130,7 +136,7 @@ class Terminal {
     let div = document.createElement("div");
     screen.parentNode.insertBefore(div, screen.nextSibling);
     div.appendChild(inputElement);
-    div.style.position = 'relative';
+    div.style.position = "relative";
     let ac = new Autocomplete(inputElement);
 
     // Managing keyboard events
@@ -139,23 +145,21 @@ class Terminal {
       switch (e.keyCode) {
         case ENTER:
           e.preventDefault();
+          ac.hide();
           this.execute(e.target.innerText.trim());
           inputElement.innerHTML = "";
           break;
         case ARROW_UP:
+          ac.hide();
           this.upHistory(e);
           break;
         case ARROW_DOWN:
+          ac.hide();
           this.downHistory(e);
-          break;
-        case ARROW_RIGHT:
-          e.preventDefault();
-          e.target.innerHTML = this.renderText(e.target.innerText, this);
-          editable.placeCaretAtEnd(e.target);
           break;
         default:
           let items = await this.parserCli(e.target.innerText).autocomplete;
-          console.log('items : ', items);
+          console.log("items : ", items);
           if (inputElement.lastChild !== null) {
             const bodyRect = inputElement.getBoundingClientRect(),
               elemRect = inputElement.lastChild.getBoundingClientRect(),
@@ -164,7 +168,11 @@ class Terminal {
             ac.setElementToUpdate(inputElement.lastChild);
           }
 
-          ac.update(items, { label: items.label, value: items.label, info: items.info });
+          ac.update(items, {
+            label: items.label,
+            value: items.label,
+            info: items.info
+          });
 
           this.historyCursor = this.history.length;
       }
@@ -178,50 +186,47 @@ class Terminal {
     if (str == undefined) return false;
     let _this = this;
 
-    let parsed = str.replace(/(\$\{command\})/, function (x, i) {
+    let parsed = str.replace(/(\$\{command\})/, function(x, i) {
       return _this.currentCommand || "[command undefined]";
     });
 
-    parsed = parsed.replace(/(\$\{option\})/, function (x, i) {
+    parsed = parsed.replace(/(\$\{option\})/, function(x, i) {
       return _this.currentOption || "[option undefined]";
     });
 
-    parsed = parsed.replace(/(\$\{info\})/, function (x, i) {
+    parsed = parsed.replace(/(\$\{info\})/, function(x, i) {
       return context.info || "[info undefined]";
     });
 
-    parsed = parsed.replace(/\$\{args\[(\d+)\]\}/, function (x, i) {
+    parsed = parsed.replace(/\$\{args\[(\d+)\]\}/, function(x, i) {
       return context.arguments[i - 1] || "[argument undefined]";
     });
 
     return parsed;
   }
   async autocomplete(source, property, info, str) {
-    source = source.split('>').map(x => x.trim());
+    source = source.split(">").map(x => x.trim());
     //console.log(source);
     const regex = /(.*)\[(.*)=["'](.*)["']\]/;
     let tree = terminalConfig;
     for (let i = 0; i < source.length; i++) {
-
       let m;
 
       if ((m = regex.exec(source[i])) !== null) {
         // The result can be accessed through the `m`-variable.
         //console.log(tree, m);
-        tree = tree[m[1]].filter(
-          root => root[m[2]] == m[3]
-        )[0] || undefined;
-      }
-      else {
+        tree = tree[m[1]].filter(root => root[m[2]] == m[3])[0] || undefined;
+      } else {
         tree = tree[source[i]];
       }
-
     }
     let ac;
-    if (tree[0].hasOwnProperty('filter')) {
+    if (tree[0].hasOwnProperty("filter")) {
       console.log("user autocomplete");
-      console.log(tree[0]['filter']);
-      ac = await this.commandsNamespace[tree[0]['filter']['callbackMethod']](str);
+      console.log(tree[0]["filter"]);
+      ac = await this.commandsNamespace[tree[0]["filter"]["callbackMethod"]](
+        str
+      );
       let ac2 = [];
       for (let i = 0; i < ac.length; i++) {
         ac2.push({ name: '"' + ac[i] + '"' });
@@ -229,17 +234,9 @@ class Terminal {
       ac2.label = property;
       ac2.info = info;
       return ac2;
-
-
+    } else {
+      ac = tree.filter(command => command[property].startsWith(str));
     }
-    else {
-      ac =
-        tree
-          .filter(command =>
-            command[property].startsWith(str)
-          )
-    }
-
 
     ac.label = property;
     ac.info = info;
@@ -260,84 +257,134 @@ class Terminal {
     str = str.replace(/>/g, "&gt;").replace(/</g, "&lt;");
     let regSeparator = new RegExp("^\\s+");
     let regCommand = /^\s*\S+/;
-    let regString = new RegExp("^\"([^\\\\\"]|\\\\\")*\"?");
+    let regString = new RegExp('^"([^\\\\"]|\\\\")*"?');
     let regOption = /^(-{1,2})([^=\s]*)((=("([^\\"]|\\")*"?))|(=(\S+)))?/;
     let index = 0;
-    let currentOption = '';
+    let currentOption = "";
     let m = regCommand.exec(str);
     while (m !== null) {
-      if (index == 0)        // command
-      {
+      if (index == 0) {
+        // command
         parser.command = m[0].trim();
-        parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.command);
-        parser.autocomplete = this.autocomplete("commands", "name", "shortDescription", parser.command);
-      }
-      else {
+        parser.highlighted += this.highlight(
+          m[0],
+          terminalConfig.css.highlight.command
+        );
+        parser.autocomplete = this.autocomplete(
+          "commands",
+          "name",
+          "shortDescription",
+          parser.command
+        );
+      } else {
         let token = m[0].trim();
-        if (token == '')              // separator
-        {
-          parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.operator);
+        if (token == "") {
+          // separator
+          parser.highlighted += this.highlight(
+            m[0],
+            terminalConfig.css.highlight.operator
+          );
           parser.autocomplete = [];
-        }
-        else if (m.length <= 2)       // argument
-        {
-          if (currentOption !== '') {
+        } else if (m.length <= 2) {
+          // argument
+          if (currentOption !== "") {
             parser.options[parser.options.length - 1].arguments.push(token);
-            parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.optionArgument);
-
-          }
-          else {
+            parser.highlighted += this.highlight(
+              m[0],
+              terminalConfig.css.highlight.optionArgument
+            );
+          } else {
             parser.arguments.push(this.unquote(token.trim()));
-            parser.highlighted += this.highlight(m[0], terminalConfig.css.highlight.argument);
-            parser.autocomplete = this.autocomplete("commands[name='" + parser.command + "'] > args", "name", "info", this.unquote(token.trim()));
+            parser.highlighted += this.highlight(
+              m[0],
+              terminalConfig.css.highlight.argument
+            );
+            parser.autocomplete = this.autocomplete(
+              "commands[name='" + parser.command + "'] > args",
+              "name",
+              "info",
+              this.unquote(token.trim())
+            );
           }
+        } else {
+          // option
 
-        }
-        else {                        // option
-
-          if (m[1] == "-")            // abbreviated option
-          {
-            parser.highlighted += this.highlight('-', terminalConfig.css.highlight.operator);
+          if (m[1] == "-") {
+            // abbreviated option
+            parser.highlighted += this.highlight(
+              "-",
+              terminalConfig.css.highlight.operator
+            );
 
             m[2].split("").map(opt => {
               parser.options.push({ name: opt, arguments: [] });
-              parser.highlighted += this.highlight(opt, terminalConfig.css.highlight.option);
+              parser.highlighted += this.highlight(
+                opt,
+                terminalConfig.css.highlight.option
+              );
               currentOption = opt;
             });
 
-
-            parser.autocomplete = this.autocomplete("commands[name='" + parser.command + "'] > opts", "abbr", "info", "");
-
-          }
-          else if (m[1] == "--")      // long option
-          {
-            parser.highlighted += this.highlight('--', terminalConfig.css.highlight.operator);
+            parser.autocomplete = this.autocomplete(
+              "commands[name='" + parser.command + "'] > opts",
+              "abbr",
+              "info",
+              ""
+            );
+          } else if (m[1] == "--") {
+            // long option
+            parser.highlighted += this.highlight(
+              "--",
+              terminalConfig.css.highlight.operator
+            );
             let arg = m[8] ? m[8] : m[5] ? m[5] : "";
 
             parser.options.push({ name: m[2], arguments: [this.unquote(arg)] });
-            parser.highlighted += this.highlight(m[2], terminalConfig.css.highlight.option);
+            parser.highlighted += this.highlight(
+              m[2],
+              terminalConfig.css.highlight.option
+            );
 
-            parser.autocomplete = this.autocomplete("commands[name='" + parser.command + "'] > opts", "name", "info", m[2]);
+            parser.autocomplete = this.autocomplete(
+              "commands[name='" + parser.command + "'] > opts",
+              "name",
+              "info",
+              m[2]
+            );
 
             if (m[8]) {
-              parser.highlighted += this.highlight('=', terminalConfig.css.highlight.operator);
-              parser.highlighted += this.highlight(m[8], terminalConfig.css.highlight.optionArgument);
-            }
-            else if (m[5]) {
-              parser.highlighted += this.highlight('=', terminalConfig.css.highlight.operator);
-              parser.highlighted += this.highlight(m[5], terminalConfig.css.highlight.optionArgument);
+              parser.highlighted += this.highlight(
+                "=",
+                terminalConfig.css.highlight.operator
+              );
+              parser.highlighted += this.highlight(
+                m[8],
+                terminalConfig.css.highlight.optionArgument
+              );
+            } else if (m[5]) {
+              parser.highlighted += this.highlight(
+                "=",
+                terminalConfig.css.highlight.operator
+              );
+              parser.highlighted += this.highlight(
+                m[5],
+                terminalConfig.css.highlight.optionArgument
+              );
             }
           }
-
         }
       }
       str = str.substring(m[0].length);
-      m = regSeparator.exec(str) || regString.exec(str) || regOption.exec(str) || regCommand.exec(str);
+      m =
+        regSeparator.exec(str) ||
+        regString.exec(str) ||
+        regOption.exec(str) ||
+        regCommand.exec(str);
 
       index++;
     }
 
-    parser.options.isOption = function (str) {
+    parser.options.isOption = function(str) {
       let opt = this.filter(options => options.name == str)[0] || [];
       return opt.length == 0 ? false : opt;
     };
@@ -346,7 +393,6 @@ class Terminal {
     return parser;
   }
   highlight(str, color) {
-
     return `<span style="color:${color}">${str}</span>`;
   }
   execute(str) {
@@ -368,7 +414,7 @@ class Terminal {
     if (definition.length == 0 && parser.command !== "help") {
       this.error(
         this.interpolation(terminalConfig.errors.unknown, context) ||
-        "Command not found : " + parser.command
+          "Command not found : " + parser.command
       );
       return false;
     }
@@ -460,7 +506,7 @@ class Terminal {
       if (!validOption) {
         this.error(
           this.interpolation(terminalConfig.errors.invalidOption, parser) ||
-          "Invalid option"
+            "Invalid option"
         );
       }
     });
@@ -468,7 +514,7 @@ class Terminal {
     this.log(this.interpolation(definition.info, parser) || "");
     let _this = this;
     // Call the user method with arguments and options
-    let promise = new Promise(function (resolve, reject) {
+    let promise = new Promise(function(resolve, reject) {
       resolve(
         _this.commandsNamespace[definition.method](
           parser.arguments,

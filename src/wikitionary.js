@@ -1,15 +1,17 @@
+import WikiParser from "./wikiparser";
+
 class Wiktionary {
   constructor(word, langDestination = "French") {
     this.lang = langDestination;
     this.word = word;
-
   }
   getPage(word) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       var myHeaders = new Headers();
       word = encodeURIComponent(word);
       myHeaders.append("Content-Type", "application/json");
-      fetch(`https://en.wiktionary.org/w/api.php?action=query&titles=${word}&rvslots=main&prop=revisions&rvprop=content&format=json&origin=*`,
+      fetch(
+        `https://en.wiktionary.org/w/api.php?action=query&titles=${word}&rvslots=main&prop=revisions&rvprop=content&format=json&origin=*`,
 
         { headers: myHeaders }
       )
@@ -19,11 +21,9 @@ class Wiktionary {
           } else {
             let page = this.getNestedObject(json, "*");
             resolve(page);
-
           }
-        })
+        });
     });
-
   }
   getNestedObject(obj, prop) {
     for (let el in obj) {
@@ -36,33 +36,29 @@ class Wiktionary {
     }
     return false;
   }
-  getDefinition() {
 
-  }
   async getInfos() {
     let page = await this.getPage(this.word);
     const rPos = /^=+([^=]*)=+$/;
-    let lines = page.split('\n');
+    let lines = page.split("\n");
     let stack = [];
     let object = {};
-    let currentSection = '';
+    let currentSection = "";
     let currentDepth = -1;
     let cursor;
     lines.forEach(element => {
       if (rPos.test(element)) {
-        let depth = element.replace(/(^=+).*/, '$1').length - 2;
+        let depth = element.replace(/(^=+).*/, "$1").length - 2;
 
-        currentSection = element.replace(rPos, '$1')
+        currentSection = element.replace(rPos, "$1");
         if (depth > currentDepth) {
           stack.push(currentSection);
-        }
-        else if (depth < currentDepth) {
+        } else if (depth < currentDepth) {
           for (let i = 0; i <= currentDepth - depth; i++) {
             stack.pop();
           }
           stack.push(currentSection);
-        }
-        else {
+        } else {
           stack.pop();
           stack.push(currentSection);
         }
@@ -74,9 +70,8 @@ class Wiktionary {
           cursor = cursor[stack[i]];
         }
         currentDepth = depth;
-      }
-      else {
-        if (currentSection !== '' && element !== '') {
+      } else {
+        if (currentSection !== "" && element !== "") {
           cursor.content.push(element);
         }
       }
@@ -85,17 +80,21 @@ class Wiktionary {
     return object;
   }
   getDefinition(wikiObject) {
-
-    const pos = ['Noun', 'Adjective', 'Verb'];
+    const pos = ["Noun", "Adjective", "Verb"];
     let ret = [];
 
     pos.forEach(p => {
-
       if (wikiObject[this.lang].hasOwnProperty(p)) {
         ret.push(wikiObject[this.lang][p].content);
       }
     });
 
+    let wp = new WikiParser(this.word);
+    for (let i = 0; i < ret.length; i++) {
+      ret[i] = ret[i].map(el => wp.parse(el));
+    }
+
+    console.log(ret);
     return ret;
   }
 }
