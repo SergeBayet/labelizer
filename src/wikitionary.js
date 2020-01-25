@@ -94,7 +94,11 @@ class Wiktionary {
     //     "San Francisco also has [[public transport]]ation. Examples include [[bus]]es, [[taxicab]]s, and [[tram]]s.",
     //     "[[kingdom (biology)|]]",
     //     "[[Wikipedia:Village pump|]]",
-    //     "[[Wikipedia:Manual of Style (headings)|]]"
+    //     "[[Wikipedia:Manual of Style (headings)|]]",
+    //     "To ''italicize text'', put two consecutive apostrophes on each side of it.",
+    //     "Three apostrophes each side will '''bold the text'''.",
+    //     "Five consecutive apostrophes on each side (two for italics plus three for bold) produces '''''bold italics'''''.",
+    //     "'''''Italic and bold formatting''''' works correctly only within a single line."
     //   ]
     // ];
     let wp = new WikiParser(this.word);

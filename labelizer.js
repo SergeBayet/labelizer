@@ -8186,7 +8186,16 @@
       value: function parse(str) {
         var ret = this.getTemplates(str);
         console.log(ret);
-        return ret;
+        ret.parsed = this.wikiFormat(ret.parsed);
+        return ret.parsed;
+      }
+    }, {
+      key: "wikiFormat",
+      value: function wikiFormat(str) {
+        str = str.replace(/'''''([^'{5}]*)'''''/gm, "<i><strong>$1</strong></i>");
+        str = str.replace(/'''([^'{3}]*)'''/gm, "<strong>$1</strong>");
+        str = str.replace(/''([^'{2}]*)''/gm, "<i>$1</i>");
+        return str;
       }
     }, {
       key: "getTemplates",
@@ -8194,6 +8203,7 @@
         var cursor = 0;
         var lastAnchor = null;
         var type = null;
+        var templates = [];
 
         while (cursor < str.length - 1) {
           var anchor = str.substring(cursor, cursor + 2);
@@ -8208,6 +8218,7 @@
             case "}}":
               if (type == "accolade" && lastAnchor !== null) {
                 var inside = this.manageTemplate(str.substring(lastAnchor, cursor));
+                templates.push(inside);
                 str = str.substring(0, lastAnchor - 2) + inside + str.substring(cursor + 2);
                 lastAnchor = null;
                 type = null;
@@ -8229,6 +8240,8 @@
                 var blend = str.substr(cursor + 2).replace(/^(\w*).*/gm, "$1");
 
                 var _inside = this.manageLink(str.substring(lastAnchor, cursor), blend);
+
+                templates.push(_inside);
                 str = str.substring(0, lastAnchor - 2) + _inside + str.substring(cursor + 2 + blend.length);
                 lastAnchor = null;
                 type = null;
@@ -8244,8 +8257,10 @@
           }
         }
 
-        console.log(str);
-        return str;
+        return {
+          templates: templates,
+          parsed: str
+        };
       }
     }, {
       key: "manageTemplate",
@@ -8256,17 +8271,13 @@
       key: "manageLink",
       value: function manageLink(str) {
         var blend = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "";
-        console.log(str, blend);
         var params = str.split("|");
 
         if (params.length == 1) {
           return '<a href="#" data-link="' + params[0].replace(" ", "_") + '">' + params[0] + blend + "</a>";
         } else if (params.length == 2) {
-          console.log('"' + params[1] + '"');
-
           if (params[1] == "") {
             var transform = params[0].replace(/^(\w*:)?([^\()]*)(\(.*\))?/gm, "$2");
-            console.log('"' + transform + '"');
             return '<a href="#" data-link="' + params[0].replace(" ", "_") + '">' + transform + blend + "</a>";
           } else {
             return '<a href="#" data-link="' + params[0].replace(" ", "_") + '">' + params[1] + blend + "</a>";
@@ -8420,7 +8431,11 @@
         //     "San Francisco also has [[public transport]]ation. Examples include [[bus]]es, [[taxicab]]s, and [[tram]]s.",
         //     "[[kingdom (biology)|]]",
         //     "[[Wikipedia:Village pump|]]",
-        //     "[[Wikipedia:Manual of Style (headings)|]]"
+        //     "[[Wikipedia:Manual of Style (headings)|]]",
+        //     "To ''italicize text'', put two consecutive apostrophes on each side of it.",
+        //     "Three apostrophes each side will '''bold the text'''.",
+        //     "Five consecutive apostrophes on each side (two for italics plus three for bold) produces '''''bold italics'''''.",
+        //     "'''''Italic and bold formatting''''' works correctly only within a single line."
         //   ]
         // ];
 

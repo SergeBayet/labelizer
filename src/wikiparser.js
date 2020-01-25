@@ -7,7 +7,14 @@ class WikiParser {
     let obj = {};
     let ret = this.getTemplates(str);
     console.log(ret);
-    return ret;
+    ret.parsed = this.wikiFormat(ret.parsed);
+    return ret.parsed;
+  }
+  wikiFormat(str) {
+    str = str.replace(/'''''([^'{5}]*)'''''/gm, "<i><strong>$1</strong></i>");
+    str = str.replace(/'''([^'{3}]*)'''/gm, "<strong>$1</strong>");
+    str = str.replace(/''([^'{2}]*)''/gm, "<i>$1</i>");
+    return str;
   }
   getTemplates(str) {
     let cursor = 0;
@@ -69,14 +76,13 @@ class WikiParser {
           cursor++;
       }
     }
-    console.log(str);
-    return str;
+
+    return { templates, parsed: str };
   }
   manageTemplate(str) {
     return str;
   }
   manageLink(str, blend = "") {
-    console.log(str, blend);
     let params = str.split("|");
     if (params.length == 1) {
       return (
@@ -88,10 +94,9 @@ class WikiParser {
         "</a>"
       );
     } else if (params.length == 2) {
-      console.log('"' + params[1] + '"');
       if (params[1] == "") {
         let transform = params[0].replace(/^(\w*:)?([^\()]*)(\(.*\))?/gm, "$2");
-        console.log('"' + transform + '"');
+
         return (
           '<a href="#" data-link="' +
           params[0].replace(" ", "_") +
