@@ -47,12 +47,16 @@ class WikiParser {
           break;
         case "]]":
           if (type == "bracket" && lastAnchor !== null) {
-            let inside = this.manageLink(str.substring(lastAnchor, cursor));
+            let blend = str.substr(cursor + 2).replace(/^(\w*).*/gm, "$1");
+            let inside = this.manageLink(
+              str.substring(lastAnchor, cursor),
+              blend
+            );
             templates.push(inside);
             str =
               str.substring(0, lastAnchor - 2) +
               inside +
-              str.substring(cursor + 2);
+              str.substring(cursor + 2 + blend.length);
 
             lastAnchor = null;
             type = null;
@@ -71,24 +75,41 @@ class WikiParser {
   manageTemplate(str) {
     return str;
   }
-  manageLink(str) {
+  manageLink(str, blend = "") {
+    console.log(str, blend);
     let params = str.split("|");
     if (params.length == 1) {
       return (
-        '<span data-link="' +
+        '<a href="#" data-link="' +
         params[0].replace(" ", "_") +
         '">' +
         params[0] +
-        "</span>"
+        blend +
+        "</a>"
       );
     } else if (params.length == 2) {
-      return (
-        '<span data-link="' +
-        params[0].replace(" ", "_") +
-        '">' +
-        params[1] +
-        "</span>"
-      );
+      console.log('"' + params[1] + '"');
+      if (params[1] == "") {
+        let transform = params[0].replace(/^(\w*:)?([^\()]*)(\(.*\))?/gm, "$2");
+        console.log('"' + transform + '"');
+        return (
+          '<a href="#" data-link="' +
+          params[0].replace(" ", "_") +
+          '">' +
+          transform +
+          blend +
+          "</a>"
+        );
+      } else {
+        return (
+          '<a href="#" data-link="' +
+          params[0].replace(" ", "_") +
+          '">' +
+          params[1] +
+          blend +
+          "</a>"
+        );
+      }
     }
     return str;
   }

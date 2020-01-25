@@ -8226,8 +8226,10 @@
 
             case "]]":
               if (type == "bracket" && lastAnchor !== null) {
-                var _inside = this.manageLink(str.substring(lastAnchor, cursor));
-                str = str.substring(0, lastAnchor - 2) + _inside + str.substring(cursor + 2);
+                var blend = str.substr(cursor + 2).replace(/^(\w*).*/gm, "$1");
+
+                var _inside = this.manageLink(str.substring(lastAnchor, cursor), blend);
+                str = str.substring(0, lastAnchor - 2) + _inside + str.substring(cursor + 2 + blend.length);
                 lastAnchor = null;
                 type = null;
                 cursor = 0;
@@ -8253,12 +8255,22 @@
     }, {
       key: "manageLink",
       value: function manageLink(str) {
+        var blend = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "";
+        console.log(str, blend);
         var params = str.split("|");
 
         if (params.length == 1) {
-          return '<span data-link="' + params[0].replace(" ", "_") + '">' + params[0] + "</span>";
+          return '<a href="#" data-link="' + params[0].replace(" ", "_") + '">' + params[0] + blend + "</a>";
         } else if (params.length == 2) {
-          return '<span data-link="' + params[0].replace(" ", "_") + '">' + params[1] + "</span>";
+          console.log('"' + params[1] + '"');
+
+          if (params[1] == "") {
+            var transform = params[0].replace(/^(\w*:)?([^\()]*)(\(.*\))?/gm, "$2");
+            console.log('"' + transform + '"');
+            return '<a href="#" data-link="' + params[0].replace(" ", "_") + '">' + transform + blend + "</a>";
+          } else {
+            return '<a href="#" data-link="' + params[0].replace(" ", "_") + '">' + params[1] + blend + "</a>";
+          }
         }
 
         return str;
@@ -8403,7 +8415,15 @@
           if (wikiObject[_this2.lang].hasOwnProperty(p)) {
             ret.push(wikiObject[_this2.lang][p].content);
           }
-        });
+        }); // ret = [
+        //   [
+        //     "San Francisco also has [[public transport]]ation. Examples include [[bus]]es, [[taxicab]]s, and [[tram]]s.",
+        //     "[[kingdom (biology)|]]",
+        //     "[[Wikipedia:Village pump|]]",
+        //     "[[Wikipedia:Manual of Style (headings)|]]"
+        //   ]
+        // ];
+
         var wp = new WikiParser(this.word);
 
         for (var i = 0; i < ret.length; i++) {

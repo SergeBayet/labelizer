@@ -89,6 +89,14 @@ class Wiktionary {
       }
     });
 
+    // ret = [
+    //   [
+    //     "San Francisco also has [[public transport]]ation. Examples include [[bus]]es, [[taxicab]]s, and [[tram]]s.",
+    //     "[[kingdom (biology)|]]",
+    //     "[[Wikipedia:Village pump|]]",
+    //     "[[Wikipedia:Manual of Style (headings)|]]"
+    //   ]
+    // ];
     let wp = new WikiParser(this.word);
     for (let i = 0; i < ret.length; i++) {
       ret[i] = ret[i].map(el => wp.parse(el));
