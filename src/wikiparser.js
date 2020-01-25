@@ -1,19 +1,26 @@
 class WikiParser {
   constructor(head = "") {
     this.head = head;
+    this.orderedList = 0;
+    this.depthList = 0;
+    this.context = "";
   }
 
   parse(str) {
     let obj = {};
     let ret = this.getTemplates(str);
-    console.log(ret);
     ret.parsed = this.wikiFormat(ret.parsed);
     return ret.parsed;
   }
   wikiFormat(str) {
-    str = str.replace(/'''''([^'{5}]*)'''''/gm, "<i><strong>$1</strong></i>");
-    str = str.replace(/'''([^'{3}]*)'''/gm, "<strong>$1</strong>");
-    str = str.replace(/''([^'{2}]*)''/gm, "<i>$1</i>");
+    str = str.replace(/'''''(.+?)'''''/gm, "<i><strong>$1</strong></i>");
+    str = str.replace(/'''(.+?)'''/gm, "<strong>$1</strong>");
+    str = str.replace(/''(.+?)''/gm, "<i>$1</i>");
+    str = str.replace(/(^[#|*]+)(.*)/gm, (matched, symbols, original) => {
+      let depth = symbols.length - 1;
+      return "&nbsp&nbsp".repeat(depth) + original;
+    });
+
     return str;
   }
   getTemplates(str) {
@@ -43,7 +50,7 @@ class WikiParser {
             type = null;
             cursor = 0;
           } else {
-            return str;
+            return { templates, parsed: str };
           }
 
           break;
@@ -69,7 +76,7 @@ class WikiParser {
             type = null;
             cursor = 0;
           } else {
-            return str;
+            return { templates, parsed: str };
           }
           break;
         default:

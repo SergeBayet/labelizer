@@ -8179,22 +8179,28 @@
       _classCallCheck(this, WikiParser);
 
       this.head = head;
+      this.orderedList = 0;
+      this.depthList = 0;
+      this.context = "";
     }
 
     _createClass(WikiParser, [{
       key: "parse",
       value: function parse(str) {
         var ret = this.getTemplates(str);
-        console.log(ret);
         ret.parsed = this.wikiFormat(ret.parsed);
         return ret.parsed;
       }
     }, {
       key: "wikiFormat",
       value: function wikiFormat(str) {
-        str = str.replace(/'''''([^'{5}]*)'''''/gm, "<i><strong>$1</strong></i>");
-        str = str.replace(/'''([^'{3}]*)'''/gm, "<strong>$1</strong>");
-        str = str.replace(/''([^'{2}]*)''/gm, "<i>$1</i>");
+        str = str.replace(/'''''(.+?)'''''/gm, "<i><strong>$1</strong></i>");
+        str = str.replace(/'''(.+?)'''/gm, "<strong>$1</strong>");
+        str = str.replace(/''(.+?)''/gm, "<i>$1</i>");
+        str = str.replace(/(^[#|*]+)(.*)/gm, function (matched, symbols, original) {
+          var depth = symbols.length - 1;
+          return "&nbsp&nbsp".repeat(depth) + original;
+        });
         return str;
       }
     }, {
@@ -8224,7 +8230,10 @@
                 type = null;
                 cursor = 0;
               } else {
-                return str;
+                return {
+                  templates: templates,
+                  parsed: str
+                };
               }
 
               break;
@@ -8247,7 +8256,10 @@
                 type = null;
                 cursor = 0;
               } else {
-                return str;
+                return {
+                  templates: templates,
+                  parsed: str
+                };
               }
 
               break;
@@ -8346,7 +8358,7 @@
         var _getInfos = _asyncToGenerator(
         /*#__PURE__*/
         regeneratorRuntime.mark(function _callee() {
-          var page, rPos, lines, stack, object, currentSection, currentDepth, cursor;
+          var page, rPos, lines, count, newLines, stack, object, currentSection, currentDepth, cursor;
           return regeneratorRuntime.wrap(function _callee$(_context) {
             while (1) {
               switch (_context.prev = _context.next) {
@@ -8358,6 +8370,20 @@
                   page = _context.sent;
                   rPos = /^=+([^=]*)=+$/;
                   lines = page.split("\n");
+                  count = 0;
+                  newLines = [];
+
+                  while (count < lines.length) {
+                    if (/^[\w\|]/.test(lines[count]) && !rPos.test(lines[count - 1])) {
+                      newLines[newLines.length - 1] += lines[count];
+                    } else {
+                      newLines.push(lines[count]);
+                    }
+
+                    count++;
+                  }
+
+                  lines = newLines;
                   stack = [];
                   object = {};
                   currentSection = "";
@@ -8401,7 +8427,7 @@
                   });
                   return _context.abrupt("return", object);
 
-                case 11:
+                case 15:
                 case "end":
                   return _context.stop();
               }
@@ -8428,14 +8454,10 @@
           }
         }); // ret = [
         //   [
-        //     "San Francisco also has [[public transport]]ation. Examples include [[bus]]es, [[taxicab]]s, and [[tram]]s.",
-        //     "[[kingdom (biology)|]]",
-        //     "[[Wikipedia:Village pump|]]",
-        //     "[[Wikipedia:Manual of Style (headings)|]]",
-        //     "To ''italicize text'', put two consecutive apostrophes on each side of it.",
-        //     "Three apostrophes each side will '''bold the text'''.",
-        //     "Five consecutive apostrophes on each side (two for italics plus three for bold) produces '''''bold italics'''''.",
-        //     "'''''Italic and bold formatting''''' works correctly only within a single line."
+        //     "#* {{quote-book|en|year=1918|author={{w|W. B. Maxwell}}|chapter=10",
+        //     "|title=[http://openlibrary.org/works/OL1097634W The Mirror and the Lamp]",
+        //     "|passage=He looked round the '''poor''' room, at the distempered walls, and the bad engravings in meretricious frames, the crinkly paper and wax flowers on the chiffonier; and he thought of a room like Father Bryan's, with panelling, with cut glass, with tulips in silver pots, such a room as he had hoped to have for his own.}}",
+        //     "# ''Used to express pity.''"
         //   ]
         // ];
 
@@ -8445,9 +8467,9 @@
           ret[i] = ret[i].map(function (el) {
             return wp.parse(el);
           });
-        }
+        } //console.log(ret);
 
-        console.log(ret);
+
         return ret;
       }
     }]);
@@ -8630,7 +8652,7 @@
           console.log(data);
           var def = w.getDefinition(data);
           def.forEach(function (x) {
-            _this3.terminal.log(x.join('<br/>'));
+            _this3.terminal.log(x.join("<br/>"));
           });
         });
       }

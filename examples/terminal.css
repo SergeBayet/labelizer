@@ -11,21 +11,24 @@
 }
 
 .autocomplete-items div {
-  font-size:10px;
+  font-size: 10px;
   color: white;
   padding: 3px;
   cursor: pointer;
-  background-color:black; 
+  background-color: black;
 }
 
 /*when hovering an item:*/
 .autocomplete-items div:hover {
-  background-color: gray; 
+  background-color: gray;
   color: white;
 }
 
 /*when navigating through the items using the arrow keys:*/
 .autocomplete-active {
-  background-color: DodgerBlue !important; 
-  color: #ffffff; 
+  background-color: DodgerBlue !important;
+  color: #ffffff;
+}
+.context a {
+  color: wheat;
 }

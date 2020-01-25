@@ -41,6 +41,19 @@ class Wiktionary {
     let page = await this.getPage(this.word);
     const rPos = /^=+([^=]*)=+$/;
     let lines = page.split("\n");
+
+    let count = 0;
+    let newLines = [];
+    while (count < lines.length) {
+      if (/^[\w\|]/.test(lines[count]) && !rPos.test(lines[count - 1])) {
+        newLines[newLines.length - 1] += lines[count];
+      } else {
+        newLines.push(lines[count]);
+      }
+      count++;
+    }
+    lines = newLines;
+
     let stack = [];
     let object = {};
     let currentSection = "";
@@ -91,14 +104,10 @@ class Wiktionary {
 
     // ret = [
     //   [
-    //     "San Francisco also has [[public transport]]ation. Examples include [[bus]]es, [[taxicab]]s, and [[tram]]s.",
-    //     "[[kingdom (biology)|]]",
-    //     "[[Wikipedia:Village pump|]]",
-    //     "[[Wikipedia:Manual of Style (headings)|]]",
-    //     "To ''italicize text'', put two consecutive apostrophes on each side of it.",
-    //     "Three apostrophes each side will '''bold the text'''.",
-    //     "Five consecutive apostrophes on each side (two for italics plus three for bold) produces '''''bold italics'''''.",
-    //     "'''''Italic and bold formatting''''' works correctly only within a single line."
+    //     "#* {{quote-book|en|year=1918|author={{w|W. B. Maxwell}}|chapter=10",
+    //     "|title=[http://openlibrary.org/works/OL1097634W The Mirror and the Lamp]",
+    //     "|passage=He looked round the '''poor''' room, at the distempered walls, and the bad engravings in meretricious frames, the crinkly paper and wax flowers on the chiffonier; and he thought of a room like Father Bryan's, with panelling, with cut glass, with tulips in silver pots, such a room as he had hoped to have for his own.}}",
+    //     "# ''Used to express pity.''"
     //   ]
     // ];
     let wp = new WikiParser(this.word);
@@ -106,7 +115,7 @@ class Wiktionary {
       ret[i] = ret[i].map(el => wp.parse(el));
     }
 
-    console.log(ret);
+    //console.log(ret);
     return ret;
   }
 }

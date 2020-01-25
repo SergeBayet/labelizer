@@ -1,4 +1,4 @@
-import '../node_modules/@babel/polyfill/dist/polyfill.min.js';
+import "../node_modules/@babel/polyfill/dist/polyfill.min.js";
 import carry from "./carry";
 import { isStopWord } from "./stopwords";
 import Terminal from "./terminal";
@@ -16,9 +16,7 @@ export default class Labelizer {
     this.language = "fr";
 
     this.init();
-
   }
-
 
   init() {
     let as = document.querySelectorAll(this.selector + " a");
@@ -177,13 +175,11 @@ export default class Labelizer {
       console.log(data);
       let def = w.getDefinition(data);
       def.forEach(x => {
-        this.terminal.log(x.join('<br/>'));
-      })
-
+        this.terminal.log(x.join("<br/>"));
+      });
     });
   }
   ngrams(args, opts) {
-
     let selector = " .token";
     let r = new RegExp("^[A-zÀ-ü0-9-]+$");
     if (opts.isOption("selection")) {
@@ -198,7 +194,6 @@ export default class Labelizer {
     let minimumLength = 3;
     let stem = false;
     if (opts.isOption("recursive")) {
-
       recursive = 1;
       if (opts.isOption("minNgram")) {
         recursive = opts.isOption("minNgram").argument;
@@ -460,13 +455,15 @@ export default class Labelizer {
     this.language = label;
   }
   autocompleteWiki(str) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       var myHeaders = new Headers();
       myHeaders.append("Content-Type", "application/json");
-      fetch("https://" +
-        this.language +
-        ".wikipedia.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" +
-        str + "&namespace=0&limit=10&origin=*",
+      fetch(
+        "https://" +
+          this.language +
+          ".wikipedia.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" +
+          str +
+          "&namespace=0&limit=10&origin=*",
 
         { headers: myHeaders }
       )
@@ -475,13 +472,10 @@ export default class Labelizer {
           if (text.error) {
             this.terminal.error(text.error.info);
           } else {
-
             resolve(text[1]);
-
           }
-        })
+        });
     });
-
   }
   loadHtml(args, options = []) {
     //(e || window.event).preventDefault();
@@ -496,10 +490,10 @@ export default class Labelizer {
     myHeaders.append("Content-Type", "application/json");
     fetch(
       "http://" +
-      this.language +
-      ".wikipedia.org/w/api.php?action=parse&page=" +
-      label +
-      "&format=json&redirects&origin=*",
+        this.language +
+        ".wikipedia.org/w/api.php?action=parse&page=" +
+        label +
+        "&format=json&redirects&origin=*",
       { headers: myHeaders }
     )
       .then(response => response.json())
@@ -507,7 +501,6 @@ export default class Labelizer {
         if (text.error) {
           this.terminal.error(text.error.info);
         } else {
-
           this.terminal.log("Page loaded!");
           let html = text.parse.text["*"];
           el.innerHTML = html;
@@ -517,7 +510,6 @@ export default class Labelizer {
 
       .catch(error => {
         this.terminal.error("! " + error);
-
       });
   }
 }
