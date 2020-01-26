@@ -1,3 +1,5 @@
+import wikiTemplates from "./wikitemplates";
+
 class WikiParser {
   constructor(head = "") {
     this.head = head;
@@ -16,9 +18,10 @@ class WikiParser {
     str = str.replace(/'''''(.+?)'''''/gm, "<i><strong>$1</strong></i>");
     str = str.replace(/'''(.+?)'''/gm, "<strong>$1</strong>");
     str = str.replace(/''(.+?)''/gm, "<i>$1</i>");
-    str = str.replace(/(^[#|*]+)(.*)/gm, (matched, symbols, original) => {
+    str = str.replace(/(^[#\*:]+)(.*)/gm, (matched, symbols, original) => {
       let depth = symbols.length - 1;
-      return "&nbsp&nbsp".repeat(depth) + original;
+      original = original.replace(/^: (.*)/gm);
+      return "<div style='padding-left:" + depth + "em'>" + original + "</div>";
     });
 
     return str;
@@ -40,10 +43,10 @@ class WikiParser {
         case "}}":
           if (type == "accolade" && lastAnchor !== null) {
             let inside = this.manageTemplate(str.substring(lastAnchor, cursor));
-            templates.push(inside);
+            templates.push(inside.template);
             str =
               str.substring(0, lastAnchor - 2) +
-              inside +
+              inside.parsed +
               str.substring(cursor + 2);
 
             lastAnchor = null;
@@ -87,6 +90,66 @@ class WikiParser {
     return { templates, parsed: str };
   }
   manageTemplate(str) {
+    let template = {};
+    let parsed = "";
+    let params = str.split("|");
+    let templateName = params[0];
+    console.log(templateName);
+    let wt = wikiTemplates[templateName];
+    if (wt !== undefined) {
+      for (let i = 1; i < params.length; i++) {
+        let pair = params[i].split("="),
+          paramName,
+          value;
+        if (pair.length == 2) {
+          paramName = pair[0];
+          value = pair[1];
+        } else {
+          paramName = "";
+          value = pair[0];
+        }
+        let param = wt.params.filter(x => x.name == paramName)[0] || undefined;
+        if (param) {
+          let object = param.action(value);
+          for (let key in object) {
+            if (Array.isArray(wt.default[key])) {
+              if (template.hasOwnProperty(key)) {
+                template[key] = Array.isArray(object[key])
+                  ? [...template[key], ...object[key]]
+                  : [...template[key], object[key]];
+              } else {
+                template[key] = Array.isArray(object[key])
+                  ? [...object[key]]
+                  : [object[key]];
+              }
+            } else {
+              template[key] = object[key];
+            }
+          }
+        }
+      }
+      if (wt.default !== undefined) {
+        for (let key in wt.default) {
+          if (!template.hasOwnProperty(key)) {
+            template[key] = this.parseParameter(wt.default[key]);
+          }
+        }
+      }
+      for (let key in template) {
+        template[key] = this.parseParameter(template[key]);
+      }
+      str = wt.humanize(template);
+    }
+
+    return { template: template, parsed: str };
+  }
+  parseParameter(str) {
+    console.log(str);
+    if (Array.isArray(str)) {
+      str = str.map(x => this.parseParameter(x));
+    } else {
+      str = str.replace("${head}", this.head);
+    }
     return str;
   }
   manageLink(str, blend = "") {

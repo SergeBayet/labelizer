@@ -102,14 +102,6 @@ class Wiktionary {
       }
     });
 
-    // ret = [
-    //   [
-    //     "#* {{quote-book|en|year=1918|author={{w|W. B. Maxwell}}|chapter=10",
-    //     "|title=[http://openlibrary.org/works/OL1097634W The Mirror and the Lamp]",
-    //     "|passage=He looked round the '''poor''' room, at the distempered walls, and the bad engravings in meretricious frames, the crinkly paper and wax flowers on the chiffonier; and he thought of a room like Father Bryan's, with panelling, with cut glass, with tulips in silver pots, such a room as he had hoped to have for his own.}}",
-    //     "# ''Used to express pity.''"
-    //   ]
-    // ];
     let wp = new WikiParser(this.word);
     for (let i = 0; i < ret.length; i++) {
       ret[i] = ret[i].map(el => wp.parse(el));

@@ -175,7 +175,7 @@ export default class Labelizer {
       console.log(data);
       let def = w.getDefinition(data);
       def.forEach(x => {
-        this.terminal.log(x.join("<br/>"));
+        this.terminal.log(x.join(""));
       });
     });
   }

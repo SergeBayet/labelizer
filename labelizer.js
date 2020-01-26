@@ -8170,6 +8170,84 @@
     return Terminal;
   }();
 
+  var wikiTemplates = {
+    "en-noun": {
+      info: "inflection template for most English nouns",
+      "default": {
+        singular: "${head}",
+        plural: ["${head}s"],
+        properties: ["countable"],
+        infos: []
+      },
+      params: [{
+        name: "",
+        action: function action(value) {
+          switch (value) {
+            case "s":
+              return {
+                plural: "${head}s"
+              };
+
+            case "es":
+              return {
+                plural: "${head}es"
+              };
+
+            case "-":
+              return {
+                plural: [],
+                properties: "uncountable"
+              };
+
+            case "~":
+              return {
+                properties: ["countable", "uncountable"]
+              };
+
+            case "!":
+              return {
+                infos: "plural not attested"
+              };
+
+            case "?":
+              return {
+                infos: "unknown or uncertain plural"
+              };
+
+            default:
+              return {
+                plural: value
+              };
+          }
+        }
+      }, {
+        name: "head",
+        action: function action(value) {
+          return {
+            singular: value
+          };
+        }
+      }],
+      humanize: function humanize(obj) {
+        var str = [];
+        str.push("<strong>" + obj.singular + "</strong> ");
+        str.push("Noun (");
+        str.push("<i>");
+        str.push(obj.properties.join(" and "));
+        str.push("</i>");
+        if (obj.properties.length > 0) str.push("; ");
+        str.push("<i>plural </i>" + obj.plural.map(function (x) {
+          return '<a href="#">' + x + "</a>";
+        }).join(" or "));
+        str.push(")");
+        str = str.filter(function (x) {
+          return x;
+        });
+        return str.join("");
+      }
+    }
+  };
+
   var WikiParser =
   /*#__PURE__*/
   function () {
@@ -8197,9 +8275,10 @@
         str = str.replace(/'''''(.+?)'''''/gm, "<i><strong>$1</strong></i>");
         str = str.replace(/'''(.+?)'''/gm, "<strong>$1</strong>");
         str = str.replace(/''(.+?)''/gm, "<i>$1</i>");
-        str = str.replace(/(^[#|*]+)(.*)/gm, function (matched, symbols, original) {
+        str = str.replace(/(^[#\*:]+)(.*)/gm, function (matched, symbols, original) {
           var depth = symbols.length - 1;
-          return "&nbsp&nbsp".repeat(depth) + original;
+          original = original.replace(/^: (.*)/gm);
+          return "<div style='padding-left:" + depth + "em'>" + original + "</div>";
         });
         return str;
       }
@@ -8224,8 +8303,8 @@
             case "}}":
               if (type == "accolade" && lastAnchor !== null) {
                 var inside = this.manageTemplate(str.substring(lastAnchor, cursor));
-                templates.push(inside);
-                str = str.substring(0, lastAnchor - 2) + inside + str.substring(cursor + 2);
+                templates.push(inside.template);
+                str = str.substring(0, lastAnchor - 2) + inside.parsed + str.substring(cursor + 2);
                 lastAnchor = null;
                 type = null;
                 cursor = 0;
@@ -8277,6 +8356,86 @@
     }, {
       key: "manageTemplate",
       value: function manageTemplate(str) {
+        var template = {};
+        var params = str.split("|");
+        var templateName = params[0];
+        console.log(templateName);
+        var wt = wikiTemplates[templateName];
+
+        if (wt !== undefined) {
+          var _loop = function _loop(i) {
+            var pair = params[i].split("="),
+                paramName = void 0,
+                value = void 0;
+
+            if (pair.length == 2) {
+              paramName = pair[0];
+              value = pair[1];
+            } else {
+              paramName = "";
+              value = pair[0];
+            }
+
+            var param = wt.params.filter(function (x) {
+              return x.name == paramName;
+            })[0] || undefined;
+
+            if (param) {
+              var object = param.action(value);
+
+              for (var _key2 in object) {
+                if (Array.isArray(wt["default"][_key2])) {
+                  if (template.hasOwnProperty(_key2)) {
+                    template[_key2] = Array.isArray(object[_key2]) ? [].concat(_toConsumableArray(template[_key2]), _toConsumableArray(object[_key2])) : [].concat(_toConsumableArray(template[_key2]), [object[_key2]]);
+                  } else {
+                    template[_key2] = Array.isArray(object[_key2]) ? _toConsumableArray(object[_key2]) : [object[_key2]];
+                  }
+                } else {
+                  template[_key2] = object[_key2];
+                }
+              }
+            }
+          };
+
+          for (var i = 1; i < params.length; i++) {
+            _loop(i);
+          }
+
+          if (wt["default"] !== undefined) {
+            for (var key in wt["default"]) {
+              if (!template.hasOwnProperty(key)) {
+                template[key] = this.parseParameter(wt["default"][key]);
+              }
+            }
+          }
+
+          for (var _key in template) {
+            template[_key] = this.parseParameter(template[_key]);
+          }
+
+          str = wt.humanize(template);
+        }
+
+        return {
+          template: template,
+          parsed: str
+        };
+      }
+    }, {
+      key: "parseParameter",
+      value: function parseParameter(str) {
+        var _this = this;
+
+        console.log(str);
+
+        if (Array.isArray(str)) {
+          str = str.map(function (x) {
+            return _this.parseParameter(x);
+          });
+        } else {
+          str = str.replace("${head}", this.head);
+        }
+
         return str;
       }
     }, {
@@ -8452,15 +8611,7 @@
           if (wikiObject[_this2.lang].hasOwnProperty(p)) {
             ret.push(wikiObject[_this2.lang][p].content);
           }
-        }); // ret = [
-        //   [
-        //     "#* {{quote-book|en|year=1918|author={{w|W. B. Maxwell}}|chapter=10",
-        //     "|title=[http://openlibrary.org/works/OL1097634W The Mirror and the Lamp]",
-        //     "|passage=He looked round the '''poor''' room, at the distempered walls, and the bad engravings in meretricious frames, the crinkly paper and wax flowers on the chiffonier; and he thought of a room like Father Bryan's, with panelling, with cut glass, with tulips in silver pots, such a room as he had hoped to have for his own.}}",
-        //     "# ''Used to express pity.''"
-        //   ]
-        // ];
-
+        });
         var wp = new WikiParser(this.word);
 
         for (var i = 0; i < ret.length; i++) {
@@ -8652,7 +8803,7 @@
           console.log(data);
           var def = w.getDefinition(data);
           def.forEach(function (x) {
-            _this3.terminal.log(x.join("<br/>"));
+            _this3.terminal.log(x.join(""));
           });
         });
       }
