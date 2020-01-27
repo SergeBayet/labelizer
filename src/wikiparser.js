@@ -1,4 +1,4 @@
-import wikiTemplates from "./wikitemplates";
+import { wikiTemplates, alias } from "./wikitemplates";
 
 class WikiParser {
   constructor(head = "") {
@@ -94,7 +94,6 @@ class WikiParser {
             case ']':
               if (type == "simpleBracket") {
                 let inside = this.manageSimpleLink(str.substring(lastAnchor - 1, cursor));
-                console.log(inside);
                 str =
                   str.substring(0, lastAnchor - 2) +
                   inside +
@@ -118,6 +117,9 @@ class WikiParser {
     let parsed = "";
     let params = str.split("|").map(x => x.trim());
     let templateName = params[0];
+    if (alias[params[0]] !== undefined) {
+      templateName = alias[params[0]];
+    }
     let wt = wikiTemplates[templateName];
     if (wt !== undefined) {
       let index = -1;
@@ -135,7 +137,7 @@ class WikiParser {
         }
         let param = wt.params.filter(x => x.name == paramName)[0] || undefined;
         if (param) {
-          let object = param.action(value, index);
+          let object = param.action(value, index, template);
           for (let key in object) {
             if (Array.isArray(wt.default[key])) {
               if (template.hasOwnProperty(key)) {
@@ -186,7 +188,6 @@ class WikiParser {
       display;
     if (this.isUrl(pair[0])) {
       url = pair[0];
-      console.log('simple link : ' + url);
     }
     else {
       return '&#91;' + str + '&#93;';

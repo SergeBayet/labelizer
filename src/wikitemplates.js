@@ -1,5 +1,78 @@
-
-const wikiTemplates = {
+export const alias = {
+  'label': 'lb',
+  'lbl': 'lb',
+  'syn': 'synonyms',
+  'ant': 'antonyms',
+  'quote-text': 'quote-book'
+}
+export const wikiTemplates = {
+  "antonyms": {
+    info: "This template shows a line with antonyms.",
+    default: {
+      'lang': "en",
+      'ant': [],
+      'alt': [],
+      'tr': [],
+      'q': []
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index) => {
+          if (index == 0) {
+            return { lang: value };
+          }
+          return { ant: value };
+        }
+      }
+    ],
+    humanize: obj => {
+      let str = [];
+      str = obj.ant;
+      return '<span style="font-size:smaller">Antonyms: </span>' + str.join(', ');
+    }
+  },
+  "synonyms": {
+    info: "This template shows a line with synonyms.",
+    default: {
+      'lang': "en",
+      'syn': [],
+      'alt': [],
+      'tr': [],
+      'q': []
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index) => {
+          if (index == 0) {
+            return { lang: value };
+          }
+          return { syn: value };
+        }
+      }
+    ],
+    humanize: obj => {
+      let str = [];
+      str = obj.syn;
+      return '<span style="font-size:smaller">Synonyms: </span>' + str.join(', ');
+    }
+  },
+  "ISBN": {
+    info: "This template is used to indicate the International Standard Book Number (ISBN) of a work.",
+    default: {
+      'isbn': ''
+    },
+    params: [
+      {
+        name: "",
+        action: value => ({ isbn: value })
+      }
+    ],
+    humanize: obj => {
+      return '<a href="#" data-link="https://en.wiktionary.org/wiki/Special:BookSources/' + obj.ibsn + '">→ISBN</a>';
+    }
+  },
   "ux": {
     info: "This is used to show usage examples (not quotations) following a definition line",
     default: {
@@ -85,6 +158,94 @@ const wikiTemplates = {
         obj.display +
         "</a>";
       return str;
+    }
+  },
+  "quote-journal": {
+    info: "This template can be used in a dictionary entry to provide a quotation from a journal or other serial publication, including a magazine or a newspaper.",
+    default: {
+      '1': "",
+      author: "",
+      authorlink: "",
+      coauthors: "",
+      chapter: "",
+      editor: "",
+      title: "",
+      journal: "",
+      issn: "",
+      url: "",
+      archiveurl: "",
+      archivedate: "",
+      start_date: "",
+      location: "",
+      publisher: "",
+      date: "",
+      isbn: "",
+      oclc: "",
+      volume: "",
+      issue: "",
+      page: "",
+      pages: "",
+      pageurl: "",
+      text: "",
+      passage: "",
+      t: "",
+      tr: "",
+      year: "",
+      year_published: ""
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index) => {
+          switch (index) {
+            case 0:
+              return ({ '1': value });
+            case 1:
+              return ({ year: value });
+            case 2:
+              return ({ author: value });
+            case 3:
+              return ({ title: value });
+            case 4:
+              return ({ journal: value });
+            case 5:
+              return ({ url: value });
+            case 6:
+              return ({ page: value });
+            case 7:
+              return ({ text: value });
+            case 8:
+              return ({ tr: value });
+            default:
+              return ({});
+          }
+        }
+      }
+    ],
+    humanize: obj => {
+      let str = [];
+      if (obj.passage !== '') obj.text = obj.passage;
+      str.push('<strong>' + (obj.year == '' ? obj.date : obj.year) + '</strong>');
+      str.push(obj.month);
+
+      str.push(obj.author);
+      str.push('“' + obj.title + '”');
+      str.push('in <i>' + (obj.journal == '' ? obj.work : obj.journal) + '</i>')
+      str.push(obj.volume !== '' ? 'volume ' + obj.volume : '');
+      str.push(obj.issue !== '' ? 'number ' + obj.issue : '');
+      let publication = [];
+      publication.push(obj.location);
+      publication.push(obj.publisher);
+      str.push(publication.filter(x => x).join(': '));
+      str.push(obj.year_published !== '' ? 'published ' + obj.year_published : '');
+      str.push(obj.oclc !== '' ? '<small>OCLC ' + obj.oclc + '</small>' : '');
+      str.push(obj.isbn !== '' ? '<small>ISBN ' + obj.isbn + '</small>' : '');
+      str.push(obj.page !== '' ? 'page ' + obj.page : '');
+      str.push(obj.pages !== '' ? 'pages ' + obj.pages : '');
+
+      str = str.filter(x => x);
+      str[str.length - 1] += obj.text !== '' ? ': ' + '<dl><dd>' + obj.text + '</dd></dl>' : '';
+      return str.filter(x => x).join(', ');
     }
   },
   "quote-book": {
@@ -212,6 +373,42 @@ const wikiTemplates = {
       return str.join('');
     }
   },
+
+  "en-verb": {
+    info: "inflection template for most English verbs",
+    default: {
+      'canonical': "${head}",
+      '3ps simple present': "${head}s",
+      'past': "${head}ed",
+      'present participle': "${head}ing"
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index, obj) => {
+          switch (index) {
+            case 0:
+              switch (value) {
+                default:
+                  console.log(obj);
+                  if (obj.canonical !== value) {
+
+                  }
+              }
+              break;
+          }
+        }
+      }
+    ],
+    humanize: obj => {
+      let str = [];
+
+      str.push('<strong>' + obj.canonical + '</strong> Verb (<i>third-person singular simple present </i> <strong>' + obj['3ps simple present'] + '</strong>');
+      str.push('<i>present participle </i><strong>' + obj['present participle'] + '</strong>');
+      str.push('<i>simple past and past participle </i><strong>' + obj['past'] + '</strong>)');
+      return str.join(', ');
+    }
+  },
   "en-noun": {
     info: "inflection template for most English nouns",
     default: {
@@ -268,4 +465,3 @@ const wikiTemplates = {
     }
   }
 };
-export default wikiTemplates;
