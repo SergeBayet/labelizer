@@ -172,7 +172,6 @@ export default class Labelizer {
   getDefinition(args, opts) {
     let w = new Wiktionary(args[0], "English");
     w.getInfos().then(data => {
-      console.log(data);
       let def = w.getDefinition(data);
       def.forEach(x => {
         this.terminal.log(x.join(""));
@@ -460,10 +459,10 @@ export default class Labelizer {
       myHeaders.append("Content-Type", "application/json");
       fetch(
         "https://" +
-          this.language +
-          ".wikipedia.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" +
-          str +
-          "&namespace=0&limit=10&origin=*",
+        this.language +
+        ".wikipedia.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" +
+        str +
+        "&namespace=0&limit=10&origin=*",
 
         { headers: myHeaders }
       )
@@ -490,10 +489,10 @@ export default class Labelizer {
     myHeaders.append("Content-Type", "application/json");
     fetch(
       "http://" +
-        this.language +
-        ".wikipedia.org/w/api.php?action=parse&page=" +
-        label +
-        "&format=json&redirects&origin=*",
+      this.language +
+      ".wikipedia.org/w/api.php?action=parse&page=" +
+      label +
+      "&format=json&redirects&origin=*",
       { headers: myHeaders }
     )
       .then(response => response.json())

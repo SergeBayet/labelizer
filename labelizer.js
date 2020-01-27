@@ -7276,8 +7276,8 @@
             default:
               throw new Error("Unexpected node type: ".concat(node.nodeType));
           }
-        });
-        console.log(textSegments);
+        }); //console.log(textSegments);
+
         return textSegments;
       }
     }, {
@@ -7657,21 +7657,21 @@
                     _this2.execute(e.target.innerText.trim());
 
                     inputElement.innerHTML = "";
-                    return _context.abrupt("break", 21);
+                    return _context.abrupt("break", 20);
 
                   case 8:
                     ac.hide();
 
                     _this2.upHistory(e);
 
-                    return _context.abrupt("break", 21);
+                    return _context.abrupt("break", 20);
 
                   case 11:
                     ac.hide();
 
                     _this2.downHistory(e);
 
-                    return _context.abrupt("break", 21);
+                    return _context.abrupt("break", 20);
 
                   case 14:
                     _context.next = 16;
@@ -7679,8 +7679,8 @@
 
                   case 16:
                     items = _context.sent;
-                    console.log("items : ", items);
 
+                    //console.log("items : ", items);
                     if (inputElement.lastChild !== null) {
                       bodyRect = inputElement.getBoundingClientRect(), elemRect = inputElement.lastChild.getBoundingClientRect(), offset = elemRect.left - bodyRect.left;
                       ac.setPositionX(offset);
@@ -7694,7 +7694,7 @@
                     });
                     _this2.historyCursor = _this2.history.length;
 
-                  case 21:
+                  case 20:
                   case "end":
                     return _context.stop();
                 }
@@ -7772,16 +7772,14 @@
                   }
 
                   if (!tree[0].hasOwnProperty("filter")) {
-                    _context2.next = 18;
+                    _context2.next = 16;
                     break;
                   }
 
-                  console.log("user autocomplete");
-                  console.log(tree[0]["filter"]);
-                  _context2.next = 10;
+                  _context2.next = 8;
                   return this.commandsNamespace[tree[0]["filter"]["callbackMethod"]](str);
 
-                case 10:
+                case 8:
                   ac = _context2.sent;
                   ac2 = [];
 
@@ -7795,18 +7793,18 @@
                   ac2.info = info;
                   return _context2.abrupt("return", ac2);
 
-                case 18:
+                case 16:
                   ac = tree.filter(function (command) {
                     return command[property].startsWith(str);
                   });
 
-                case 19:
+                case 17:
                   ac.label = property;
-                  ac.info = info;
-                  console.log(ac);
+                  ac.info = info; //console.log(ac);
+
                   return _context2.abrupt("return", ac);
 
-                case 23:
+                case 20:
                 case "end":
                   return _context2.stop();
               }
@@ -8171,6 +8169,269 @@
   }();
 
   var wikiTemplates = {
+    "ux": {
+      info: "This is used to show usage examples (not quotations) following a definition line",
+      "default": {
+        '1': "",
+        '2': "",
+        '3': "",
+        'tr': "",
+        'inline': "0",
+        'q': [],
+        'footer': '',
+        'ref': '',
+        'lit': '',
+        'subst': '',
+        'noenum': "false",
+        'nocat': "false"
+      },
+      params: [{
+        name: "",
+        action: function action(value, index) {
+          switch (index) {
+            case 0:
+              return {
+                '1': value
+              };
+
+            case 1:
+              return {
+                '2': value
+              };
+
+            case 2:
+              return {
+                '3': value
+              };
+          }
+        }
+      }, {
+        name: "translation",
+        action: function action(value) {
+          return {
+            tr: value
+          };
+        }
+      }, {
+        name: "t",
+        action: function action(value) {
+          return {
+            tr: value
+          };
+        }
+      }, {
+        name: "transliteration",
+        action: function action(value) {
+          return {
+            tr: value
+          };
+        }
+      }, {
+        name: "q",
+        action: function action(value) {
+          return {
+            q: value
+          };
+        }
+      }, {
+        name: "qualifier",
+        action: function action(value) {
+          return {
+            q: value
+          };
+        }
+      }],
+      humanize: function humanize(obj) {
+        var str = [];
+        str.push('<i>' + obj['2'] + '</i>');
+        return str.join('');
+      }
+    },
+    "w": {
+      info: "This template is for having shorter links to an English Wikipedia article when the link is identical to its label.",
+      "default": {
+        wikipage: "",
+        display: "",
+        lang: "en"
+      },
+      params: [{
+        name: "",
+        action: function action(value, index) {
+          switch (index) {
+            case 0:
+              return {
+                wikipage: value,
+                display: value
+              };
+
+            case 1:
+              return {
+                display: value
+              };
+          }
+        }
+      }],
+      humanize: function humanize(obj) {
+        var str = '<a href="#" data-link="https://en.wikipedia.org/wiki/' + obj.lang + ':' + obj.wikipage.replace(" ", "_") + '">' + obj.display + "</a>";
+        return str;
+      }
+    },
+    "quote-book": {
+      info: "This template can be used in a dictionary entry to provide a quotation from a book. ",
+      "default": {
+        l: "",
+        author: "",
+        authorlink: "",
+        chapter: "",
+        editor: "",
+        title: "",
+        url: "",
+        archiveurl: "",
+        archivedate: "",
+        edition: "",
+        location: "",
+        publisher: "",
+        date: "",
+        isbn: "",
+        oclc: "",
+        volume: "",
+        section: "",
+        sectionurl: "",
+        page: "",
+        pages: "",
+        pageurl: "",
+        text: "",
+        passage: "",
+        t: "",
+        tr: "",
+        year: "",
+        year_published: ""
+      },
+      params: [{
+        name: "",
+        action: function action(value, index) {
+          switch (index) {
+            case 0:
+              return {
+                l: value
+              };
+
+            case 1:
+              return {
+                year: value
+              };
+
+            case 2:
+              return {
+                author: value
+              };
+
+            case 3:
+              return {
+                title: value
+              };
+
+            case 4:
+              return {
+                url: value
+              };
+
+            case 5:
+              return {
+                page: value
+              };
+
+            case 6:
+              return {
+                text: value
+              };
+
+            case 7:
+              return {
+                tr: value
+              };
+
+            default:
+              return {};
+          }
+        }
+      }],
+      humanize: function humanize(obj) {
+        console.log(obj);
+        var str = [];
+        if (obj.passage !== '') obj.text = obj.passage;
+        str.push('<strong>' + obj.year + '</strong>');
+        str.push(obj.author);
+        str.push('<i>' + obj.title + '</i>');
+        var publication = [];
+        publication.push(obj.location);
+        publication.push(obj.publisher);
+        str.push(publication.filter(function (x) {
+          return x;
+        }).join(': '));
+        str.push(obj.year_published !== '' ? 'published ' + obj.year_published : '');
+        str.push(obj.oclc !== '' ? '<small>OCLC ' + obj.oclc + '</small>' : '');
+        str.push(obj.isbn !== '' ? '<small>ISBN ' + obj.isbn + '</small>' : '');
+        str.push(obj.page !== '' ? 'page ' + obj.page : '');
+        str.push(obj.pages !== '' ? 'pages ' + obj.pages : '');
+        str = str.filter(function (x) {
+          return x;
+        });
+        str[str.length - 1] += obj.text !== '' ? ': ' + '<dl><dd>' + obj.text + '</dd></dl>' : '';
+        return str.filter(function (x) {
+          return x;
+        }).join(', ');
+      }
+    },
+    "lb": {
+      info: "Used : 1. To label senses with restricted usage ; 2. To label senses with grammatical information, in addition to that in the part-of-speech heading and headword line",
+      "default": {
+        languageCode: "",
+        labels: []
+      },
+      params: [{
+        name: "",
+        action: function action(value, index) {
+          if (index == 0) {
+            return {
+              languageCode: value
+            };
+          } else {
+            return {
+              labels: value
+            };
+          }
+        }
+      }],
+      humanize: function humanize(obj) {
+        var str = [];
+        str.push('(<i>');
+
+        for (var i = 0; i < obj.labels.length; i++) {
+          if (i > 0) {
+            switch (obj.labels[i]) {
+              case 'and':
+              case 'or':
+                str.push(obj.labels[i]);
+                break;
+
+              case '_':
+                str.push(' ');
+                break;
+
+              default:
+                str.push(', ' + obj.labels[i]);
+                break;
+            }
+          } else {
+            str.push(obj.labels[i]);
+          }
+        }
+
+        str.push('</i>)');
+        return str.join('');
+      }
+    },
     "en-noun": {
       info: "inflection template for most English nouns",
       "default": {
@@ -8181,7 +8442,7 @@
       },
       params: [{
         name: "",
-        action: function action(value) {
+        action: function action(value, index) {
           switch (value) {
             case "s":
               return {
@@ -8302,7 +8563,8 @@
 
             case "}}":
               if (type == "accolade" && lastAnchor !== null) {
-                var inside = this.manageTemplate(str.substring(lastAnchor, cursor));
+                var inside = this.manageTemplate(str.substring(lastAnchor, cursor)); //console.log(inside);
+
                 templates.push(inside.template);
                 str = str.substring(0, lastAnchor - 2) + inside.parsed + str.substring(cursor + 2);
                 lastAnchor = null;
@@ -8344,7 +8606,30 @@
               break;
 
             default:
-              cursor++;
+              switch (anchor.substring(0, 1)) {
+                case '[':
+                  type = "simpleBracket";
+                  cursor += 2;
+                  lastAnchor = cursor;
+                  break;
+
+                case ']':
+                  if (type == "simpleBracket") {
+                    var _inside2 = this.manageSimpleLink(str.substring(lastAnchor - 1, cursor));
+
+                    console.log(_inside2);
+                    str = str.substring(0, lastAnchor - 2) + _inside2 + str.substring(cursor + 1);
+                    lastAnchor = null;
+                    type = null;
+                    cursor = 0;
+                  }
+
+                  break;
+
+                default:
+                  cursor++;
+              }
+
           }
         }
 
@@ -8357,14 +8642,19 @@
       key: "manageTemplate",
       value: function manageTemplate(str) {
         var template = {};
-        var params = str.split("|");
+        var params = str.split("|").map(function (x) {
+          return x.trim();
+        });
         var templateName = params[0];
-        console.log(templateName);
         var wt = wikiTemplates[templateName];
 
         if (wt !== undefined) {
+          var index = -1;
+
           var _loop = function _loop(i) {
-            var pair = params[i].split("="),
+            var pair = params[i].split(/=(.+)/).filter(function (x) {
+              return x;
+            }),
                 paramName = void 0,
                 value = void 0;
 
@@ -8374,6 +8664,7 @@
             } else {
               paramName = "";
               value = pair[0];
+              index++;
             }
 
             var param = wt.params.filter(function (x) {
@@ -8381,7 +8672,7 @@
             })[0] || undefined;
 
             if (param) {
-              var object = param.action(value);
+              var object = param.action(value, index);
 
               for (var _key2 in object) {
                 if (Array.isArray(wt["default"][_key2])) {
@@ -8394,6 +8685,8 @@
                   template[_key2] = object[_key2];
                 }
               }
+            } else if (paramName !== '') {
+              template[paramName] = value;
             }
           };
 
@@ -8426,8 +8719,6 @@
       value: function parseParameter(str) {
         var _this = this;
 
-        console.log(str);
-
         if (Array.isArray(str)) {
           str = str.map(function (x) {
             return _this.parseParameter(x);
@@ -8437,6 +8728,29 @@
         }
 
         return str;
+      }
+    }, {
+      key: "manageSimpleLink",
+      value: function manageSimpleLink(str) {
+        var pair = str.split(/ (.+)/).filter(function (x) {
+          return x;
+        }),
+            url,
+            display;
+
+        if (this.isUrl(pair[0])) {
+          url = pair[0];
+          console.log('simple link : ' + url);
+        } else {
+          return '&#91;' + str + '&#93;';
+        }
+
+        if (pair.length == 2) {
+          display = pair[1];
+          return '<a href="#" data-link="' + url + '">' + display + "</a>";
+        } else {
+          return '<a href="#" data-link="' + url + '">&#91;*&#93;</a>';
+        }
       }
     }, {
       key: "manageLink",
@@ -8456,6 +8770,11 @@
         }
 
         return str;
+      }
+    }, {
+      key: "isUrl",
+      value: function isUrl(str) {
+        return /(((http|ftp|https):\/{2})+(([0-9a-z_-]+\.)+(aero|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|ac|ad|ae|af|ag|ai|al|am|an|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cu|cv|cx|cy|cz|cz|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mn|mn|mo|mp|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|nom|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ra|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sj|sk|sl|sm|sn|so|sr|st|su|sv|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|yu|za|zm|zw|arpa)(:[0-9]+)?((\/([~0-9a-zA-Z\#\+\%@\.\/_-]+))?(\?[0-9a-zA-Z\+\%@\/&\[\];=_-]+)?)?))\b/img.test(str);
       }
     }]);
 
@@ -8618,7 +8937,8 @@
           ret[i] = ret[i].map(function (el) {
             return wp.parse(el);
           });
-        } //console.log(ret);
+        } //console.log('ici : ', ret);
+        //    ret = [["{{quote-book|en|year=1851|author={{w|Nathaniel Hawthorne}}|chapter=Main Street|title={{w|The Snow-Image, and Other Twice-Told Tales}}|location=Boston|publisher=Ticknor, Reed,and Fields|year_published=1852|page=96|pgeurl=https://archive.org/stream/snowimageandothe00hawtrich#page/96|passage={{...}}but the blame must rest on the sombre spirit of our forefathers, who wove their '''web''' of life with hardly a single thread of rose-color or gold, and not on me, who have a tropic-love of sunshine, and would gladly gild all the world with it, if I knew where to find so much.}}"]];
 
 
         return ret;
@@ -8800,7 +9120,6 @@
 
         var w = new Wiktionary(args[0], "English");
         w.getInfos().then(function (data) {
-          console.log(data);
           var def = w.getDefinition(data);
           def.forEach(function (x) {
             _this3.terminal.log(x.join(""));

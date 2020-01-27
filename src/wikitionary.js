@@ -39,6 +39,7 @@ class Wiktionary {
 
   async getInfos() {
     let page = await this.getPage(this.word);
+
     const rPos = /^=+([^=]*)=+$/;
     let lines = page.split("\n");
 
@@ -107,7 +108,10 @@ class Wiktionary {
       ret[i] = ret[i].map(el => wp.parse(el));
     }
 
-    //console.log(ret);
+    //console.log('ici : ', ret);
+
+
+    //    ret = [["{{quote-book|en|year=1851|author={{w|Nathaniel Hawthorne}}|chapter=Main Street|title={{w|The Snow-Image, and Other Twice-Told Tales}}|location=Boston|publisher=Ticknor, Reed,and Fields|year_published=1852|page=96|pgeurl=https://archive.org/stream/snowimageandothe00hawtrich#page/96|passage={{...}}but the blame must rest on the sombre spirit of our forefathers, who wove their '''web''' of life with hardly a single thread of rose-color or gold, and not on me, who have a tropic-love of sunshine, and would gladly gild all the world with it, if I knew where to find so much.}}"]];
     return ret;
   }
 }
