@@ -1,11 +1,173 @@
+export const tools = {
+  toSyllabicSpeech: word => {
+    let alph = 'abcdefghijklmnopqrstuvwxyz';
+    let speech = 'vcccvcccvcccccvcccccvcccyc';
+    return word.split('')
+      .map((char, i) => {
+        let pos = alph.indexOf(char.toLowerCase());
+        if (pos == -1) {
+          return ' ';
+        }
+        return speech.charAt(pos);
+      }).join('');
+  },
+  ucfirst: word => {
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+  }
+}
 export const alias = {
   'label': 'lb',
   'lbl': 'lb',
   'syn': 'synonyms',
   'ant': 'antonyms',
-  'quote-text': 'quote-book'
+  'quote-text': 'quote-book',
+  'en-adjective': 'en-adj',
+  'en-adj-more': 'en-adj',
+  'quote': 'ux'
 }
 export const wikiTemplates = {
+  "non-gloss definition": {
+    info: "Use this template to apply the correct styling to a definition that is not a gloss. ",
+    default: {
+      definition: ""
+    },
+    params: [
+      {
+        name: "",
+        action: value => {
+          return { definition: value }
+        }
+      }
+    ],
+    humanize: obj => {
+      return `<i>${obj.definition}</i>`;
+    }
+  },
+  "en-comparative of": {
+    info: "template comparative of",
+    default: {
+      term: ""
+    },
+    params: [
+      {
+        name: "",
+        action: value => {
+          return { term: value }
+        }
+      }
+    ],
+    humanize: obj => {
+      return `<i>comparative form of</i> <strong>${obj.term}</strong>: more <a href="#" data-link="${obj.term}">${obj.term}</a>`;
+    }
+  },
+  "head": {
+    info: "This template is used to create a basic headword line.",
+    default: {
+      lang: "",
+      pos: "",
+      head: "${head}"
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index) => {
+          switch (index) {
+            case 0:
+              return { lang: value }
+            case 1:
+              return { pos: value }
+          }
+        }
+      },
+      {
+        name: "head",
+        action: (value) => {
+          return { head: value }
+        }
+      }
+    ],
+    humanize: obj => {
+      return '<strong>' + obj.head + '</strong> ' + tools.ucfirst(obj.pos);
+    }
+  },
+  "qualifier": {
+    info: "Use this template to provide a qualifier before or after a list item, e.g. to qualify a synonym with a region or register, or a type of usage, like {{qualifier|figurative}}.",
+    default: {
+      qualifier: []
+    },
+    params: [
+      {
+        name: "",
+        action: value => {
+          return ({ qualifier: value });
+        }
+      }
+    ],
+    humanize: obj => {
+      console.log('ici : ', obj);
+      return '(<i>' + obj.qualifier.join(', ') + '</i>)';
+    }
+  },
+  "defdate": {
+    info: "This template provides information about when a sense was first used, generally given to the nearest century. ",
+    default: {
+      'date': ''
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index, obj) => {
+          return ({ date: value });
+        }
+      }
+    ],
+    humanize: obj => {
+      return '<span style="font-size: smaller">&#91;' + obj.date + '&#93</span>';
+    }
+  },
+  "rfdatek": {
+    info: "This is used to attempt to ease finding dates and other missing information for quotes.",
+    default: {
+      'lang': '',
+      'author': ''
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index, obj) => {
+          switch (index) {
+            case 0:
+              return { 'lang': value }
+            case 1:
+              return { 'author': value }
+          }
+        }
+      }
+    ],
+    humanize: obj => {
+      return '<a href="#" data-link="' + obj.author.replace(' ', '_') + '">' + obj.author + '</a>';
+    }
+  },
+  "rfdate": {
+    info: "Can we date this quote?",
+    default: {
+      'lang': ''
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index, obj) => {
+          switch (index) {
+            case 0:
+              return { 'lang': value }
+          }
+        }
+      }
+    ],
+    humanize: obj => {
+      return '<i>No date of publication provided</i>';
+    }
+  },
   "antonyms": {
     info: "This template shows a line with antonyms.",
     default: {
@@ -282,7 +444,7 @@ export const wikiTemplates = {
     params: [
       {
         name: "",
-        action: (value, index) => {
+        action: (value, index, obj) => {
           switch (index) {
             case 0:
               return ({ l: value });
@@ -307,7 +469,7 @@ export const wikiTemplates = {
       }
     ],
     humanize: obj => {
-      console.log(obj);
+
       let str = [];
       if (obj.passage !== '') obj.text = obj.passage;
       str.push('<strong>' + obj.year + '</strong>');
@@ -407,6 +569,133 @@ export const wikiTemplates = {
       str.push('<i>present participle </i><strong>' + obj['present participle'] + '</strong>');
       str.push('<i>simple past and past participle </i><strong>' + obj['past'] + '</strong>)');
       return str.join(', ');
+    }
+  },
+  "en-adv": {
+    info: "Use this template to show the headword line of an English adverb. It shows the headword in bold and its comparative and superlative inflections, if any.",
+    default: {
+      adverb: "${head}",
+      comparative: ["more ${head}"],
+      superlative: ["most ${head}"],
+    },
+    params: [
+      {
+        name: "sup",
+        action: (value, index, obj) => {
+          obj.superlative = [value];
+        }
+      },
+      {
+        name: "",
+        action: (value, index, obj) => {
+          if (index == 0) {
+            obj.comparative = [];
+            obj.superlative = [];
+          }
+          if (value == 'more') {
+            return {
+              comparative: "more ${head}",
+              superlative: "most ${head}"
+            };
+          } else if (value == 'er') {
+            if (tools.toSyllabicSpeech(obj.adverb) == 'cvc') {
+              let letterToDouble = obj.adverb.slice(-1);
+              return {
+                comparative: obj.adverb + letterToDouble + 'er',
+                superlative: obj.adverb + letterToDouble + 'est'
+              }
+            }
+            else if (obj.adverb.slice(-1) == 'y') {
+              return {
+                comparative: obj.adverb.substring(0, obj.adverb.length - 1) + 'ier',
+                superlative: obj.adverb.substring(0, obj.adverb.length - 1) + 'iest'
+              }
+            }
+            return { comparative: "${head}er", superlative: "${head}est" }
+          } else if (value.slice(-2) == 'er') {
+            return {
+              comparative: value,
+              superlative: value.substring(0, value.length - 2) + 'est'
+            }
+          }
+        }
+      }
+    ],
+    humanize: obj => {
+
+      let str = []
+      str.push("<strong>" + obj.adverb + "</strong>");
+      str.push("Adverb");
+      let parenthesis = []
+
+      parenthesis.push(obj.comparative.length > 0 ? '<i>comparative</i> ' + obj.comparative.map(x => '<strong>' + x + '</strong>').join(' <i>or</i> ') : '');
+      parenthesis.push(obj.superlative.length > 0 ? '<i>superlative</i> ' + obj.superlative.map(x => '<strong>' + x + '</strong>').join(' <i>or</i> ') : '');
+      parenthesis = parenthesis.filter(x => x).join(', ');
+      str.push(parenthesis ? '(' + parenthesis + ')' : '(<i>not comparable)</i>');
+      return str.filter(x => x).join(' ');
+    }
+  },
+  "en-adj": {
+    info: "Use this template to show the headword line of an English adjective. It shows the headword in bold and its comparative and superlative inflections, if any.",
+    default: {
+      adjective: "${head}",
+      comparative: ["more ${head}"],
+      superlative: ["most ${head}"],
+    },
+    params: [
+      {
+        name: "sup",
+        action: (value, index, obj) => {
+          obj.superlative = [value];
+        }
+      },
+      {
+        name: "",
+        action: (value, index, obj) => {
+          if (index == 0) {
+            obj.comparative = [];
+            obj.superlative = [];
+          }
+          if (value == 'more') {
+            return {
+              comparative: "more ${head}",
+              superlative: "most ${head}"
+            };
+          } else if (value == 'er') {
+            if (tools.toSyllabicSpeech(obj.adjective) == 'cvc') {
+              let letterToDouble = obj.adjective.slice(-1);
+              return {
+                comparative: obj.adjective + letterToDouble + 'er',
+                superlative: obj.adjective + letterToDouble + 'est'
+              }
+            }
+            else if (obj.adjective.slice(-1) == 'y') {
+              return {
+                comparative: obj.adjective.substring(0, obj.adjective.length - 1) + 'ier',
+                superlative: obj.adjective.substring(0, obj.adjective.length - 1) + 'iest'
+              }
+            }
+            return { comparative: "${head}er", superlative: "${head}est" }
+          } else if (value.slice(-2) == 'er') {
+            return {
+              comparative: value,
+              superlative: value.substring(0, value.length - 2) + 'est'
+            }
+          }
+        }
+      }
+    ],
+    humanize: obj => {
+      let str = []
+      str.push("<strong>" + obj.adjective + "</strong>");
+      str.push("Adjective");
+      let parenthesis = []
+
+      parenthesis.push(obj.comparative.length > 0 ? '<i>comparative</i> ' + obj.comparative.map(x => '<strong>' + x + '</strong>').join(' <i>or</i> ') : '');
+      parenthesis.push(obj.superlative.length > 0 ? '<i>superlative</i> ' + obj.superlative.map(x => '<strong>' + x + '</strong>').join(' <i>or</i> ') : '');
+      parenthesis = parenthesis.filter(x => x).join(', ');
+      str.push(parenthesis ? '(' + parenthesis + ')' : '(<i>not comparable)</i>');
+      return str.filter(x => x).join(' ');
     }
   },
   "en-noun": {

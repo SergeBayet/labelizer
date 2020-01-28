@@ -22,7 +22,8 @@ class WikiParser {
     str = str.replace(/(^[#\*:]+)(.*)/gm, (matched, symbols, original) => {
       let depth = symbols.length - 1;
       original = original.replace(/^: (.*)/gm);
-      return "<div style='padding-left:" + depth + "em'>" + original + "</div>";
+      if (depth == 0) original = '<br/>' + original;
+      return "<div style='padding-left:" + (depth + 1) + "em'>" + original + "</div>";
     });
 
     return str;
@@ -116,17 +117,35 @@ class WikiParser {
     let template = {};
     let parsed = "";
     let params = str.split("|").map(x => x.trim());
+
     let templateName = params[0];
     if (alias[params[0]] !== undefined) {
       templateName = alias[params[0]];
     }
     let wt = wikiTemplates[templateName];
     if (wt !== undefined) {
+      if (wt.default !== undefined) {
+        for (let key in wt.default) {
+          if (!template.hasOwnProperty(key)) {
+            template[key] = this.parseParameter(wt.default[key]);
+          }
+        }
+      }
       let index = -1;
       for (let i = 1; i < params.length; i++) {
-        let pair = params[i].split(/=(.+)/).filter(x => x),
-          paramName,
+        let regex = /^(\w+)=(.*)/;
+        let pair = regex.exec(params[i]);
+        if (pair) {
+          pair = pair.splice(1).filter(x => x)
+          if (pair[1] === undefined) {
+            continue;
+          }
+        } else {
+          pair = [params[i]];
+        }
+        let paramName,
           value;
+
         if (pair.length == 2) {
           paramName = pair[0];
           value = pair[1];
@@ -158,21 +177,19 @@ class WikiParser {
           template[paramName] = value;
         }
       }
-      if (wt.default !== undefined) {
-        for (let key in wt.default) {
-          if (!template.hasOwnProperty(key)) {
-            template[key] = this.parseParameter(wt.default[key]);
-          }
-        }
-      }
+
       for (let key in template) {
         template[key] = this.parseParameter(template[key]);
       }
       str = wt.humanize(template);
+    } else {
+
+      //str = str.replace(/\|/g, '');          // Avoid problem of parsing with '|'
+
     }
     return { template: template, parsed: str };
   }
-  parseParameter(str) {
+  parseParameter(str = '') {
     if (Array.isArray(str)) {
       str = str.map(x => this.parseParameter(x));
     } else {

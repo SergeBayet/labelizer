@@ -26,12 +26,16 @@ class Wiktionary {
     });
   }
   getNestedObject(obj, prop) {
+    //console.log(obj);
     for (let el in obj) {
-      if (el == prop) {
+
+      if (el === prop) {
         return obj[el];
       }
-      if (typeof obj[el] == "object") {
-        return this.getNestedObject(obj[el], prop);
+      if (typeof obj[el] === "object") {
+
+        let res = this.getNestedObject(obj[el], prop);
+        if (res !== false) return res;
       }
     }
     return false;
@@ -93,19 +97,32 @@ class Wiktionary {
 
     return object;
   }
-  getDefinition(wikiObject) {
-    const pos = ["Noun", "Adjective", "Verb"];
-    let ret = [];
+  getNestedObjects(obj, properties, data = []) {
+    for (let el in obj) {
 
-    pos.forEach(p => {
-      if (wikiObject[this.lang].hasOwnProperty(p)) {
-        ret.push(wikiObject[this.lang][p].content);
+      if (properties.includes(el)) {
+        data.push(obj[el]);
       }
-    });
+      if (typeof obj[el] === 'object') {
+        this.getNestedObjects(obj[el], properties, data);
+      }
+    }
+    return data;
+  }
+  getDefinition(wikiObject) {
+    const pos = ["Noun", "Adjective", "Verb", "Adverb", "Proper noun", "Conjunction"];
+    console.log(wikiObject);
+    let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(x => x.content);
+
 
     let wp = new WikiParser(this.word);
     for (let i = 0; i < ret.length; i++) {
-      ret[i] = ret[i].map(el => wp.parse(el));
+      ret[i] = ret[i].map((el, index) => {
+        if (index == 0) {
+          el = (i + 1).toString() + '. ' + el;
+        }
+        return wp.parse(el)
+      });
     }
 
     //console.log('ici : ', ret);
