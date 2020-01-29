@@ -28,12 +28,10 @@ class Wiktionary {
   getNestedObject(obj, prop) {
     //console.log(obj);
     for (let el in obj) {
-
       if (el === prop) {
         return obj[el];
       }
       if (typeof obj[el] === "object") {
-
         let res = this.getNestedObject(obj[el], prop);
         if (res !== false) return res;
       }
@@ -99,56 +97,66 @@ class Wiktionary {
   }
   getNestedObjects(obj, properties, data = []) {
     for (let el in obj) {
-
       if (properties.includes(el)) {
         data.push(obj[el]);
       }
-      if (typeof obj[el] === 'object') {
+      if (typeof obj[el] === "object") {
         this.getNestedObjects(obj[el], properties, data);
       }
     }
     return data;
   }
   getDefinition(wikiObject) {
-    const pos = ["Noun", "Adjective", "Verb", "Adverb", "Proper noun", "Conjunction"];
+    const pos = [
+      "Noun",
+      "Adjective",
+      "Verb",
+      "Adverb",
+      "Proper noun",
+      "Conjunction"
+    ];
     //console.log(wikiObject);
-    let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(x => x.content);
-
+    let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(
+      x => x.content
+    );
 
     let wp = new WikiParser(this.word);
     for (let i = 0; i < ret.length; i++) {
       ret[i] = ret[i].map((el, index) => {
         if (index == 0) {
-          el = (i + 1).toString() + '. ' + el;
+          el = (i + 1).toString() + ". " + el;
         }
-        return wp.parse(el)
+        return wp.parse(el);
       });
     }
 
     //console.log('ici : ', ret);
-
 
     //    ret = [["{{quote-book|en|year=1851|author={{w|Nathaniel Hawthorne}}|chapter=Main Street|title={{w|The Snow-Image, and Other Twice-Told Tales}}|location=Boston|publisher=Ticknor, Reed,and Fields|year_published=1852|page=96|pgeurl=https://archive.org/stream/snowimageandothe00hawtrich#page/96|passage={{...}}but the blame must rest on the sombre spirit of our forefathers, who wove their '''web''' of life with hardly a single thread of rose-color or gold, and not on me, who have a tropic-love of sunshine, and would gladly gild all the world with it, if I knew where to find so much.}}"]];
     return ret;
   }
   getTranslation(wikiObject) {
     const pos = ["Translations"];
-    let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(x => x.content);
+    let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(
+      x => x.content
+    );
     let wp = new WikiParser(this.word);
     for (let i = 0; i < ret.length; i++) {
       ret[i] = ret[i].map((el, index) => {
-        return wp.parse(el)
+        return wp.parse(el);
       });
     }
     return ret;
   }
   getEtymology(wikiObject) {
     const pos = ["Etymology"];
-    let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(x => x.content);
+    let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(
+      x => x.content
+    );
     let wp = new WikiParser(this.word);
     for (let i = 0; i < ret.length; i++) {
       ret[i] = ret[i].map((el, index) => {
-        return wp.parse(el)
+        return wp.parse(el);
       });
     }
     return ret;

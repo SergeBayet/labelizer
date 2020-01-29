@@ -32,3 +32,6 @@
 .context a {
   color: wheat;
 }
+ref {
+  display: none;
+}

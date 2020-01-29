@@ -36,7 +36,8 @@ export const alias = {
   'inh': 'inherited',
   'der': 'derived',
   'm': 'mention',
-  'bor': 'borrowed'
+  'bor': 'borrowed',
+  'suf': 'suffix'
 }
 export const wikiTemplates = {
   "image": {
@@ -1186,6 +1187,60 @@ export const wikiTemplates = {
       str.push(obj.term ? `<a href="#" data-link="${obj.term}"><i>${obj.term}</i></a>` : '');
       str.push(obj.gloss ? `(“${obj.gloss}”)` : '');
       return str.filter(x => x).join(' ')
+    }
+  },
+  "suffix": {
+    info: "This template is used in the etymology section",
+    default: {
+      language: '',
+      root: '',
+      suffix: ''
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index, obj) => {
+          switch(index)
+          {
+            case 0:
+              return {language: value};
+            case 1:
+              return {root: value};
+            case 2:
+              return {suffix: value};
+          }
+        }
+      }
+    ],
+    humanize: obj => {
+      return `<a href="#" data-link="${obj.root}"><i>${obj.root}</i></a> + <a href="#" data-link="${obj.suffix}"><i>${obj.suffix}</i></a>`
+    },
+
+  },
+  "taxlink": {
+    info: "This template categorizes entries with missing taxonomic names, so that the missing names can be added (if not spelling mistakes).",
+    default: {
+      taxon : '',
+      level : '',
+      alternativeDisplay : ''
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index, obj) => {
+          switch(index) {
+            case 0:
+              return {taxon: value, alternativeDisplay: value};
+            case 1:
+              return {level: value};
+            case 2:
+              return {alternativeDisplay: value}
+          }
+        }
+      }
+    ],
+    humanize: obj => {
+      return `<a href="#" data-link="${obj.taxon}">${obj.alternativeDisplay}</a>`;
     }
   }
 };

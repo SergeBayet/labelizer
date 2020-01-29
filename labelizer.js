@@ -8308,7 +8308,8 @@
     'inh': 'inherited',
     'der': 'derived',
     'm': 'mention',
-    'bor': 'borrowed'
+    'bor': 'borrowed',
+    'suf': 'suffix'
   };
   var wikiTemplates = {
     "image": {
@@ -9718,6 +9719,71 @@
           return x;
         }).join(' ');
       }
+    },
+    "suffix": {
+      info: "This template is used in the etymology section",
+      "default": {
+        language: '',
+        root: '',
+        suffix: ''
+      },
+      params: [{
+        name: "",
+        action: function action(value, index, obj) {
+          switch (index) {
+            case 0:
+              return {
+                language: value
+              };
+
+            case 1:
+              return {
+                root: value
+              };
+
+            case 2:
+              return {
+                suffix: value
+              };
+          }
+        }
+      }],
+      humanize: function humanize(obj) {
+        return "<a href=\"#\" data-link=\"".concat(obj.root, "\"><i>").concat(obj.root, "</i></a> + <a href=\"#\" data-link=\"").concat(obj.suffix, "\"><i>").concat(obj.suffix, "</i></a>");
+      }
+    },
+    "taxlink": {
+      info: "This template categorizes entries with missing taxonomic names, so that the missing names can be added (if not spelling mistakes).",
+      "default": {
+        taxon: '',
+        level: '',
+        alternativeDisplay: ''
+      },
+      params: [{
+        name: "",
+        action: function action(value, index, obj) {
+          switch (index) {
+            case 0:
+              return {
+                taxon: value,
+                alternativeDisplay: value
+              };
+
+            case 1:
+              return {
+                level: value
+              };
+
+            case 2:
+              return {
+                alternativeDisplay: value
+              };
+          }
+        }
+      }],
+      humanize: function humanize(obj) {
+        return "<a href=\"#\" data-link=\"".concat(obj.taxon, "\">").concat(obj.alternativeDisplay, "</a>");
+      }
     }
   };
 
@@ -10172,7 +10238,7 @@
             data.push(obj[el]);
           }
 
-          if (_typeof(obj[el]) === 'object') {
+          if (_typeof(obj[el]) === "object") {
             this.getNestedObjects(obj[el], properties, data);
           }
         }
@@ -10192,7 +10258,7 @@
         var _loop = function _loop(i) {
           ret[i] = ret[i].map(function (el, index) {
             if (index == 0) {
-              el = (i + 1).toString() + '. ' + el;
+              el = (i + 1).toString() + ". " + el;
             }
 
             return wp.parse(el);
