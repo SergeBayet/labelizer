@@ -169,12 +169,54 @@ export default class Labelizer {
   }
 
   // Commands Console
+  getTranslation(args, opts) {
+
+    let w = new Wiktionary(args[0], "English");
+    let index = 0;
+    let lang = '';
+    if (opts.isOption('language')) {
+      lang = opts.isOption('language').arguments;
+    }
+    console.log(lang);
+    w.getInfos().then(data => {
+      let trans = w.getTranslation(data);
+      trans.forEach(x => {
+        x.forEach(y => {
+          if (y.templates.filter(x => x.templateName == 'trans-top').length > 0) {
+            index++;
+            this.terminal.log(index.toString() + '. ' + y.parsed);
+          }
+          else {
+            if (lang !== '') {
+              console.log(y.templates);
+              let display = false;
+              if (y.templates.filter(x => {
+                if (x.lang && lang.includes(x.lang)) {
+                  display = true;
+                }
+              }));
+              if (display) {
+                this.terminal.log(y.parsed);
+              }
+            }
+            else {
+              this.terminal.log(y.parsed);
+            }
+
+          }
+        })
+      });
+    });
+  }
   getDefinition(args, opts) {
     let w = new Wiktionary(args[0], "English");
     w.getInfos().then(data => {
       let def = w.getDefinition(data);
       def.forEach(x => {
-        this.terminal.log(x.join(""));
+        x.forEach(y => {
+          this.terminal.log(y.parsed);
+
+        })
         this.terminal.log('<br/>');
       });
     });

@@ -13,7 +13,7 @@ class WikiParser {
 
     let ret = this.getTemplates(str);
     ret.parsed = this.wikiFormat(ret.parsed);
-    return ret.parsed;
+    return ret;
   }
   wikiFormat(str) {
     str = str.replace(/'''''(.+?)'''''/gm, "<i><strong>$1</strong></i>");
@@ -22,8 +22,8 @@ class WikiParser {
     str = str.replace(/(^[#\*:]+)(.*)/gm, (matched, symbols, original) => {
       let depth = symbols.length - 1;
       original = original.replace(/^: (.*)/gm);
-      if (depth == 0) original = '<br/>' + original;
-      return "<div style='padding-left:" + (depth + 1) + "em'>" + original + "</div>";
+      //if (depth == 0) original = '<br/>' + original;
+      return "<div style='padding-left:" + (depth + 1) * 2 + "em'>" + original + "</div>";
     });
 
     return str;
@@ -33,7 +33,7 @@ class WikiParser {
     let lastAnchor = null;
     let type = null;
     let templates = [];
-    while (cursor < str.length - 1) {
+    while (cursor < str.length) {
       let anchor = str.substring(cursor, cursor + 2);
 
       switch (anchor) {
@@ -124,6 +124,7 @@ class WikiParser {
     }
     let wt = wikiTemplates[templateName];
     if (wt !== undefined) {
+      template.templateName = templateName;
       if (wt.default !== undefined) {
         for (let key in wt.default) {
           if (!template.hasOwnProperty(key)) {
@@ -187,6 +188,7 @@ class WikiParser {
       //str = str.replace(/\|/g, '');          // Avoid problem of parsing with '|'
 
     }
+    //console.log(template);
     return { template: template, parsed: str };
   }
   parseParameter(str = '') {
@@ -227,7 +229,11 @@ class WikiParser {
     }
   }
   manageLink(str, blend = "") {
+    //console.log(str);
     let params = str.split("|");
+    if (/^(File:|Image:)(.*)/.test(params[0])) {
+      return ('{{image|' + str + '}}');
+    }
     if (params.length == 1) {
       return (
         '<a href="#" data-link="' +

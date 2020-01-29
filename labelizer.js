@@ -7155,6 +7155,25 @@
     },
     help: "Some global help here!",
     commands: [{
+      name: "trans",
+      method: "getTranslation",
+      args: [{
+        name: "word",
+        info: "written form of the word (case sensitive)",
+        type: "string",
+        error: "word (${info}) must be a string"
+      }],
+      opts: [{
+        name: "language",
+        abbr: "l",
+        info: "Language of translation.",
+        arg: {
+          name: "Language",
+          type: "string",
+          mandatory: true
+        }
+      }]
+    }, {
       name: "def",
       method: "getDefinition",
       args: [{
@@ -7163,8 +7182,6 @@
         type: "string",
         error: "word (${info}) must be a string"
       }]
-    }, {
-      name: "nprint"
     }, {
       name: "ngrams",
       method: "ngrams",
@@ -8168,6 +8185,81 @@
     return Terminal;
   }();
 
+  var MD5 = function MD5(d) {
+    var result = M$1(V$1(Y(X(d), 8 * d.length)));
+    return result.toLowerCase();
+  };
+
+  function M$1(d) {
+    for (var _, m = "0123456789ABCDEF", f = "", r = 0; r < d.length; r++) {
+      _ = d.charCodeAt(r), f += m.charAt(_ >>> 4 & 15) + m.charAt(15 & _);
+    }
+
+    return f;
+  }
+
+  function X(d) {
+    for (var _ = Array(d.length >> 2), m = 0; m < _.length; m++) {
+      _[m] = 0;
+    }
+
+    for (m = 0; m < 8 * d.length; m += 8) {
+      _[m >> 5] |= (255 & d.charCodeAt(m / 8)) << m % 32;
+    }
+
+    return _;
+  }
+
+  function V$1(d) {
+    for (var _ = "", m = 0; m < 32 * d.length; m += 8) {
+      _ += String.fromCharCode(d[m >> 5] >>> m % 32 & 255);
+    }
+
+    return _;
+  }
+
+  function Y(d, _) {
+    d[_ >> 5] |= 128 << _ % 32, d[14 + (_ + 64 >>> 9 << 4)] = _;
+
+    for (var m = 1732584193, f = -271733879, r = -1732584194, i = 271733878, n = 0; n < d.length; n += 16) {
+      var h = m,
+          t = f,
+          g = r,
+          e = i;
+      f = md5_ii(f = md5_ii(f = md5_ii(f = md5_ii(f = md5_hh(f = md5_hh(f = md5_hh(f = md5_hh(f = md5_gg(f = md5_gg(f = md5_gg(f = md5_gg(f = md5_ff(f = md5_ff(f = md5_ff(f = md5_ff(f, r = md5_ff(r, i = md5_ff(i, m = md5_ff(m, f, r, i, d[n + 0], 7, -680876936), f, r, d[n + 1], 12, -389564586), m, f, d[n + 2], 17, 606105819), i, m, d[n + 3], 22, -1044525330), r = md5_ff(r, i = md5_ff(i, m = md5_ff(m, f, r, i, d[n + 4], 7, -176418897), f, r, d[n + 5], 12, 1200080426), m, f, d[n + 6], 17, -1473231341), i, m, d[n + 7], 22, -45705983), r = md5_ff(r, i = md5_ff(i, m = md5_ff(m, f, r, i, d[n + 8], 7, 1770035416), f, r, d[n + 9], 12, -1958414417), m, f, d[n + 10], 17, -42063), i, m, d[n + 11], 22, -1990404162), r = md5_ff(r, i = md5_ff(i, m = md5_ff(m, f, r, i, d[n + 12], 7, 1804603682), f, r, d[n + 13], 12, -40341101), m, f, d[n + 14], 17, -1502002290), i, m, d[n + 15], 22, 1236535329), r = md5_gg(r, i = md5_gg(i, m = md5_gg(m, f, r, i, d[n + 1], 5, -165796510), f, r, d[n + 6], 9, -1069501632), m, f, d[n + 11], 14, 643717713), i, m, d[n + 0], 20, -373897302), r = md5_gg(r, i = md5_gg(i, m = md5_gg(m, f, r, i, d[n + 5], 5, -701558691), f, r, d[n + 10], 9, 38016083), m, f, d[n + 15], 14, -660478335), i, m, d[n + 4], 20, -405537848), r = md5_gg(r, i = md5_gg(i, m = md5_gg(m, f, r, i, d[n + 9], 5, 568446438), f, r, d[n + 14], 9, -1019803690), m, f, d[n + 3], 14, -187363961), i, m, d[n + 8], 20, 1163531501), r = md5_gg(r, i = md5_gg(i, m = md5_gg(m, f, r, i, d[n + 13], 5, -1444681467), f, r, d[n + 2], 9, -51403784), m, f, d[n + 7], 14, 1735328473), i, m, d[n + 12], 20, -1926607734), r = md5_hh(r, i = md5_hh(i, m = md5_hh(m, f, r, i, d[n + 5], 4, -378558), f, r, d[n + 8], 11, -2022574463), m, f, d[n + 11], 16, 1839030562), i, m, d[n + 14], 23, -35309556), r = md5_hh(r, i = md5_hh(i, m = md5_hh(m, f, r, i, d[n + 1], 4, -1530992060), f, r, d[n + 4], 11, 1272893353), m, f, d[n + 7], 16, -155497632), i, m, d[n + 10], 23, -1094730640), r = md5_hh(r, i = md5_hh(i, m = md5_hh(m, f, r, i, d[n + 13], 4, 681279174), f, r, d[n + 0], 11, -358537222), m, f, d[n + 3], 16, -722521979), i, m, d[n + 6], 23, 76029189), r = md5_hh(r, i = md5_hh(i, m = md5_hh(m, f, r, i, d[n + 9], 4, -640364487), f, r, d[n + 12], 11, -421815835), m, f, d[n + 15], 16, 530742520), i, m, d[n + 2], 23, -995338651), r = md5_ii(r, i = md5_ii(i, m = md5_ii(m, f, r, i, d[n + 0], 6, -198630844), f, r, d[n + 7], 10, 1126891415), m, f, d[n + 14], 15, -1416354905), i, m, d[n + 5], 21, -57434055), r = md5_ii(r, i = md5_ii(i, m = md5_ii(m, f, r, i, d[n + 12], 6, 1700485571), f, r, d[n + 3], 10, -1894986606), m, f, d[n + 10], 15, -1051523), i, m, d[n + 1], 21, -2054922799), r = md5_ii(r, i = md5_ii(i, m = md5_ii(m, f, r, i, d[n + 8], 6, 1873313359), f, r, d[n + 15], 10, -30611744), m, f, d[n + 6], 15, -1560198380), i, m, d[n + 13], 21, 1309151649), r = md5_ii(r, i = md5_ii(i, m = md5_ii(m, f, r, i, d[n + 4], 6, -145523070), f, r, d[n + 11], 10, -1120210379), m, f, d[n + 2], 15, 718787259), i, m, d[n + 9], 21, -343485551), m = safe_add(m, h), f = safe_add(f, t), r = safe_add(r, g), i = safe_add(i, e);
+    }
+
+    return Array(m, f, r, i);
+  }
+
+  function md5_cmn(d, _, m, f, r, i) {
+    return safe_add(bit_rol(safe_add(safe_add(_, d), safe_add(f, i)), r), m);
+  }
+
+  function md5_ff(d, _, m, f, r, i, n) {
+    return md5_cmn(_ & m | ~_ & f, d, _, r, i, n);
+  }
+
+  function md5_gg(d, _, m, f, r, i, n) {
+    return md5_cmn(_ & f | m & ~f, d, _, r, i, n);
+  }
+
+  function md5_hh(d, _, m, f, r, i, n) {
+    return md5_cmn(_ ^ m ^ f, d, _, r, i, n);
+  }
+
+  function md5_ii(d, _, m, f, r, i, n) {
+    return md5_cmn(m ^ (_ | ~f), d, _, r, i, n);
+  }
+
+  function safe_add(d, _) {
+    var m = (65535 & d) + (65535 & _);
+    return (d >> 16) + (_ >> 16) + (m >> 16) << 16 | 65535 & m;
+  }
+
+  function bit_rol(d, _) {
+    return d << _ | d >>> 32 - _;
+  }
   var tools = {
     toSyllabicSpeech: function toSyllabicSpeech(word) {
       var alph = 'abcdefghijklmnopqrstuvwxyz';
@@ -8194,9 +8286,85 @@
     'quote-text': 'quote-book',
     'en-adjective': 'en-adj',
     'en-adj-more': 'en-adj',
-    'quote': 'ux'
+    'quote': 'ux',
+    't+': 't',
+    't-check': 't',
+    't+check': 't',
+    't-needed': 't',
+    'q': 'qualifier'
   };
   var wikiTemplates = {
+    "image": {
+      info: "Template image",
+      "default": {
+        file: '',
+        format: 'borderless',
+        width: '200',
+        height: '',
+        horizontalAlignement: 'left',
+        caption: ""
+      },
+      params: [{
+        name: "",
+        action: function action(value, index, obj) {
+          if (index == 0) {
+            var url = 'https://upload.wikimedia.org/wikipedia/commons/thumb/';
+            var file = value.substring(value.indexOf(':') + 1).replace(/ /g, '_');
+            var hash = MD5(file).substring(0, 2);
+            hash = hash.substring(0, 1) + "/" + hash + "/";
+            return {
+              file: url + hash + file + "/{size}-" + file
+            };
+          }
+
+          switch (value) {
+            case 'thumb':
+              return {
+                format: 'thumb',
+                width: '200',
+                horizontalAlignement: 'right'
+              };
+
+            case 'frame':
+              return {
+                format: 'frame'
+              };
+
+            case 'left':
+            case 'right':
+            case 'center':
+            case 'none':
+              return {
+                horizontalAlignement: value
+              };
+
+            default:
+              var regex = /^((\d*)x)?(\d*)px/;
+              var m;
+
+              if ((m = regex.exec(value)) !== null) {
+                var height = m[2] ? m[3] : '';
+                var width = m[2] ? m[2] : m[3];
+                return {
+                  width: width,
+                  height: height
+                };
+              } else {
+                return {
+                  caption: value
+                };
+              }
+
+          }
+        }
+      }],
+      humanize: function humanize(obj) {
+        var str = [];
+        var src = obj.file.replace('{size}', obj.width + "px");
+        str.push("<img style=\"float:".concat(obj.horizontalAlignement, "\" src=\"").concat(src, "\"/>"));
+        return str.join('');
+      }
+    },
     "non-gloss definition": {
       info: "Use this template to apply the correct styling to a definition that is not a gloss. ",
       "default": {
@@ -8279,7 +8447,6 @@
         }
       }],
       humanize: function humanize(obj) {
-        console.log('ici : ', obj);
         return '(<i>' + obj.qualifier.join(', ') + '</i>)';
       }
     },
@@ -8526,6 +8693,82 @@
       humanize: function humanize(obj) {
         var str = '<a href="#" data-link="https://en.wikipedia.org/wiki/' + obj.lang + ':' + obj.wikipage.replace(" ", "_") + '">' + obj.display + "</a>";
         return str;
+      }
+    },
+    "quote-song": {
+      info: "This template can be used in a dictionary entry to provide a quotation of lyrics from a song.",
+      "default": {
+        '1': "",
+        year: "",
+        author: "",
+        title: "",
+        album: "",
+        url: "",
+        text: "",
+        translation: ""
+      },
+      params: [{
+        name: "",
+        action: function action(value, index, obj) {
+          switch (index) {
+            case 0:
+              return {
+                '1': value
+              };
+
+            case 1:
+              return {
+                year: value
+              };
+
+            case 2:
+              return {
+                author: value
+              };
+
+            case 3:
+              return {
+                title: value
+              };
+
+            case 4:
+              return {
+                album: value
+              };
+
+            case 5:
+              return {
+                url: value
+              };
+
+            case 6:
+              return {
+                text: value
+              };
+
+            case 7:
+              return {
+                translation: value
+              };
+          }
+        }
+      }],
+      humanize: function humanize(obj) {
+        var str = [];
+        if (obj.passage !== '') obj.text = obj.passage;
+        str.push(obj.year ? '<strong>' + obj.year + '</strong>' : '');
+        str.push(obj.author);
+        str.push(obj.title ? '“' + obj.title + '”' : '');
+        str.push(obj.album ? 'in <i>' + obj.album + '</i>' : '');
+        str.push(obj.artist ? 'performed by ' + obj.artist : '');
+        str.push(obj.note);
+        str = str.filter(function (x) {
+          return x;
+        });
+        str[str.length - 1] += obj.text !== '' ? ': ' + '<dl><dd>' + obj.text + '</dd></dl>' : '';
+        return str.filter(function (x) {
+          return x;
+        }).join(', ');
       }
     },
     "quote-journal": {
@@ -9049,6 +9292,180 @@
         });
         return str.join("");
       }
+    },
+    "+obj": {
+      info: "use with object",
+      "default": {
+        lang: "en"
+      },
+      params: [{
+        name: "",
+        action: function action(value, index) {
+          if (index == 0) {
+            return {
+              lang: value
+            };
+          }
+        }
+      }],
+      humanize: function humanize(obj) {
+        return '[+object]';
+      }
+    },
+    "+preo": {
+      info: "use with x + object",
+      "default": {
+        lang: "en",
+        expr: ""
+      },
+      params: [{
+        name: "",
+        action: function action(value, index) {
+          if (index == 0) {
+            return {
+              lang: value
+            };
+          } else {
+            return {
+              expr: value
+            };
+          }
+        }
+      }],
+      humanize: function humanize(obj) {
+        return "[+ <i><a href=\"#\" data-link=\"".concat(obj.expr, "\">").concat(obj.expr, "</a></i> object]");
+      }
+    },
+    "t": {
+      info: "Translation information template",
+      "default": {
+        'lang': '',
+        'translation': '',
+        'categories': [],
+        'script': '',
+        'transliteration': '',
+        'alternateForm': '',
+        'literal': '',
+        'id': ''
+      },
+      params: [{
+        name: "",
+        action: function action(value, index, obj) {
+          switch (index) {
+            case 0:
+              return {
+                lang: value
+              };
+
+            case 1:
+              return {
+                translation: value
+              };
+
+            default:
+              return {
+                categories: value
+              };
+          }
+        }
+      }, {
+        name: "sc",
+        action: function action(value) {
+          return {
+            script: value
+          };
+        }
+      }, {
+        name: "tr",
+        action: function action(value) {
+          return {
+            transliteration: value
+          };
+        }
+      }, {
+        name: "alt",
+        action: function action(value) {
+          return {
+            alternateForm: value
+          };
+        }
+      }, {
+        name: "lit",
+        action: function action(value) {
+          return {
+            literal: value
+          };
+        }
+      }, {
+        name: "id",
+        action: function action(value) {
+          return {
+            id: value
+          };
+        }
+      }],
+      humanize: function humanize(obj) {
+        var str = [];
+        str.push("<a href=\"#\" data-link=\"".concat(obj.translation, "\">").concat(obj.translation, "</a>"));
+        str.push(_toConsumableArray(obj.categories).join(', '));
+        var parenthesis = [];
+        parenthesis.push(obj.transliteration ? obj.transliteration : '');
+        parenthesis.push(obj.literal ? obj.literal : '');
+        parenthesis = parenthesis.filter(function (x) {
+          return x;
+        }).join(', ');
+        str.push(parenthesis ? '(' + parenthesis + ')' : '');
+        return str.filter(function (x) {
+          return x;
+        }).join(' ');
+      }
+    },
+    "trans-mid": {
+      info: "Separator of translation section",
+      "default": {},
+      params: [],
+      humanize: function humanize(obj) {
+        return '';
+      }
+    },
+    "trans-bottom": {
+      info: "End of translation section",
+      "default": {},
+      params: [],
+      humanize: function humanize(obj) {
+        return '';
+      }
+    },
+    "checktrans-top": {
+      info: "Translations to check",
+      "default": {},
+      params: [],
+      humanize: function humanize(obj) {
+        return '<strong>Translations to be checked</strong>';
+      }
+    },
+    "trans-top": {
+      info: "Use this template to display a “Translations” section",
+      "default": {
+        gloss: "",
+        id: ''
+      },
+      params: [{
+        name: "",
+        action: function action(value, index, obj) {
+          switch (index) {
+            case 0:
+              return {
+                gloss: value
+              };
+          }
+        }
+      }],
+      humanize: function humanize(obj) {
+        var str = [];
+        str.push(obj.gloss ? '<strong>' + obj.gloss + '</strong>' : '');
+        return str.join('');
+      }
     }
   };
 
@@ -9071,7 +9488,7 @@
       value: function parse(str) {
         var ret = this.getTemplates(str);
         ret.parsed = this.wikiFormat(ret.parsed);
-        return ret.parsed;
+        return ret;
       }
     }, {
       key: "wikiFormat",
@@ -9081,9 +9498,9 @@
         str = str.replace(/''(.+?)''/gm, "<i>$1</i>");
         str = str.replace(/(^[#\*:]+)(.*)/gm, function (matched, symbols, original) {
           var depth = symbols.length - 1;
-          original = original.replace(/^: (.*)/gm);
-          if (depth == 0) original = '<br/>' + original;
-          return "<div style='padding-left:" + (depth + 1) + "em'>" + original + "</div>";
+          original = original.replace(/^: (.*)/gm); //if (depth == 0) original = '<br/>' + original;
+
+          return "<div style='padding-left:" + (depth + 1) * 2 + "em'>" + original + "</div>";
         });
         return str;
       }
@@ -9095,7 +9512,7 @@
         var type = null;
         var templates = [];
 
-        while (cursor < str.length - 1) {
+        while (cursor < str.length) {
           var anchor = str.substring(cursor, cursor + 2);
 
           switch (anchor) {
@@ -9197,6 +9614,8 @@
         var wt = wikiTemplates[templateName];
 
         if (wt !== undefined) {
+          template.templateName = templateName;
+
           if (wt["default"] !== undefined) {
             for (var key in wt["default"]) {
               if (!template.hasOwnProperty(key)) {
@@ -9269,7 +9688,9 @@
           }
 
           str = wt.humanize(template);
-        }
+        } //str = str.replace(/\|/g, '');          // Avoid problem of parsing with '|'
+        //console.log(template);
+
 
         return {
           template: template,
@@ -9319,7 +9740,12 @@
       key: "manageLink",
       value: function manageLink(str) {
         var blend = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "";
+        //console.log(str);
         var params = str.split("|");
+
+        if (/^(File:|Image:)(.*)/.test(params[0])) {
+          return '{{image|' + str + '}}';
+        }
 
         if (params.length == 1) {
           return '<a href="#" data-link="' + params[0].replace(" ", "_") + '">' + params[0] + blend + "</a>";
@@ -9504,8 +9930,8 @@
     }, {
       key: "getDefinition",
       value: function getDefinition(wikiObject) {
-        var pos = ["Noun", "Adjective", "Verb", "Adverb", "Proper noun", "Conjunction"];
-        console.log(wikiObject);
+        var pos = ["Noun", "Adjective", "Verb", "Adverb", "Proper noun", "Conjunction"]; //console.log(wikiObject);
+
         var ret = this.getNestedObjects(wikiObject[this.lang], pos).map(function (x) {
           return x.content;
         });
@@ -9526,6 +9952,23 @@
         } //console.log('ici : ', ret);
         //    ret = [["{{quote-book|en|year=1851|author={{w|Nathaniel Hawthorne}}|chapter=Main Street|title={{w|The Snow-Image, and Other Twice-Told Tales}}|location=Boston|publisher=Ticknor, Reed,and Fields|year_published=1852|page=96|pgeurl=https://archive.org/stream/snowimageandothe00hawtrich#page/96|passage={{...}}but the blame must rest on the sombre spirit of our forefathers, who wove their '''web''' of life with hardly a single thread of rose-color or gold, and not on me, who have a tropic-love of sunshine, and would gladly gild all the world with it, if I knew where to find so much.}}"]];
 
+
+        return ret;
+      }
+    }, {
+      key: "getTranslation",
+      value: function getTranslation(wikiObject) {
+        var pos = ["Translations"];
+        var ret = this.getNestedObjects(wikiObject[this.lang], pos).map(function (x) {
+          return x.content;
+        });
+        var wp = new WikiParser(this.word);
+
+        for (var i = 0; i < ret.length; i++) {
+          ret[i] = ret[i].map(function (el, index) {
+            return wp.parse(el);
+          });
+        }
 
         return ret;
       }
@@ -9700,17 +10143,64 @@
       } // Commands Console
 
     }, {
+      key: "getTranslation",
+      value: function getTranslation(args, opts) {
+        var _this3 = this;
+
+        var w = new Wiktionary(args[0], "English");
+        var index = 0;
+        var lang = '';
+
+        if (opts.isOption('language')) {
+          lang = opts.isOption('language').arguments;
+        }
+
+        console.log(lang);
+        w.getInfos().then(function (data) {
+          var trans = w.getTranslation(data);
+          trans.forEach(function (x) {
+            x.forEach(function (y) {
+              if (y.templates.filter(function (x) {
+                return x.templateName == 'trans-top';
+              }).length > 0) {
+                index++;
+
+                _this3.terminal.log(index.toString() + '. ' + y.parsed);
+              } else {
+                if (lang !== '') {
+                  console.log(y.templates);
+                  var display = false;
+                  if (y.templates.filter(function (x) {
+                    if (x.lang && lang.includes(x.lang)) {
+                      display = true;
+                    }
+                  })) ;
+
+                  if (display) {
+                    _this3.terminal.log(y.parsed);
+                  }
+                } else {
+                  _this3.terminal.log(y.parsed);
+                }
+              }
+            });
+          });
+        });
+      }
+    }, {
       key: "getDefinition",
       value: function getDefinition(args, opts) {
-        var _this3 = this;
+        var _this4 = this;
 
         var w = new Wiktionary(args[0], "English");
         w.getInfos().then(function (data) {
           var def = w.getDefinition(data);
           def.forEach(function (x) {
-            _this3.terminal.log(x.join(""));
+            x.forEach(function (y) {
+              _this4.terminal.log(y.parsed);
+            });
 
-            _this3.terminal.log('<br/>');
+            _this4.terminal.log('<br/>');
           });
         });
       }
@@ -9877,7 +10367,7 @@
     }, {
       key: "freq",
       value: function freq(args, opts) {
-        var _this4 = this;
+        var _this5 = this;
 
         var selector = " .token";
         var sensitive = true;
@@ -9932,7 +10422,7 @@
 
         if (opts.isOption("p")) {
           this.terminal.log(words.map(function (x) {
-            return x[0] + " (" + _this4.digits2(x[1] / wordsCount * 100) + "%)";
+            return x[0] + " (" + _this5.digits2(x[1] / wordsCount * 100) + "%)";
           }).join(" - "));
         } else {
           this.terminal.log(words.map(function (x) {
@@ -10026,18 +10516,18 @@
     }, {
       key: "autocompleteWiki",
       value: function autocompleteWiki(str) {
-        var _this5 = this;
+        var _this6 = this;
 
         return new Promise(function (resolve) {
           var myHeaders = new Headers();
           myHeaders.append("Content-Type", "application/json");
-          fetch("https://" + _this5.language + ".wikipedia.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" + str + "&namespace=0&limit=10&origin=*", {
+          fetch("https://" + _this6.language + ".wikipedia.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" + str + "&namespace=0&limit=10&origin=*", {
             headers: myHeaders
           }).then(function (response) {
             return response.json();
           }).then(function (text) {
             if (text.error) {
-              _this5.terminal.error(text.error.info);
+              _this6.terminal.error(text.error.info);
             } else {
               resolve(text[1]);
             }
@@ -10047,7 +10537,7 @@
     }, {
       key: "loadHtml",
       value: function loadHtml(args) {
-        var _this6 = this;
+        var _this7 = this;
         //(e || window.event).preventDefault();
         var label = args[0];
 
@@ -10066,17 +10556,17 @@
           return response.json();
         }).then(function (text) {
           if (text.error) {
-            _this6.terminal.error(text.error.info);
+            _this7.terminal.error(text.error.info);
           } else {
-            _this6.terminal.log("Page loaded!");
+            _this7.terminal.log("Page loaded!");
 
             var html = text.parse.text["*"];
             el.innerHTML = html;
 
-            _this6.init();
+            _this7.init();
           }
         })["catch"](function (error) {
-          _this6.terminal.error("! " + error);
+          _this7.terminal.error("! " + error);
         });
       }
     }]);

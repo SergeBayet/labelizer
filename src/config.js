@@ -35,6 +35,31 @@ const terminalConfig = {
   help: "Some global help here!",
   commands: [
     {
+      name: "trans",
+      method: "getTranslation",
+      args: [
+        {
+          name: "word",
+          info: "written form of the word (case sensitive)",
+          type: "string",
+          error: "word (${info}) must be a string"
+        }
+      ],
+      opts: [
+        {
+          name: "language",
+          abbr: "l",
+          info:
+            "Language of translation.",
+          arg: {
+            name: "Language",
+            type: "string",
+            mandatory: true
+          }
+        }
+      ]
+    },
+    {
       name: "def",
       method: "getDefinition",
       args: [
@@ -47,10 +72,7 @@ const terminalConfig = {
       ]
 
     },
-    {
-      name: "nprint",
 
-    },
     {
       name: "ngrams",
       method: "ngrams",

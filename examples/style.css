@@ -45,3 +45,6 @@ body {
 .mw-editsection {
   display: none;
 }
+.wikiparser {
+  margin: 0px;
+}

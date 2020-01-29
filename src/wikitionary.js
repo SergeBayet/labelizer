@@ -111,7 +111,7 @@ class Wiktionary {
   }
   getDefinition(wikiObject) {
     const pos = ["Noun", "Adjective", "Verb", "Adverb", "Proper noun", "Conjunction"];
-    console.log(wikiObject);
+    //console.log(wikiObject);
     let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(x => x.content);
 
 
@@ -129,6 +129,17 @@ class Wiktionary {
 
 
     //    ret = [["{{quote-book|en|year=1851|author={{w|Nathaniel Hawthorne}}|chapter=Main Street|title={{w|The Snow-Image, and Other Twice-Told Tales}}|location=Boston|publisher=Ticknor, Reed,and Fields|year_published=1852|page=96|pgeurl=https://archive.org/stream/snowimageandothe00hawtrich#page/96|passage={{...}}but the blame must rest on the sombre spirit of our forefathers, who wove their '''web''' of life with hardly a single thread of rose-color or gold, and not on me, who have a tropic-love of sunshine, and would gladly gild all the world with it, if I knew where to find so much.}}"]];
+    return ret;
+  }
+  getTranslation(wikiObject) {
+    const pos = ["Translations"];
+    let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(x => x.content);
+    let wp = new WikiParser(this.word);
+    for (let i = 0; i < ret.length; i++) {
+      ret[i] = ret[i].map((el, index) => {
+        return wp.parse(el)
+      });
+    }
     return ret;
   }
 }
