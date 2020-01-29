@@ -72,7 +72,19 @@ const terminalConfig = {
       ]
 
     },
+    {
+      name: "etymo",
+      method: "getEtymology",
+      args: [
+        {
+          name: "word",
+          info: "written form of the word (case sensitive)",
+          type: "string",
+          error: "word (${info}) must be a string"
+        }
+      ]
 
+    },
     {
       name: "ngrams",
       method: "ngrams",

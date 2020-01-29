@@ -208,6 +208,18 @@ export default class Labelizer {
       });
     });
   }
+  getEtymology(args, opts) {
+    let w = new Wiktionary(args[0], "English");
+    w.getInfos().then(data => {
+      let def = w.getEtymology(data);
+      def.forEach(x => {
+        x.forEach(y => {
+          this.terminal.log(y.parsed);
+        })
+        this.terminal.log('<br/>');
+      });
+    });
+  }
   getDefinition(args, opts) {
     let w = new Wiktionary(args[0], "English");
     w.getInfos().then(data => {
@@ -215,7 +227,6 @@ export default class Labelizer {
       def.forEach(x => {
         x.forEach(y => {
           this.terminal.log(y.parsed);
-
         })
         this.terminal.log('<br/>');
       });
