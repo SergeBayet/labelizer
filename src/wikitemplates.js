@@ -32,6 +32,7 @@ export const alias = {
   't-check': 't',
   't+check': 't',
   't-needed': 't',
+  'ttbc': 't',
   'q': 'qualifier',
   'inh': 'inherited',
   'der': 'derived',
@@ -39,7 +40,8 @@ export const alias = {
   'bor': 'borrowed',
   'suf': 'suffix',
   'cog': 'cognate',
-  'etyl': 'etymology language'
+  'etyl': 'etymology language',
+  'l': 'link'
 }
 export const wikiTemplates = {
   "image": {
@@ -1058,6 +1060,10 @@ export const wikiTemplates = {
 
           }
         }
+      },
+      {
+        name: "t",
+        action: value => ({ gloss: value })
       }
     ],
     humanize: obj => {
@@ -1100,6 +1106,10 @@ export const wikiTemplates = {
 
           }
         }
+      },
+      {
+        name: "t",
+        action: value => ({ gloss: value })
       }
     ],
     humanize: obj => {
@@ -1142,6 +1152,10 @@ export const wikiTemplates = {
 
           }
         }
+      },
+      {
+        name: "t",
+        action: value => ({ gloss: value })
       }
     ],
     humanize: obj => {
@@ -1181,6 +1195,10 @@ export const wikiTemplates = {
 
           }
         }
+      },
+      {
+        name: "t",
+        action: value => ({ gloss: value })
       }
     ],
     humanize: obj => {
@@ -1219,6 +1237,48 @@ export const wikiTemplates = {
 
           }
         }
+      },
+      {
+        name: "t",
+        action: value => ({ gloss: value })
+      }
+    ],
+    humanize: obj => {
+      let str = [];
+
+      str.push(obj.alternateText ? `<a href="#" data-link="${obj.pageName}"><i>${obj.alternateText}</i></a>` : '');
+      str.push(obj.gloss ? `(“${obj.gloss}”)` : '');
+      return str.filter(x => x).join(' ')
+    }
+  },
+  "link": {
+    info: "Use this template outside running text, in sections that list entries, such as “Synonyms”, “Related terms” and “Descendants”.",
+    default: {
+      'language': '',
+      'pageName': '',
+      'alternateText': '',
+      'gloss': ''
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index, obj) => {
+          switch (index) {
+            case 0:
+              return { language: value };
+            case 1:
+              return { pageName: value, alternateText: value };
+            case 2:
+              return { alternateText: value };
+            case 3:
+              return { gloss: value };
+
+          }
+        }
+      },
+      {
+        name: "t",
+        action: value => ({ gloss: value })
       }
     ],
     humanize: obj => {
@@ -1256,6 +1316,10 @@ export const wikiTemplates = {
 
           }
         }
+      },
+      {
+        name: "t",
+        action: value => ({ gloss: value })
       }
     ],
     humanize: obj => {
@@ -1326,6 +1390,33 @@ export const wikiTemplates = {
       str.push(obj.roots.join(", "));
       return str.join('') + ". ";
     }
+  },
+  "prefix": {
+    info: "This template is used in the etymology section",
+    default: {
+      language: '',
+      root: '',
+      prefix: ''
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index, obj) => {
+          switch (index) {
+            case 0:
+              return { language: value };
+            case 1:
+              return { prefix: value };
+            case 2:
+              return { root: value };
+          }
+        }
+      }
+    ],
+    humanize: obj => {
+      return `<a href="#" data-link="${obj.prefix}"><i>${obj.prefix}-</i></a> + <a href="#" data-link="${obj.root}"><i>${obj.root}</i></a>`
+    },
+
   },
   "suffix": {
     info: "This template is used in the etymology section",
