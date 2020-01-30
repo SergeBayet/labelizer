@@ -37,7 +37,9 @@ export const alias = {
   'der': 'derived',
   'm': 'mention',
   'bor': 'borrowed',
-  'suf': 'suffix'
+  'suf': 'suffix',
+  'cog': 'cognate',
+  'etyl': 'etymology language'
 }
 export const wikiTemplates = {
   "image": {
@@ -1113,6 +1115,86 @@ export const wikiTemplates = {
       return str.filter(x => x).join(' ')
     }
   },
+  "inherited": {
+    info: "This template is intended for terms that have an unbroken chain of inheritance from the source term in question.",
+    default: {
+      'language': '',
+      'languageFrom': '',
+      'term': '',
+      'alternativeDisplay': '',
+      'gloss': ''
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index, obj) => {
+          switch (index) {
+            case 0:
+              return { language: value };
+            case 1:
+              return { languageFrom: value };
+            case 2:
+              return { term: value };
+            case 3:
+              return { alternativeDisplay: value };
+            case 4:
+              return { gloss: value };
+
+          }
+        }
+      }
+    ],
+    humanize: obj => {
+      let str = [];
+      let language = langCodes.filter(x => x.includes(obj.languageFrom))[0] || [];
+
+      if (language.length > 0) {
+        console.log(language);
+        str.push(language[2]);
+      }
+      str.push(obj.term ? `<a href="#" data-link="${obj.term}"><i>${obj.term}</i></a>` : '');
+      str.push(obj.gloss ? `(“${obj.gloss}”)` : '');
+      return str.filter(x => x).join(' ')
+    }
+  },
+  "cognate": {
+    info: "This template is used to indicate cognacy with terms in other languages that are not ancestors of the given term (hence none of {{inherited}}, {{borrowed}}, and {{derived}} are applicable).",
+    default: {
+      'languageFrom': '',
+      'term': '',
+      'alternativeDisplay': '',
+      'gloss': ''
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index, obj) => {
+          switch (index) {
+            case 0:
+              return { languageFrom: value };
+            case 1:
+              return { term: value };
+            case 2:
+              return { alternativeDisplay: value };
+            case 3:
+              return { gloss: value };
+
+          }
+        }
+      }
+    ],
+    humanize: obj => {
+      let str = [];
+      let language = langCodes.filter(x => x.includes(obj.languageFrom))[0] || [];
+
+      if (language.length > 0) {
+        str.push(language[2]);
+      }
+      str.push(obj.term ? `<a href="#" data-link="${obj.term}"><i>${obj.term}</i></a>` : '');
+      str.push(obj.gloss ? `(“${obj.gloss}”)` : '');
+      return str.filter(x => x).join(' ')
+    }
+  },
   "mention": {
     info: "This template is used to format the etymology of terms derived from another language.",
     default: {
@@ -1189,6 +1271,62 @@ export const wikiTemplates = {
       return str.filter(x => x).join(' ')
     }
   },
+  "etymology language": {
+    info: "This template should no longer be used directly in entries; it should be replaced by {{der}}, {{bor}}, {{inh}}, {{cog}} or {{noncog}}.",
+    default: {
+      'language': '',
+      'languageFrom': ''
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index, obj) => {
+          switch (index) {
+            case 0:
+              return { languageFrom: value };
+            case 1:
+              return { language: value };
+          }
+        }
+      }
+    ],
+    humanize: obj => {
+      let str = [];
+      let language = langCodes.filter(x => x.includes(obj.languageFrom))[0] || [];
+
+      if (language.length > 0) {
+        str.push(language[2]);
+      }
+
+      return str.filter(x => x).join(' ')
+    }
+  },
+  "PIE root": {
+    info: "This template adds entries to a subcategory of Category:Terms derived from Proto-Indo-European roots. It should be placed at the top of the \"Etymology\" section, before the text. ",
+    default: {
+      language: '',
+      roots: []
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index, obj) => {
+          switch (index) {
+            case 0:
+              return { language: value };
+            default:
+              return { roots: value };
+          }
+        }
+      }
+    ],
+    humanize: obj => {
+      let str = [];
+      str.push('Proto-Indo-European root : ');
+      str.push(obj.roots.join(", "));
+      return str.join('') + ". ";
+    }
+  },
   "suffix": {
     info: "This template is used in the etymology section",
     default: {
@@ -1200,14 +1338,13 @@ export const wikiTemplates = {
       {
         name: "",
         action: (value, index, obj) => {
-          switch(index)
-          {
+          switch (index) {
             case 0:
-              return {language: value};
+              return { language: value };
             case 1:
-              return {root: value};
+              return { root: value };
             case 2:
-              return {suffix: value};
+              return { suffix: value };
           }
         }
       }
@@ -1220,21 +1357,21 @@ export const wikiTemplates = {
   "taxlink": {
     info: "This template categorizes entries with missing taxonomic names, so that the missing names can be added (if not spelling mistakes).",
     default: {
-      taxon : '',
-      level : '',
-      alternativeDisplay : ''
+      taxon: '',
+      level: '',
+      alternativeDisplay: ''
     },
     params: [
       {
         name: "",
         action: (value, index, obj) => {
-          switch(index) {
+          switch (index) {
             case 0:
-              return {taxon: value, alternativeDisplay: value};
+              return { taxon: value, alternativeDisplay: value };
             case 1:
-              return {level: value};
+              return { level: value };
             case 2:
-              return {alternativeDisplay: value}
+              return { alternativeDisplay: value }
           }
         }
       }

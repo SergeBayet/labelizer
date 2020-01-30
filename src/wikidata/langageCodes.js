@@ -1,4 +1,6 @@
 const langCodes = [
+  ["gem-pro", "", "Proto-Germanic"],
+  ["ine-pro", "", "Proto-Indo-European"],
   ["aar", "aa", "Afar"],
   ["abk", "ab", "Abkhazian"],
   ["ace", "", "Achinese"],
