@@ -23,7 +23,6 @@ class Autocomplete {
 
   }
   setPositionX(x) {
-    console.log(x);
     this.div.style.left = x.toString() + 'px';
   }
   setElementToUpdate(element) {

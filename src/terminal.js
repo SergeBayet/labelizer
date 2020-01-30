@@ -535,6 +535,8 @@ class Terminal {
       return value >= filter[0] && value <= filter[1];
     } else if (filter instanceof RegExp) {
       return filter.test(value);
+    } else if (typeof filter === 'object') {
+      return true;
     }
     this.error("Filter <em>" + filter.toString() + "</em> not supported");
     return true;

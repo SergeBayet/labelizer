@@ -113,7 +113,12 @@ class Wiktionary {
       "Verb",
       "Adverb",
       "Proper noun",
-      "Conjunction"
+      "Conjunction",
+      "Pronoun",
+      "Preposition",
+      "Numeral",
+      "Letter",
+      "Article"
     ];
     //console.log(wikiObject);
     let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(
@@ -137,6 +142,19 @@ class Wiktionary {
   }
   getTranslation(wikiObject) {
     const pos = ["Translations"];
+    let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(
+      x => x.content
+    );
+    let wp = new WikiParser(this.word);
+    for (let i = 0; i < ret.length; i++) {
+      ret[i] = ret[i].map((el, index) => {
+        return wp.parse(el);
+      });
+    }
+    return ret;
+  }
+  getPronunciation(wikiObject) {
+    const pos = ["Pronunciation"];
     let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(
       x => x.content
     );

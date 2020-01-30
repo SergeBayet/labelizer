@@ -119,6 +119,14 @@ class WikiParser {
     let params = str.split("|").map(x => x.trim());
 
     let templateName = params[0];
+    let subTemplate = templateName.indexOf(':');
+    if (subTemplate !== -1) {
+      //console.log(templateName);
+      params = [...templateName.split(':'), ...params.slice(1)];
+
+      templateName = params[0];
+      console.log(templateName);
+    }
     if (alias[params[0]] !== undefined) {
       templateName = alias[params[0]];
     }

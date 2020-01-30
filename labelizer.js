@@ -7176,6 +7176,9 @@
         name: "word",
         info: "written form of the word (case sensitive)",
         type: "string",
+        filter: {
+          callbackMethod: "autocompleteWiktionary"
+        },
         error: "word (${info}) must be a string"
       }],
       opts: [{
@@ -7195,6 +7198,21 @@
         name: "word",
         info: "written form of the word (case sensitive)",
         type: "string",
+        filter: {
+          callbackMethod: "autocompleteWiktionary"
+        },
+        error: "word (${info}) must be a string"
+      }]
+    }, {
+      name: "pronunce",
+      method: "getPronunciation",
+      args: [{
+        name: "word",
+        info: "written form of the word (case sensitive)",
+        type: "string",
+        filter: {
+          callbackMethod: "autocompleteWiktionary"
+        },
         error: "word (${info}) must be a string"
       }]
     }, {
@@ -7204,6 +7222,9 @@
         name: "word",
         info: "written form of the word (case sensitive)",
         type: "string",
+        filter: {
+          callbackMethod: "autocompleteWiktionary"
+        },
         error: "word (${info}) must be a string"
       }]
     }, {
@@ -7449,7 +7470,6 @@
     }, {
       key: "setPositionX",
       value: function setPositionX(x) {
-        console.log(x);
         this.div.style.left = x.toString() + 'px';
       }
     }, {
@@ -8081,6 +8101,8 @@
           return value >= filter[0] && value <= filter[1];
         } else if (filter instanceof RegExp) {
           return filter.test(value);
+        } else if (_typeof(filter) === 'object') {
+          return true;
         }
 
         this.error("Filter <em>" + filter.toString() + "</em> not supported");
@@ -8211,8 +8233,916 @@
 
   var langCodes = [["gem-pro", "", "Proto-Germanic"], ["ine-pro", "", "Proto-Indo-European"], ["aar", "aa", "Afar"], ["abk", "ab", "Abkhazian"], ["ace", "", "Achinese"], ["ach", "", "Acoli"], ["ada", "", "Adangme"], ["ady", "", "Adyghe; Adygei"], ["afa", "", "Afro-Asiatic languages"], ["afh", "", "Afrihili"], ["afr", "af", "Afrikaans"], ["ain", "", "Ainu"], ["aka", "ak", "Akan"], ["akk", "", "Akkadian"], ["alb", "sq", "Albanian"], ["ale", "", "Aleut"], ["alg", "", "Algonquian languages"], ["alt", "", "Southern Altai"], ["amh", "am", "Amharic"], ["ang", "", "Old English (ca.450-1100)"], ["anp", "", "Angika"], ["apa", "", "Apache languages"], ["ara", "ar", "Arabic"], ["arc", "", "Official Aramaic (700-300 BCE); Imperial Aramaic (700-300 BCE)"], ["arg", "an", "Aragonese"], ["arm", "hy", "Armenian"], ["arn", "", "Mapudungun; Mapuche"], ["arp", "", "Arapaho"], ["art", "", "Artificial languages"], ["arw", "", "Arawak"], ["asm", "as", "Assamese"], ["ast", "", "Asturian; Bable; Leonese; Asturleonese"], ["ath", "", "Athapascan languages"], ["aus", "", "Australian languages"], ["ava", "av", "Avaric"], ["ave", "ae", "Avestan"], ["awa", "", "Awadhi"], ["aym", "ay", "Aymara"], ["aze", "az", "Azerbaijani"], ["bad", "", "Banda languages"], ["bai", "", "Bamileke languages"], ["bak", "ba", "Bashkir"], ["bal", "", "Baluchi"], ["bam", "bm", "Bambara"], ["ban", "", "Balinese"], ["baq", "eu", "Basque"], ["bas", "", "Basa"], ["bat", "", "Baltic languages"], ["bej", "", "Beja; Bedawiyet"], ["bel", "be", "Belarusian"], ["bem", "", "Bemba"], ["ben", "bn", "Bengali"], ["ber", "", "Berber languages"], ["bho", "", "Bhojpuri"], ["bih", "bh", "Bihari languages"], ["bik", "", "Bikol"], ["bin", "", "Bini; Edo"], ["bis", "bi", "Bislama"], ["bla", "", "Siksika"], ["bnt", "", "Bantu (Other)"], ["bos", "bs", "Bosnian"], ["bra", "", "Braj"], ["bre", "br", "Breton"], ["btk", "", "Batak languages"], ["bua", "", "Buriat"], ["bug", "", "Buginese"], ["bul", "bg", "Bulgarian"], ["bur", "my", "Burmese"], ["byn", "", "Blin; Bilin"], ["cad", "", "Caddo"], ["cai", "", "Central American Indian languages"], ["car", "", "Galibi Carib"], ["cat", "ca", "Catalan; Valencian"], ["cau", "", "Caucasian languages"], ["ceb", "", "Cebuano"], ["cel", "", "Celtic languages"], ["cha", "ch", "Chamorro"], ["chb", "", "Chibcha"], ["che", "ce", "Chechen"], ["chg", "", "Chagatai"], ["chi", "zh", "Chinese"], ["chk", "", "Chuukese"], ["chm", "", "Mari"], ["chn", "", "Chinook jargon"], ["cho", "", "Choctaw"], ["chp", "", "Chipewyan; Dene Suline"], ["chr", "", "Cherokee"], ["chu", "cu", "Church Slavic; Old Slavonic; Church Slavonic; Old Bulgarian; Old Church Slavonic"], ["chv", "cv", "Chuvash"], ["chy", "", "Cheyenne"], ["cmc", "", "Chamic languages"], ["cop", "", "Coptic"], ["cor", "kw", "Cornish"], ["cos", "co", "Corsican"], ["cpe", "", "Creoles and pidgins, English based"], ["cpf", "", "Creoles and pidgins, French-based "], ["cpp", "", "Creoles and pidgins, Portuguese-based "], ["cre", "cr", "Cree"], ["crh", "", "Crimean Tatar; Crimean Turkish"], ["crp", "", "Creoles and pidgins "], ["csb", "", "Kashubian"], ["cus", "", "Cushitic languages"], ["cze", "cs", "Czech"], ["dak", "", "Dakota"], ["dan", "da", "Danish"], ["dar", "", "Dargwa"], ["day", "", "Land Dayak languages"], ["del", "", "Delaware"], ["den", "", "Slave (Athapascan)"], ["dgr", "", "Dogrib"], ["din", "", "Dinka"], ["div", "dv", "Divehi; Dhivehi; Maldivian"], ["doi", "", "Dogri"], ["dra", "", "Dravidian languages"], ["dsb", "", "Lower Sorbian"], ["dua", "", "Duala"], ["dum", "", "Middle Dutch (ca.1050-1350)"], ["dut", "nl", "Dutch; Flemish"], ["dyu", "", "Dyula"], ["dzo", "dz", "Dzongkha"], ["efi", "", "Efik"], ["egy", "", "Egyptian (Ancient)"], ["eka", "", "Ekajuk"], ["elx", "", "Elamite"], ["eng", "en", "English"], ["enm", "", "Middle English (1100-1500)"], ["epo", "eo", "Esperanto"], ["est", "et", "Estonian"], ["ewe", "ee", "Ewe"], ["ewo", "", "Ewondo"], ["fan", "", "Fang"], ["fao", "fo", "Faroese"], ["fat", "", "Fanti"], ["fij", "fj", "Fijian"], ["fil", "", "Filipino; Pilipino"], ["fin", "fi", "Finnish"], ["fiu", "", "Finno-Ugrian languages"], ["fon", "", "Fon"], ["fre", "fr", "French"], ["frm", "", "Middle French (ca.1400-1600)"], ["fro", "", "Old French (842-ca.1400)"], ["frr", "", "Northern Frisian"], ["frs", "", "Eastern Frisian"], ["fry", "fy", "Western Frisian"], ["ful", "ff", "Fulah"], ["fur", "", "Friulian"], ["gaa", "", "Ga"], ["gay", "", "Gayo"], ["gba", "", "Gbaya"], ["gem", "", "Germanic languages"], ["geo", "ka", "Georgian"], ["ger", "de", "German"], ["gez", "", "Geez"], ["gil", "", "Gilbertese"], ["gla", "gd", "Gaelic; Scottish Gaelic"], ["gle", "ga", "Irish"], ["glg", "gl", "Galician"], ["glv", "gv", "Manx"], ["gmh", "", "German, Middle High (ca.1050-1500)"], ["goh", "", "German, Old High (ca.750-1050)"], ["gon", "", "Gondi"], ["gor", "", "Gorontalo"], ["got", "", "Gothic"], ["grb", "", "Grebo"], ["grc", "", "Ancient Greek (to 1453)"], ["gre", "el", "Modern Greek (1453-)"], ["grn", "gn", "Guarani"], ["gsw", "", "Swiss German; Alemannic; Alsatian"], ["guj", "gu", "Gujarati"], ["gwi", "", "Gwich'in"], ["hai", "", "Haida"], ["hat", "ht", "Haitian; Haitian Creole"], ["hau", "ha", "Hausa"], ["haw", "", "Hawaiian"], ["heb", "he", "Hebrew"], ["her", "hz", "Herero"], ["hil", "", "Hiligaynon"], ["him", "", "Himachali languages; Western Pahari languages"], ["hin", "hi", "Hindi"], ["hit", "", "Hittite"], ["hmn", "", "Hmong; Mong"], ["hmo", "ho", "Hiri Motu"], ["hrv", "hr", "Croatian"], ["hsb", "", "Upper Sorbian"], ["hun", "hu", "Hungarian"], ["hup", "", "Hupa"], ["iba", "", "Iban"], ["ibo", "ig", "Igbo"], ["ice", "is", "Icelandic"], ["ido", "io", "Ido"], ["iii", "ii", "Sichuan Yi; Nuosu"], ["ijo", "", "Ijo languages"], ["iku", "iu", "Inuktitut"], ["ile", "ie", "Interlingue; Occidental"], ["ilo", "", "Iloko"], ["ina", "ia", "Interlingua (International Auxiliary Language Association)"], ["inc", "", "Indic languages"], ["ind", "id", "Indonesian"], ["ine", "", "Indo-European languages"], ["inh", "", "Ingush"], ["ipk", "ik", "Inupiaq"], ["ira", "", "Iranian languages"], ["iro", "", "Iroquoian languages"], ["ita", "it", "Italian"], ["jav", "jv", "Javanese"], ["jbo", "", "Lojban"], ["jpn", "ja", "Japanese"], ["jpr", "", "Judeo-Persian"], ["jrb", "", "Judeo-Arabic"], ["kaa", "", "Kara-Kalpak"], ["kab", "", "Kabyle"], ["kac", "", "Kachin; Jingpho"], ["kal", "kl", "Kalaallisut; Greenlandic"], ["kam", "", "Kamba"], ["kan", "kn", "Kannada"], ["kar", "", "Karen languages"], ["kas", "ks", "Kashmiri"], ["kau", "kr", "Kanuri"], ["kaw", "", "Kawi"], ["kaz", "kk", "Kazakh"], ["kbd", "", "Kabardian"], ["kha", "", "Khasi"], ["khi", "", "Khoisan languages"], ["khm", "km", "Central Khmer"], ["kho", "", "Khotanese; Sakan"], ["kik", "ki", "Kikuyu; Gikuyu"], ["kin", "rw", "Kinyarwanda"], ["kir", "ky", "Kirghiz; Kyrgyz"], ["kmb", "", "Kimbundu"], ["kok", "", "Konkani"], ["kom", "kv", "Komi"], ["kon", "kg", "Kongo"], ["kor", "ko", "Korean"], ["kos", "", "Kosraean"], ["kpe", "", "Kpelle"], ["krc", "", "Karachay-Balkar"], ["krl", "", "Karelian"], ["kro", "", "Kru languages"], ["kru", "", "Kurukh"], ["kua", "kj", "Kuanyama; Kwanyama"], ["kum", "", "Kumyk"], ["kur", "ku", "Kurdish"], ["kut", "", "Kutenai"], ["lad", "", "Ladino"], ["lah", "", "Lahnda"], ["lam", "", "Lamba"], ["lao", "lo", "Lao"], ["lat", "la", "Latin"], ["lav", "lv", "Latvian"], ["lez", "", "Lezghian"], ["lim", "li", "Limburgan; Limburger; Limburgish"], ["lin", "ln", "Lingala"], ["lit", "lt", "Lithuanian"], ["lol", "", "Mongo"], ["loz", "", "Lozi"], ["ltz", "lb", "Luxembourgish; Letzeburgesch"], ["lua", "", "Luba-Lulua"], ["lub", "lu", "Luba-Katanga"], ["lug", "lg", "Ganda"], ["lui", "", "Luiseno"], ["lun", "", "Lunda"], ["luo", "", "Luo (Kenya and Tanzania)"], ["lus", "", "Lushai"], ["mac", "mk", "Macedonian"], ["mad", "", "Madurese"], ["mag", "", "Magahi"], ["mah", "mh", "Marshallese"], ["mai", "", "Maithili"], ["mak", "", "Makasar"], ["mal", "ml", "Malayalam"], ["man", "", "Mandingo"], ["mao", "mi", "Maori"], ["map", "", "Austronesian languages"], ["mar", "mr", "Marathi"], ["mas", "", "Masai"], ["may", "ms", "Malay"], ["mdf", "", "Moksha"], ["mdr", "", "Mandar"], ["men", "", "Mende"], ["mga", "", "Irish, Middle (900-1200)"], ["mic", "", "Mi'kmaq; Micmac"], ["min", "", "Minangkabau"], ["mis", "", "Uncoded languages"], ["mkh", "", "Mon-Khmer languages"], ["mlg", "mg", "Malagasy"], ["mlt", "mt", "Maltese"], ["mnc", "", "Manchu"], ["mni", "", "Manipuri"], ["mno", "", "Manobo languages"], ["moh", "", "Mohawk"], ["mon", "mn", "Mongolian"], ["mos", "", "Mossi"], ["mul", "", "Multiple languages"], ["mun", "", "Munda languages"], ["mus", "", "Creek"], ["mwl", "", "Mirandese"], ["mwr", "", "Marwari"], ["myn", "", "Mayan languages"], ["myv", "", "Erzya"], ["nah", "", "Nahuatl languages"], ["nai", "", "North American Indian languages"], ["nap", "", "Neapolitan"], ["nau", "na", "Nauru"], ["nav", "nv", "Navajo; Navaho"], ["nbl", "nr", "Ndebele, South; South Ndebele"], ["nde", "nd", "Ndebele, North; North Ndebele"], ["ndo", "ng", "Ndonga"], ["nds", "", "Low German; Low Saxon; German, Low; Saxon, Low"], ["nep", "ne", "Nepali"], ["new", "", "Nepal Bhasa; Newari"], ["nia", "", "Nias"], ["nic", "", "Niger-Kordofanian languages"], ["niu", "", "Niuean"], ["nno", "nn", "Norwegian Nynorsk; Nynorsk, Norwegian"], ["nob", "nb", "Bokmål, Norwegian; Norwegian Bokmål"], ["nog", "", "Nogai"], ["non", "", "Norse, Old"], ["nor", "no", "Norwegian"], ["nqo", "", "N'Ko"], ["nso", "", "Pedi; Sepedi; Northern Sotho"], ["nub", "", "Nubian languages"], ["nwc", "", "Classical Newari; Old Newari; Classical Nepal Bhasa"], ["nya", "ny", "Chichewa; Chewa; Nyanja"], ["nym", "", "Nyamwezi"], ["nyn", "", "Nyankole"], ["nyo", "", "Nyoro"], ["nzi", "", "Nzima"], ["oci", "oc", "Occitan (post 1500); Provençal"], ["oji", "oj", "Ojibwa"], ["ori", "or", "Oriya"], ["orm", "om", "Oromo"], ["osa", "", "Osage"], ["oss", "os", "Ossetian; Ossetic"], ["ota", "", "Turkish, Ottoman (1500-1928)"], ["oto", "", "Otomian languages"], ["paa", "", "Papuan languages"], ["pag", "", "Pangasinan"], ["pal", "", "Pahlavi"], ["pam", "", "Pampanga; Kapampangan"], ["pan", "pa", "Panjabi; Punjabi"], ["pap", "", "Papiamento"], ["pau", "", "Palauan"], ["peo", "", "Persian, Old (ca.600-400 B.C.)"], ["per", "fa", "Persian"], ["phi", "", "Philippine languages"], ["phn", "", "Phoenician"], ["pli", "pi", "Pali"], ["pol", "pl", "Polish"], ["pon", "", "Pohnpeian"], ["por", "pt", "Portuguese"], ["pra", "", "Prakrit languages"], ["pro", "", "Provençal, Old (to 1500)"], ["pus", "ps", "Pushto; Pashto"], ["qaa-qtz", "", "Reserved for local use"], ["que", "qu", "Quechua"], ["raj", "", "Rajasthani"], ["rap", "", "Rapanui"], ["rar", "", "Rarotongan; Cook Islands Maori"], ["roa", "", "Romance languages"], ["roh", "rm", "Romansh"], ["rom", "", "Romany"], ["rum", "ro", "Romanian; Moldavian; Moldovan"], ["run", "rn", "Rundi"], ["rup", "", "Aromanian; Arumanian; Macedo-Romanian"], ["rus", "ru", "Russian"], ["sad", "", "Sandawe"], ["sag", "sg", "Sango"], ["sah", "", "Yakut"], ["sai", "", "South American Indian (Other)"], ["sal", "", "Salishan languages"], ["sam", "", "Samaritan Aramaic"], ["san", "sa", "Sanskrit"], ["sas", "", "Sasak"], ["sat", "", "Santali"], ["scn", "", "Sicilian"], ["sco", "", "Scots"], ["sel", "", "Selkup"], ["sem", "", "Semitic languages"], ["sga", "", "Old Irish (to 900)"], ["sgn", "", "Sign Languages"], ["shn", "", "Shan"], ["sid", "", "Sidamo"], ["sin", "si", "Sinhala; Sinhalese"], ["sio", "", "Siouan languages"], ["sit", "", "Sino-Tibetan languages"], ["sla", "", "Slavic languages"], ["slo", "sk", "Slovak"], ["slv", "sl", "Slovenian"], ["sma", "", "Southern Sami"], ["sme", "se", "Northern Sami"], ["smi", "", "Sami languages"], ["smj", "", "Lule Sami"], ["smn", "", "Inari Sami"], ["smo", "sm", "Samoan"], ["sms", "", "Skolt Sami"], ["sna", "sn", "Shona"], ["snd", "sd", "Sindhi"], ["snk", "", "Soninke"], ["sog", "", "Sogdian"], ["som", "so", "Somali"], ["son", "", "Songhai languages"], ["sot", "st", "Southern Sotho"], ["spa", "es", "Spanish; Castilian"], ["srd", "sc", "Sardinian"], ["srn", "", "Sranan Tongo"], ["srp", "sr", "Serbian"], ["srr", "", "Serer"], ["ssa", "", "Nilo-Saharan languages"], ["ssw", "ss", "Swati"], ["suk", "", "Sukuma"], ["sun", "su", "Sundanese"], ["sus", "", "Susu"], ["sux", "", "Sumerian"], ["swa", "sw", "Swahili"], ["swe", "sv", "Swedish"], ["syc", "", "Classical Syriac"], ["syr", "", "Syriac"], ["tah", "ty", "Tahitian"], ["tai", "", "Tai languages"], ["tam", "ta", "Tamil"], ["tat", "tt", "Tatar"], ["tel", "te", "Telugu"], ["tem", "", "Timne"], ["ter", "", "Tereno"], ["tet", "", "Tetum"], ["tgk", "tg", "Tajik"], ["tgl", "tl", "Tagalog"], ["tha", "th", "Thai"], ["tib", "bo", "Tibetan"], ["tig", "", "Tigre"], ["tir", "ti", "Tigrinya"], ["tiv", "", "Tiv"], ["tkl", "", "Tokelau"], ["tlh", "", "Klingon; tlhIngan-Hol"], ["tli", "", "Tlingit"], ["tmh", "", "Tamashek"], ["tog", "", "Tonga (Nyasa)"], ["ton", "to", "Tonga (Tonga Islands)"], ["tpi", "", "Tok Pisin"], ["tsi", "", "Tsimshian"], ["tsn", "tn", "Tswana"], ["tso", "ts", "Tsonga"], ["tuk", "tk", "Turkmen"], ["tum", "", "Tumbuka"], ["tup", "", "Tupi languages"], ["tur", "tr", "Turkish"], ["tut", "", "Altaic languages"], ["tvl", "", "Tuvalu"], ["twi", "tw", "Twi"], ["tyv", "", "Tuvinian"], ["udm", "", "Udmurt"], ["uga", "", "Ugaritic"], ["uig", "ug", "Uighur; Uyghur"], ["ukr", "uk", "Ukrainian"], ["umb", "", "Umbundu"], ["und", "", "Undetermined"], ["urd", "ur", "Urdu"], ["uzb", "uz", "Uzbek"], ["vai", "", "Vai"], ["ven", "ve", "Venda"], ["vie", "vi", "Vietnamese"], ["vol", "vo", "Volapük"], ["vot", "", "Votic"], ["wak", "", "Wakashan languages"], ["wal", "", "Walamo"], ["war", "", "Waray"], ["was", "", "Washo"], ["wel", "cy", "Welsh"], ["wen", "", "Sorbian languages"], ["wln", "wa", "Walloon"], ["wol", "wo", "Wolof"], ["xal", "", "Kalmyk; Oirat"], ["xho", "xh", "Xhosa"], ["yao", "", "Yao"], ["yap", "", "Yapese"], ["yid", "yi", "Yiddish"], ["yor", "yo", "Yoruba"], ["ypk", "", "Yupik languages"], ["zap", "", "Zapotec"], ["zbl", "", "Blissymbols; Blissymbolics; Bliss"], ["zen", "", "Zenaga"], ["zgh", "", "Standard Moroccan Tamazight"], ["zha", "za", "Zhuang; Chuang"], ["znd", "", "Zande languages"], ["zul", "zu", "Zulu"], ["zun", "", "Zuni"], ["zxx", "", "No linguistic content; Not applicable"], ["zza", "", "Zaza; Dimili; Dimli; Kirdki; Kirmanjki; Zazaki"], ["xno", "", "Anglo-Norman"], ["LL.", "", "Late-Latin"]];
 
+  var labels = {};
+  var aliases = {};
+  var CE = '<small class="ce-date2">CE</small>';
+  var BCE = '<small class="ce-date2">BCE</small>';
+  labels["AAVE"] = {
+    link: "African American Vernacular English",
+    display: "AAVE"
+  };
+  labels["æ-tensing"] = {
+    link: "æ-tensing",
+    type: "sound change"
+  };
+  aliases["ae-tensing"] = "æ-tensing";
+  labels["afb"] = {
+    link: "Gulf Arabic",
+    display: "Gulf Arabic"
+  };
+  aliases["Gulf"] = "afb";
+  labels["Anglicised"] = {
+    link: "Anglicisation#Anglicisation of non-English-language vocabulary and names",
+    display: "Anglicised"
+  };
+  aliases["Anglicized"] = "Anglicised";
+  labels["Aran"] = {
+    link: "Aran Islands",
+    display: "Aran"
+  };
+  labels["ar-Cairene"] = {
+    link: "Egyptian Arabic",
+    display: "Cairene"
+  };
+  aliases["Cairene"] = "ar-Cairene";
+  labels["Arvanite"] = {
+    link: "Arvanitika",
+    display: "Arvanite"
+  };
+  labels["Ashkenazi Hebrew"] = {
+    link: "Ashkenazi Hebrew",
+    display: "Ashkenazi Hebrew"
+  };
+  aliases["Ashkenazi"] = "Ashkenazi Hebrew";
+  labels["Australia"] = {
+    link: "Australian English phonology",
+    display: "General Australian"
+  };
+  aliases["AU"] = "Australia";
+  aliases["AuE"] = "Australia";
+  aliases["Aus"] = "Australia";
+  aliases["AusE"] = "Australia";
+  aliases["GenAus"] = "Australia";
+  aliases["General Australian"] = "Australia";
+  labels["Balearic Catalan"] = {
+    link: "Balearic dialect",
+    display: "Balearic"
+  };
+  aliases["Balearic"] = "Balearic Catalan";
+  labels["BE-nl"] = {
+    link: "Belgian Dutch",
+    display: "Belgium"
+  };
+  aliases["BE"] = "BE-nl";
+  labels["Beijing"] = {
+    link: "Beijing dialect",
+    display: "Beijing"
+  };
+  labels["Bosnia"] = {
+    link: "Comparison of standard Bosnian, Croatian, Montenegrin and Serbian#Accentuation",
+    display: "Bosnia"
+  };
+  aliases["Bosnian"] = "Bosnia";
+  labels["Boston"] = {
+    link: "Boston English",
+    display: "Boston"
+  };
+  aliases["Bos"] = "Boston";
+  labels["Brazil"] = {
+    link: "Brazilian Portuguese",
+    display: "Brazil"
+  };
+  aliases["BP"] = "Brazil";
+  aliases["BR"] = "Brazil";
+  aliases["Brazilian Portuguese"] = "Brazil";
+  labels["Burträsk"] = {
+    link: "Burträsk"
+  };
+  labels["Bygdeå"] = {
+    link: "Bygdeå"
+  };
+  labels["Canada"] = {
+    link: "Canadian English",
+    display: "Canada"
+  };
+  aliases["CA"] = "Canada";
+  aliases["Canadian"] = "Canada";
+  labels["Canadian Shift"] = {
+    link: "Canadian Shift",
+    display: "Canadian Vowel Shift",
+    type: "sound change"
+  };
+  aliases["Canadian shift"] = "Canadian Shift";
+  aliases["Canadian Vowel Shift"] = "Canadian Shift";
+  aliases["Canadian vowel shift"] = "Canadian Shift";
+  labels["Carioca"] = {
+    link: "Carioca#Carioca Dialect",
+    display: "Carioca"
+  };
+  aliases["RJ"] = "Carioca";
+  labels["Castilian"] = {
+    link: "Castilian Spanish",
+    display: "Castilian"
+  };
+  aliases["Spain"] = "Castilian";
+  labels["Central Catalan"] = {
+    link: "Central Catalan",
+    display: "Central"
+  };
+  labels["central Germany"] = {
+    display: "central Germany"
+  };
+  aliases["central German"] = "central Germany";
+  aliases["Central German"] = "central Germany";
+  aliases["Central Germany"] = "central Germany";
+  labels["central Italy"] = {
+    link: "Central Italian",
+    display: "central Italy"
+  };
+  aliases["central Italian"] = "central Italy";
+  aliases["Central Italian"] = "central Italy";
+  aliases["Central Italy"] = "central Italy";
+  labels["Central Scotland"] = {
+    link: "Central Scots",
+    display: "Central Scotland"
+  };
+  labels["Central Sweden"] = {
+    link: "Central Swedish",
+    display: "Central Sweden"
+  };
+  aliases["Central Swedish"] = "Central Sweden";
+  labels["ceceo"] = {
+    link: "ceceo",
+    display: "''ceceo'' merger",
+    type: "sound change"
+  };
+  labels["Clay"] = {
+    link: "Clay Frisian",
+    display: "Clay"
+  };
+  labels["Classical"] = {
+    link: "Classical Latin",
+    display: "Classical"
+  };
+  labels["Classical Sanskrit"] = {
+    link: "Sanskrit#Classical Sanskrit",
+    display: "Classical"
+  };
+  labels["Cois Fharraige"] = {
+    link: "Gaeltacht Cois Fharraige",
+    display: "Cois Fharraige"
+  };
+  aliases["CF"] = "Cois Fharraige";
+  labels["Connacht"] = {
+    link: "Connacht Irish",
+    display: "Connacht"
+  };
+  labels["Cork"] = {
+    link: "Gaeltacht#Cork Gaeltacht",
+    display: "Cork"
+  };
+  labels["cot-caught"] = {
+    link: "Cot–caught merger",
+    display: "''cot''–''caught'' merger",
+    type: "sound change"
+  };
+  aliases["caught-cot"] = "cot-caught";
+  labels["Croatia"] = {
+    link: "Comparison of standard Bosnian, Croatian, Montenegrin and Serbian#Accentuation",
+    display: "Croatia"
+  };
+  aliases["Croatian"] = "Croatia";
+  labels["cure-force"] = {
+    link: "w:Cure–force merger",
+    display: "''cure''–''force'' merger",
+    type: "sound change"
+  };
+  labels["cy-N"] = {
+    link: "Welsh language#Dialects",
+    display: "North Wales"
+  };
+  aliases["cy-g"] = "cy-N";
+  labels["cy-S"] = {
+    link: "Welsh language#Dialects",
+    display: "South Wales"
+  };
+  aliases["cy-h"] = "cy-S";
+  labels["Dari"] = {
+    link: "Dari Persian",
+    display: "Dari"
+  };
+  labels["Delhi"] = {
+    display: "Delhi Hindi"
+  };
+  labels["distinción"] = {
+    link: "distinción",
+    display: "''z''-''s'' distinction",
+    type: "sound change"
+  };
+  aliases["distincion"] = "distinción";
+  labels["Ecclesiastical"] = {
+    link: "Ecclesiastical Latin",
+    display: "Ecclesiastical"
+  };
+  labels["Egyptological"] = {
+    link: "Egyptian language#Egyptological pronunciation",
+    display: "modern Egyptological"
+  };
+  aliases["modern Egyptological"] = "Egyptological";
+  labels["Estuary English"] = {
+    link: "Estuary English"
+  };
+  labels["father-bother"] = {
+    link: "Father–bother merger",
+    display: "''father''-''bother'' merger",
+    type: "sound change"
+  };
+  labels["Finland"] = {
+    link: "Finland Swedish#Phonology",
+    display: "Finland"
+  };
+  aliases["Finland Swedish"] = "Finland";
+  labels["FS"] = {
+    link: "Standard French",
+    display: "FS"
+  };
+  labels["FV"] = {
+    link: "French Flemish",
+    display: "French Flanders"
+  };
+  labels["GenAm"] = {
+    link: "General American"
+  };
+  aliases["GA"] = "GenAm";
+  aliases["General American"] = "GenAm";
+  labels["Geordie"] = {
+    link: "Geordie"
+  };
+  labels["Ghawa"] = {
+    display: "[[Ghawa syndrome]]"
+  };
+  labels["Gheg"] = {
+    link: "Gheg Albanian",
+    display: "Gheg"
+  };
+  labels["Givi"] = {
+    link: "Giv, South Khorasan",
+    display: "Givi"
+  };
+  labels["Glenties"] = {
+    link: "Glenties",
+    display: "The Glenties"
+  };
+  labels["grc-byz1"] = {
+    link: "Medieval Greek",
+    display: '10<sup>th</sup> ' + CE + ' Byzantine'
+  };
+  labels["grc-byz2"] = {
+    link: "Medieval Greek",
+    display: '15<sup>th</sup> ' + CE + ' Constantinopolitan'
+  };
+  labels["grc-cla"] = {
+    link: "Ancient Greek phonology",
+    display: '5<sup>th</sup> ' + BCE + ' Attic'
+  };
+  labels["grc-koi1"] = {
+    link: "Koine Greek phonology",
+    display: '1<sup>st</sup> ' + CE + ' Egyptian'
+  };
+  labels["grc-koi2"] = {
+    link: "Koine Greek phonology",
+    display: '4<sup>th</sup> ' + CE + ' Koine'
+  };
+  labels["hbo"] = {
+    link: "Biblical Hebrew#Phonology",
+    display: "Biblical Hebrew"
+  };
+  aliases["Biblical Hebrew"] = "hbo";
+  labels["Hong Kong"] = {
+    link: "Hong Kong English",
+    display: "Hong Kong"
+  };
+  aliases["HK"] = "Hong Kong";
+  labels["horse-hoarse"] = {
+    link: "horse–hoarse merger",
+    display: "without the ''horse''–''hoarse'' merger",
+    type: "sound change"
+  };
+  labels["Hössjö"] = {
+    link: "sv:Hössjö"
+  };
+  labels["hy-E"] = {
+    link: "Eastern Armenian language",
+    display: "Eastern Armenian"
+  };
+  labels["hy-IR"] = {
+    link: "Armenian Iranians#Culture and language",
+    display: "Eastern Armenian - Iran"
+  };
+  labels["hy-W"] = {
+    link: "Western Armenian language",
+    display: "Western Armenian"
+  };
+  labels["hy-Y"] = {
+    link: "Yerevan",
+    display: "Eastern Armenian - Yerevan"
+  };
+  labels["IL"] = {
+    link: "Modern Hebrew phonology",
+    display: "Modern Israeli Hebrew"
+  };
+  aliases["Israeli Hebrew"] = "IL";
+  aliases["Modern Hebrew"] = "IL";
+  aliases["Modern Israeli"] = "IL";
+  aliases["Modern Israeli Hebrew"] = "IL";
+  aliases["Modern/Israeli Hebrew"] = "IL";
+  labels["InE"] = {
+    link: "Indian English",
+    display: "Indian English"
+  };
+  labels["intrusive r"] = {
+    link: "Intrusive r",
+    display: "intrusive r",
+    type: "sound change"
+  };
+  labels["IR"] = {
+    link: "Western Persian",
+    display: "Iranian Persian"
+  };
+  labels["Ireland"] = {
+    link: "Hiberno-English",
+    display: "Ireland"
+  };
+  aliases["HE"] = "Ireland";
+  aliases["IE"] = "Ireland";
+  labels["Italian Hebrew"] = {
+    link: "Italian Hebrew",
+    display: "Italian Hebrew"
+  };
+  labels["Johor-Selangor"] = {
+    link: "Malayan languages",
+    display: "Johor-Selangor"
+  };
+  labels["Kabul, Peshawar"] = {
+    link: "Pashto dialects",
+    display: "Kabul, Peshawar"
+  };
+  labels["Kalix"] = {
+    link: "Kalix"
+  };
+  labels["Kandahar"] = {
+    link: "Kandahari Pashto",
+    display: "Kandahar"
+  };
+  aliases["ps-Kandahar"] = "Kandahar";
+  labels["Kerry"] = {
+    link: "Gaeltacht#Kerry Gaeltacht",
+    display: "Kerry"
+  };
+  labels["xme-ham"] = {
+    display: "Hamadani",
+    link: "Kermanic languages"
+  };
+  labels["xme-mah"] = {
+    display: "Mahallati",
+    link: "Kermanic languages"
+  };
+  labels["xme-von"] = {
+    display: "Vonishuni",
+    link: "Kermanic languages"
+  };
+  labels["xme-del"] = {
+    display: "Delijani",
+    link: "Kermanic languages"
+  };
+  labels["xme-kas"] = {
+    display: "Kashani",
+    link: "Kermanic languages"
+  };
+  labels["xme-kes"] = {
+    display: "Kese'i",
+    link: "Kermanic languages"
+  };
+  labels["xme-mey"] = {
+    display: "Meyme'i",
+    link: "Kermanic languages"
+  };
+  labels["xme-abz"] = {
+    display: "Abuzeydabadi",
+    link: "Kermanic languages"
+  };
+  labels["xme-aby"] = {
+    display: "Abyanehi",
+    link: "Kermanic languages"
+  };
+  labels["xme-far"] = {
+    display: "Farizandi",
+    link: "Kermanic languages"
+  };
+  labels["xme-jow"] = {
+    display: "Jowshaqani",
+    link: "Kermanic languages"
+  };
+  labels["xme-qoh"] = {
+    display: "Qohrudi",
+    link: "Kermanic languages"
+  };
+  labels["xme-yar"] = {
+    display: "Yarandi",
+    link: "Kermanic languages"
+  };
+  labels["xme-tar"] = {
+    display: "Tari",
+    link: "Kermanic languages"
+  };
+  labels["xme-sed"] = {
+    display: "Sedehi",
+    link: "Kermanic languages"
+  };
+  labels["xme-ard"] = {
+    display: "Ardestani",
+    link: "Kermanic languages"
+  };
+  labels["xme-zef"] = {
+    display: "Zefre'i",
+    link: "Kermanic languages"
+  };
+  labels["xme-isf"] = {
+    display: "Isfahani",
+    link: "Kermanic languages"
+  };
+  labels["xme-kaf"] = {
+    display: "Kafroni",
+    link: "Kermanic languages"
+  };
+  labels["xme-var"] = {
+    display: "Varzenei",
+    link: "Kermanic languages"
+  };
+  labels["xme-nay"] = {
+    display: "Nayini",
+    link: "Nayini language"
+  };
+  labels["xme-vaf"] = {
+    display: "Vafsi",
+    link: "Vafsi dialect"
+  };
+  labels["xme-ast"] = {
+    display: "Ashtiani language",
+    link: "nyq"
+  };
+  labels["xme-xun"] = {
+    display: "Khunsari",
+    link: "Khunsari language"
+  };
+  labels["xme-nat"] = {
+    display: "Natanzi",
+    link: "Natanzi language"
+  };
+  labels["xme-soi"] = {
+    display: "Soi",
+    link: "Soi language"
+  };
+  labels["xme-gaz"] = {
+    display: "Gazi",
+    link: "Gazi language"
+  };
+  labels["xme-ana"] = {
+    display: "Anaraki",
+    link: "Nayini language"
+  };
+  labels["xme-ker"] = {
+    display: "Kermani",
+    link: "Zoroastrian Dari language"
+  };
+  labels["xme-yaz"] = {
+    display: "Yazdi",
+    link: "Zoroastrian Dari language"
+  };
+  labels["LAm"] = {
+    link: "Spanish language in the Americas",
+    display: "Latin American"
+  };
+  labels["Late Egyptian"] = {
+    link: "Late Egyptian language",
+    display: "reconstructed Late Egyptian"
+  };
+  labels["Latinate"] = {
+    link: "Latin#Phonology",
+    display: "Latinate"
+  };
+  labels["lleísmo"] = {
+    link: "Yeísmo",
+    display: "''ll''-''y'' distinction",
+    type: "sound change"
+  };
+  labels["Lövånger"] = {
+    link: "Lövånger"
+  };
+  labels["Luleå"] = {
+    link: "Luleå"
+  };
+  labels["Mary-marry-merry"] = {
+    link: "Mary–marry–merry merger",
+    display: "''Mary''–''marry''–''merry'' merger",
+    type: "sound change"
+  };
+  aliases["Mmmm"] = "Mary-marry-merry";
+  labels["Mayo"] = {
+    link: "Gaeltacht Iorrais agus Acaill",
+    display: "Mayo"
+  };
+  labels["Medio-Late Egyptian"] = {
+    link: "Late Egyptian language",
+    display: "reconstructed Medio-Late Egyptian"
+  };
+  labels["Middle Egyptian"] = {
+    link: "Egyptian language#Middle Egyptian",
+    display: "reconstructed Middle Egyptian"
+  };
+  labels["Midwestern US"] = {
+    link: "Midwestern United States#Linguistic characteristics",
+    display: "Midwestern US"
+  };
+  aliases["Midwest US"] = "Midwestern US";
+  aliases["Midwest US English"] = "Midwestern US";
+  aliases["Midwestern US English"] = "Midwestern US";
+  labels["Mizrahi Hebrew"] = {
+    link: "Mizrahi Hebrew",
+    display: "Mizrahi Hebrew"
+  };
+  aliases["Mizrahi"] = "Mizrahi Hebrew";
+  aliases["Mizrakhi"] = "Mizrahi Hebrew";
+  aliases["Mizrachi"] = "Mizrahi Hebrew";
+  aliases["Mizrakhi Hebrew"] = "Mizrahi Hebrew";
+  aliases["Mizrachi Hebrew"] = "Mizrahi Hebrew";
+  labels["MLE"] = {
+    link: "Multicultural London English",
+    display: "MLE"
+  };
+  labels["Montenegro"] = {
+    link: "Comparison of standard Bosnian, Croatian, Montenegrin and Serbian#Accentuation",
+    display: "Montenegro"
+  };
+  aliases["Montenegrin"] = "Montenegro";
+  labels["Munster"] = {
+    link: "Munster Irish",
+    display: "Munster"
+  };
+  labels["Netherlands"] = {
+    link: "Dutch phonology",
+    display: "Netherlands"
+  };
+  aliases["NL"] = "Netherlands";
+  labels["New Latin"] = {
+    link: "New Latin"
+  };
+  labels["New York"] = {
+    link: "New York dialect#Linguistic features",
+    display: "NYC"
+  };
+  aliases["NY"] = "New York";
+  aliases["NYC"] = "New York";
+  labels["New Zealand"] = {
+    link: "New Zealand English phonology",
+    display: "General New Zealand"
+  };
+  aliases["NZ"] = "New Zealand";
+  aliases["GNZ"] = "New Zealand";
+  aliases["General New Zealand"] = "New Zealand";
+  labels["non-Mary-marry-merry"] = {
+    link: "Mary–marry–merry merger",
+    display: "''Mary''–''marry''–''merry'' distinction",
+    type: "sound change"
+  };
+  aliases["nMmmm"] = "non-Mary-marry-merry";
+  labels["non-rhotic"] = {
+    link: "Rhoticity in English",
+    display: "non-rhotic"
+  };
+  aliases["nonrhotic"] = "non-rhotic";
+  labels["non-weak vowel"] = {
+    link: "Weak vowel merger",
+    display: "weak vowel distinction",
+    type: "sound change"
+  };
+  labels["northern and central Germany"] = {
+    display: "northern Germany, central Germany"
+  };
+  aliases["north and central German"] = "northern and central Germany";
+  aliases["North and Central German"] = "northern and central Germany";
+  aliases["north and central Germany"] = "northern and central Germany";
+  aliases["North and Central Germany"] = "northern and central Germany";
+  aliases["northern and central German"] = "northern and central Germany";
+  aliases["Northern and Central German"] = "northern and central Germany";
+  aliases["Northern and Central Germany"] = "northern and central Germany";
+  labels["Northern England"] = {
+    link: "English language in Northern England",
+    display: "Northern England"
+  };
+  aliases["North England"] = "Northern England";
+  labels["northern Germany"] = {
+    display: "northern Germany"
+  };
+  aliases["north German"] = "northern Germany";
+  aliases["North German"] = "northern Germany";
+  aliases["north Germany"] = "northern Germany";
+  aliases["North Germany"] = "northern Germany";
+  aliases["northern German"] = "northern Germany";
+  aliases["Northern German"] = "northern Germany";
+  aliases["Northern Germany"] = "northern Germany";
+  labels["Northern Scotland"] = {
+    link: "Northern Scots",
+    display: "Northern Scotland"
+  };
+  labels["Old Egyptian"] = {
+    link: "Egyptian language#Old Egyptian",
+    display: "reconstructed Old Egyptian"
+  };
+  labels["Osaka"] = {
+    link: "Kansai dialect",
+    display: "Osaka"
+  };
+  labels["Palestinian Hebrew"] = {
+    link: "Palestinian vocalization",
+    display: "Palestinian Hebrew"
+  };
+  labels["pin-pen"] = {
+    link: "pin–pen merger",
+    display: "''pin''–''pen'' merger",
+    type: "sound change"
+  };
+  aliases["pen-pin"] = "pin-pen";
+  labels["Philippine"] = {
+    link: "Philippine English",
+    display: "Philippine"
+  };
+  aliases["Philippines"] = "Philippine";
+  labels["Portugal"] = {
+    link: "European Portuguese",
+    display: "Portugal"
+  };
+  aliases["EP"] = "Portugal";
+  aliases["PT"] = "Portugal";
+  labels["ps-Kabul"] = {
+    link: "Pashto dialects",
+    display: "Kabuli"
+  };
+  labels["Quanzhou"] = {
+    link: "Quanzhou"
+  };
+  labels["Quebec"] = {
+    link: "Quebec French phonology",
+    display: "Quebec"
+  };
+  aliases["Québec"] = "Quebec";
+  aliases["Joual"] = "Quebec";
+  labels["Quetta"] = {
+    link: "Pashto dialects",
+    display: "Quetta"
+  };
+  labels["r-dissimilation"] = {
+    link: "Dissimilation",
+    display: "''r''-dissimilation",
+    type: "sound change"
+  };
+  labels["Rālik"] = {
+    link: "Rālik Chain",
+    display: "Rālik"
+  };
+  aliases["Ralik"] = "Rālik";
+  labels["Ratak"] = {
+    link: "Ratak Chain",
+    display: "Ratak"
+  };
+  labels["rhotic"] = {
+    link: "Rhotic and non-rhotic accents",
+    display: "rhotic",
+    type: "sound change"
+  };
+  labels["Riau-Lingga"] = {
+    link: "Riau-Lingga Sultanate",
+    display: "Riau-Lingga"
+  };
+  labels["Rioplatense"] = {
+    link: "Rioplatense Spanish",
+    display: "Rioplatense"
+  };
+  labels["RP"] = {
+    link: "Received Pronunciation"
+  };
+  aliases["Received Pronunciation"] = "RP";
+  labels["São Paulo"] = {
+    link: "Brazilian Portuguese",
+    display: "São Paulo"
+  };
+  labels["Scotland"] = {
+    link: "Scottish English",
+    display: "Scotland"
+  };
+  labels["Sephardi Hebrew"] = {
+    link: "Sephardi Hebrew",
+    display: "Sephardi Hebrew"
+  };
+  aliases["Sephardi"] = "Sephardi Hebrew";
+  labels["Serbia"] = {
+    link: "Comparison of standard Bosnian, Croatian, Montenegrin and Serbian#Accentuation",
+    display: "Serbia"
+  };
+  aliases["Serbian"] = "Serbia";
+  labels["seseo"] = {
+    link: "seseo",
+    display: "''seseo'' merger",
+    type: "sound change"
+  };
+  labels["Sistani"] = {
+    link: "Sistani dialect",
+    display: "Sistani"
+  };
+  labels["Skellefteå"] = {
+    link: "Skellefteå"
+  };
+  labels["South Africa"] = {
+    link: "South African English phonology",
+    display: "General South African"
+  };
+  aliases["SAE"] = "South Africa";
+  aliases["GSAE"] = "South Africa";
+  aliases["GenSAE"] = "South Africa";
+  aliases["General South African"] = "South Africa";
+  labels["Southern American English"] = {
+    link: "Southern American English"
+  };
+  aliases["Southern US"] = "Southern American English";
+  aliases["Southern US English"] = "Southern American English";
+  aliases["Southern U.S. English"] = "Southern American English";
+  labels["South Brazil"] = {
+    link: "Brazilian Portuguese",
+    display: "South Brazil"
+  };
+  labels["southern Germany"] = {
+    display: "southern Germany"
+  };
+  aliases["south German"] = "southern Germany";
+  aliases["South German"] = "southern Germany";
+  aliases["south Germany"] = "southern Germany";
+  aliases["South Germany"] = "southern Germany";
+  aliases["southern German"] = "southern Germany";
+  aliases["Southern German"] = "southern Germany";
+  aliases["Southern Germany"] = "southern Germany";
+  labels["Southern Scotland"] = {
+    link: "Southern Scots",
+    display: "Southern Scotland"
+  };
+  aliases["Southern Scots"] = "Southern Scotland";
+  labels["St. Louis"] = {
+    link: "North American regional phonology#St. Louis and vicinity",
+    display: "St. Louis (Missouri)"
+  };
+  aliases["STL"] = "St. Louis";
+  labels["standard"] = {
+    display: "standard"
+  };
+  aliases["Standard"] = "standard";
+  labels["Standard Zhuang"] = {
+    link: "Standard Zhuang",
+    display: "Standard Zhuang"
+  };
+  labels["Sweden"] = {
+    link: "Swedish phonology",
+    display: "Sweden"
+  };
+  aliases["Swedish"] = "Sweden";
+  labels["Syrian Hebrew"] = {
+    link: "Syrian Jews#Pronunciation of Hebrew",
+    display: "Syrian Hebrew"
+  };
+  labels["t-glottalization"] = {
+    link: "T-glottalization",
+    display: "''t''-glottalization",
+    type: "sound change"
+  };
+  aliases["t-glottaling"] = "t-glottalization";
+  labels["Tajik"] = {
+    link: "Tajik language",
+    display: "Tajik"
+  };
+  aliases["Tajiki"] = "Tajik";
+  labels["Tehrani"] = {
+    link: "Tehrani accent",
+    display: "Tehrani"
+  };
+  labels["th-fronting"] = {
+    link: "th-fronting",
+    type: "sound change"
+  };
+  labels["Tiberian Hebrew"] = {
+    link: "Tiberian Hebrew",
+    display: "Tiberian Hebrew"
+  };
+  aliases["Tiberian"] = "Tiberian Hebrew";
+  labels["Tosk"] = {
+    link: "Tosk Albanian",
+    display: "Tosk"
+  };
+  labels["UK"] = {
+    link: "British English",
+    display: "UK"
+  };
+  aliases["British"] = "UK";
+  aliases["U.K."] = "UK";
+  labels["Ulaanbaatar"] = {
+    link: "Ulaanbaatar"
+  };
+  aliases["UlaanBaatar"] = "Ulaanbaatar";
+  labels["Ulster"] = {
+    link: "Ulster Irish",
+    display: "Ulster"
+  };
+  aliases["Donegal"] = "Ulster";
+  labels["Umeå"] = {
+    link: "Umeå"
+  };
+  labels["US"] = {
+    link: "American English",
+    display: "US"
+  };
+  aliases["U.S."] = "US";
+  labels["Valencia"] = {
+    link: "Valencian"
+  };
+  aliases["Valencian"] = "Valencia";
+  labels["Vedic Sanskrit"] = {
+    link: "Vedic Sanskrit",
+    display: "Vedic"
+  };
+  aliases["Vedic"] = "Vedic Sanskrit";
+  aliases["Rigvedic"] = "Vedic Sanskrit";
+  labels["Vulgar"] = {
+    link: "Vulgar Latin",
+    display: "Vulgar"
+  };
+  labels["Wales"] = {
+    link: "Welsh English",
+    display: "Wales"
+  };
+  aliases["Welsh"] = "Wales";
+  labels["Wardak"] = {
+    link: "Pashto dialects",
+    display: "Wardak"
+  };
+  labels["Waterford"] = {
+    link: "Gaeltacht na nDéise",
+    display: "Waterford"
+  };
+  labels["Wazirwola"] = {
+    link: "Wazirwola dialect",
+    display: "Wazirwola"
+  };
+  labels["weak vowel"] = {
+    link: "Weak vowel merger",
+    display: "weak vowel merger",
+    type: "sound change"
+  };
+  labels["wine/whine"] = {
+    link: "wine–whine merger",
+    display: "without the ''wine''–''whine'' merger",
+    type: "sound change"
+  };
+  labels["Wood"] = {
+    link: "Wood Frisian",
+    display: "Wood"
+  };
+  labels["Xiamen"] = {
+    link: "Xiamen"
+  };
+  labels["yeísmo"] = {
+    link: "Yeísmo",
+    display: "''ll''-''y'' neutralization",
+    type: "sound change"
+  };
+  labels["Yemenite Hebrew"] = {
+    link: "Yemenite Hebrew",
+    display: "Yemenite Hebrew"
+  };
+  labels["YIVO"] = {
+    link: "YIVO"
+  };
+  labels["yod-coalescence"] = {
+    link: "yod-coalescence",
+    display: "yod-coalescence",
+    type: "sound change"
+  };
+  labels["Zhangzhou"] = {
+    link: "Zhangzhou"
+  };
+  var accents = {
+    labels: labels,
+    aliases: aliases
+  };
+
   var _wikiTemplates;
-  console.log(langCodes);
+  console.log(accents);
 
   var MD5 = function MD5(d) {
     var result = M$1(V$1(Y(X(d), 8 * d.length)));
@@ -8304,10 +9234,11 @@
       }).join('');
     },
     ucfirst: function ucfirst(word) {
-      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      return word.charAt(0).toUpperCase() + word.slice(1);
     }
   };
   var alias = {
+    'a': 'accent',
     'label': 'lb',
     'lbl': 'lb',
     'syn': 'synonyms',
@@ -8332,6 +9263,60 @@
     'l': 'link'
   };
   var wikiTemplates = (_wikiTemplates = {
+    "audio": {
+      info: "Audio file",
+      "default": {
+        language: '',
+        file: '',
+        text: ''
+      },
+      params: [{
+        name: "",
+        action: function action(value, index, obj) {
+          switch (index) {
+            case 0:
+              return {
+                language: value
+              };
+
+            case 1:
+              return {
+                file: value
+              };
+
+            case 2:
+              return {
+                text: value
+              };
+          }
+        }
+      }, {
+        name: "clip",
+        action: function action(value) {
+          return {
+            file: value
+          };
+        }
+      }, {
+        name: "context",
+        action: function action(value) {
+          return {
+            text: value
+          };
+        }
+      }],
+      humanize: function humanize(obj) {
+        var url = 'https://upload.wikimedia.org/wikipedia/commons/';
+        var file = encodeURIComponent(tools.ucfirst(obj.file.replace(/ /g, '_')));
+        var hash = MD5(file).substring(0, 2);
+        hash = hash.substring(0, 1) + "/" + hash + "/";
+        url += hash + file;
+        var type = url.slice(-3);
+        type = type == 'mp3' ? 'mpeg' : type;
+        console.log(file);
+        return " <audio controls><source src=\"".concat(url, "\" type=\"audio/").concat(type, "\">Your browser does not support the audio element.</audio> ");
+      }
+    },
     "image": {
       info: "Template image",
       "default": {
@@ -9273,6 +10258,42 @@
         }).join(' ');
       }
     },
+    "en-pron": {
+      info: "Use this template on inflection lines for English pronouns. ",
+      "default": {
+        'pron': '${head}',
+        'desc': '',
+        'info': []
+      },
+      params: [{
+        name: "desc",
+        action: function action(value) {
+          return {
+            desc: value
+          };
+        }
+      }, {
+        name: "",
+        action: function action(value, index, obj) {
+          return {
+            info: value
+          };
+        }
+      }],
+      humanize: function humanize(obj) {
+        var str = [];
+        str.push('<strong>' + obj.pron + '</strong>');
+        str.push(obj.desc ? '<i>' + obj.desc + '</i>' : '');
+        var parenthesis = [];
+
+        for (var i = 0; i < obj.info.length - 1; i += 2) {
+          parenthesis.push("<i>".concat(obj.info[i], "</i> <a href=\"#\" data-link=\"").concat(obj.info[i + 1], "\">").concat(obj.info[i + 1], "</a>"));
+        }
+
+        str.push(parenthesis.length > 0 ? '(' + parenthesis.join(', ') + ')' : '');
+        return str.join(' ');
+      }
+    },
     "en-noun": {
       info: "inflection template for most English nouns",
       "default": {
@@ -9346,6 +10367,145 @@
           return x;
         });
         return str.join("");
+      }
+    },
+    "en-proper noun": {
+      info: "Use this template to show the inflection line of an English proper noun",
+      "default": {
+        singular: "${head}",
+        plural: [],
+        properties: [],
+        infos: []
+      },
+      params: [{
+        name: "",
+        action: function action(value, index) {
+          switch (value) {
+            case "s":
+              return {
+                plural: "${head}s"
+              };
+
+            case "es":
+              return {
+                plural: "${head}es"
+              };
+
+            case "-":
+              return {
+                plural: [],
+                properties: "uncountable"
+              };
+
+            case "~":
+              return {
+                properties: ["countable", "uncountable"]
+              };
+
+            case "!":
+              return {
+                infos: "plural not attested"
+              };
+
+            case "?":
+              return {
+                infos: "unknown or uncertain plural"
+              };
+
+            default:
+              return {
+                plural: value
+              };
+          }
+        }
+      }, {
+        name: "head",
+        action: function action(value) {
+          return {
+            singular: value
+          };
+        }
+      }],
+      humanize: function humanize(obj) {
+        var str = [];
+        str.push("<strong>" + obj.singular + "</strong> ");
+        str.push("Proper Noun (");
+        str.push("<i>");
+        str.push(obj.properties.join(" and "));
+        str.push("</i>");
+        if (obj.properties.length > 0) str.push("; ");
+        str.push("<i>plural </i>" + obj.plural.map(function (x) {
+          return '<a href="#">' + x + "</a>";
+        }).join(" or "));
+        str.push(")");
+        str = str.filter(function (x) {
+          return x;
+        });
+        return str.join("");
+      }
+    },
+    "given name": {
+      info: "This template is used in definitions for given names. ",
+      "default": {
+        language: '',
+        gender: '',
+        or: '',
+        from: '',
+        fromt: '',
+        fromalt: '',
+        fromtr: '',
+        frompos: '',
+        fromlit: '',
+        fromid: '',
+        usage: '',
+        meaning: '',
+        dim: '',
+        dimalt: '',
+        dimtr: '',
+        eq: '',
+        eqalt: '',
+        eqtr: '',
+        xlit: '',
+        xlitalt: '',
+        "var": '',
+        varalt: '',
+        vartr: '',
+        m: '',
+        malt: '',
+        mtr: '',
+        f: '',
+        falt: '',
+        ftr: '',
+        A: ''
+      },
+      params: [{
+        name: "",
+        action: function action(value, index, obj) {
+          switch (index) {
+            case 0:
+              return {
+                language: value
+              };
+
+            case 1:
+              return {
+                gender: value
+              };
+          }
+        }
+      }],
+      humanize: function humanize(obj) {
+        var str = [];
+        str.push("A ".concat(obj.gender, " given name"));
+        str.push(obj.or ? 'or ' + obj.or : '');
+
+        if (obj.from == 'surnames') {
+          str.push('transferred from the surname');
+        } else {
+          str.push('from ' + obj.from);
+        }
+
+        return str.join(' ');
       }
     },
     "+obj": {
@@ -10032,6 +11192,33 @@
     humanize: function humanize(obj) {
       return "<a href=\"#\" data-link=\"".concat(obj.prefix, "\"><i>").concat(obj.prefix, "-</i></a> + <a href=\"#\" data-link=\"").concat(obj.root, "\"><i>").concat(obj.root, "</i></a>");
     }
+  }), _defineProperty(_wikiTemplates, "affix", {
+    info: "This template is used in the etymology section",
+    "default": {
+      language: '',
+      parts: []
+    },
+    params: [{
+      name: "",
+      action: function action(value, index, obj) {
+        switch (index) {
+          case 0:
+            return {
+              language: value
+            };
+
+          default:
+            return {
+              parts: value
+            };
+        }
+      }
+    }],
+    humanize: function humanize(obj) {
+      return obj.parts.map(function (x) {
+        return "<a href=\"#\" data-link=\"".concat(x, "\"><i>").concat(x, "</i></a>");
+      }).join(' + ');
+    }
   }), _defineProperty(_wikiTemplates, "suffix", {
     info: "This template is used in the etymology section",
     "default": {
@@ -10094,6 +11281,115 @@
     }],
     humanize: function humanize(obj) {
       return "<a href=\"#\" data-link=\"".concat(obj.taxon, "\">").concat(obj.alternativeDisplay, "</a>");
+    }
+  }), _defineProperty(_wikiTemplates, "RQ", {
+    info: "Quotation templates",
+    "default": {
+      'uniform title': '',
+      'book': '',
+      'chapter': '',
+      'page': '',
+      'pages': '',
+      'text': '',
+      'para': '',
+      'paras': ''
+    },
+    params: [{
+      name: "",
+      action: function action(value, index, obj) {
+        switch (index) {
+          case 0:
+            return {
+              'uniform title': value
+            };
+        }
+      }
+    }],
+    humanize: function humanize(obj) {
+      var str = [];
+      if (obj.passage) obj.text = obj.passage; // To do : manage uniform titles
+
+      str.push(obj['uniform title'] + ' : <dt><dd>' + obj.text + '</dd></dt>');
+      return str.join('');
+    }
+  }), _defineProperty(_wikiTemplates, "accent", {
+    info: "Use this template to specify an accent qualifier for a pronunciation. ",
+    "default": {
+      accents: []
+    },
+    params: [{
+      name: "",
+      action: function action(value) {
+        return {
+          accents: value
+        };
+      }
+    }],
+    humanize: function humanize(obj) {
+      var str = [];
+
+      for (var i = 0; i < obj.accents.length; i++) {
+        if (accents.aliases[obj.accents[i]]) {
+          obj.accents[i] = accents.labels[accents.aliases[obj.accents[i]]];
+        } else {
+          obj.accents[i] = accents.labels[obj.accents[i]];
+        }
+
+        if (obj.accents[i].display) {
+          str.push("<a href=\"#\" data-link=\"".concat(obj.accents[i].link, "\"><i>").concat(obj.accents[i].display, "</i></a>"));
+        } else {
+          str.push("<a href=\"#\" data-link=\"".concat(obj.accents[i].link, "\"><i>").concat(obj.accents[i].link, "</i></a>"));
+        }
+      }
+
+      return '(' + str.join(', ') + ')';
+    }
+  }), _defineProperty(_wikiTemplates, 'IPA', {
+    info: "This template adds the proper formatting and links to a pronunciation transcription in the International Phonetic Alphabet.",
+    "default": {
+      'language': '',
+      'transcriptions': []
+    },
+    params: [{
+      name: '',
+      action: function action(value, index, obj) {
+        switch (index) {
+          case 0:
+            return {
+              language: value
+            };
+
+          default:
+            return {
+              transcriptions: value
+            };
+        }
+      }
+    }],
+    humanize: function humanize(obj) {
+      var str = [];
+      str.push('IPA: ');
+      str.push(obj.transcriptions.join(', '));
+      return str.join('');
+    }
+  }), _defineProperty(_wikiTemplates, 'enPR', {
+    info: "This template is for phonemic transcriptions in the Appendix:English pronunciation (enPR) system, for use in the pronunciation section of entries.",
+    "default": {
+      'transcriptions': []
+    },
+    params: [{
+      name: '',
+      action: function action(value, index, obj) {
+        return {
+          transcriptions: value
+        };
+      }
+    }],
+    humanize: function humanize(obj) {
+      var str = [];
+      str.push('enPR: ');
+      str.push(obj.transcriptions.join(', '));
+      return str.join('');
     }
   }), _wikiTemplates);
 
@@ -10234,6 +11530,14 @@
           return x.trim();
         });
         var templateName = params[0];
+        var subTemplate = templateName.indexOf(':');
+
+        if (subTemplate !== -1) {
+          //console.log(templateName);
+          params = [].concat(_toConsumableArray(templateName.split(':')), _toConsumableArray(params.slice(1)));
+          templateName = params[0];
+          console.log(templateName);
+        }
 
         if (alias[params[0]] !== undefined) {
           templateName = alias[params[0]];
@@ -10558,7 +11862,7 @@
     }, {
       key: "getDefinition",
       value: function getDefinition(wikiObject) {
-        var pos = ["Noun", "Adjective", "Verb", "Adverb", "Proper noun", "Conjunction"]; //console.log(wikiObject);
+        var pos = ["Noun", "Adjective", "Verb", "Adverb", "Proper noun", "Conjunction", "Pronoun", "Preposition", "Numeral", "Letter", "Article"]; //console.log(wikiObject);
 
         var ret = this.getNestedObjects(wikiObject[this.lang], pos).map(function (x) {
           return x.content;
@@ -10587,6 +11891,23 @@
       key: "getTranslation",
       value: function getTranslation(wikiObject) {
         var pos = ["Translations"];
+        var ret = this.getNestedObjects(wikiObject[this.lang], pos).map(function (x) {
+          return x.content;
+        });
+        var wp = new WikiParser(this.word);
+
+        for (var i = 0; i < ret.length; i++) {
+          ret[i] = ret[i].map(function (el, index) {
+            return wp.parse(el);
+          });
+        }
+
+        return ret;
+      }
+    }, {
+      key: "getPronunciation",
+      value: function getPronunciation(wikiObject) {
+        var pos = ["Pronunciation"];
         var ret = this.getNestedObjects(wikiObject[this.lang], pos).map(function (x) {
           return x.content;
         });
@@ -10636,7 +11957,7 @@
       this.o = options;
       this.indexToken = 0;
       this.consoleInitialized = false;
-      this.language = "fr";
+      this.language = "en";
       this.init();
     }
 
@@ -10850,19 +12171,36 @@
         });
       }
     }, {
-      key: "getDefinition",
-      value: function getDefinition(args, opts) {
+      key: "getPronunciation",
+      value: function getPronunciation(args, opts) {
         var _this5 = this;
 
         var w = new Wiktionary(args[0], "English");
         w.getInfos().then(function (data) {
-          var def = w.getDefinition(data);
+          var def = w.getPronunciation(data);
           def.forEach(function (x) {
             x.forEach(function (y) {
               _this5.terminal.log(y.parsed);
             });
 
             _this5.terminal.log('<br/>');
+          });
+        });
+      }
+    }, {
+      key: "getDefinition",
+      value: function getDefinition(args, opts) {
+        var _this6 = this;
+
+        var w = new Wiktionary(args[0], "English");
+        w.getInfos().then(function (data) {
+          var def = w.getDefinition(data);
+          def.forEach(function (x) {
+            x.forEach(function (y) {
+              _this6.terminal.log(y.parsed);
+            });
+
+            _this6.terminal.log('<br/>');
           });
         });
       }
@@ -11029,7 +12367,7 @@
     }, {
       key: "freq",
       value: function freq(args, opts) {
-        var _this6 = this;
+        var _this7 = this;
 
         var selector = " .token";
         var sensitive = true;
@@ -11084,7 +12422,7 @@
 
         if (opts.isOption("p")) {
           this.terminal.log(words.map(function (x) {
-            return x[0] + " (" + _this6.digits2(x[1] / wordsCount * 100) + "%)";
+            return x[0] + " (" + _this7.digits2(x[1] / wordsCount * 100) + "%)";
           }).join(" - "));
         } else {
           this.terminal.log(words.map(function (x) {
@@ -11178,18 +12516,39 @@
     }, {
       key: "autocompleteWiki",
       value: function autocompleteWiki(str) {
-        var _this7 = this;
+        var _this8 = this;
 
         return new Promise(function (resolve) {
           var myHeaders = new Headers();
           myHeaders.append("Content-Type", "application/json");
-          fetch("https://" + _this7.language + ".wikipedia.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" + str + "&namespace=0&limit=10&origin=*", {
+          fetch("https://" + _this8.language + ".wikipedia.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" + str + "&namespace=0&limit=10&origin=*", {
             headers: myHeaders
           }).then(function (response) {
             return response.json();
           }).then(function (text) {
             if (text.error) {
-              _this7.terminal.error(text.error.info);
+              _this8.terminal.error(text.error.info);
+            } else {
+              resolve(text[1]);
+            }
+          });
+        });
+      }
+    }, {
+      key: "autocompleteWiktionary",
+      value: function autocompleteWiktionary(str) {
+        var _this9 = this;
+
+        return new Promise(function (resolve) {
+          var myHeaders = new Headers();
+          myHeaders.append("Content-Type", "application/json");
+          fetch("https://" + _this9.language + ".wiktionary.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" + str + "&namespace=0&limit=10&origin=*", {
+            headers: myHeaders
+          }).then(function (response) {
+            return response.json();
+          }).then(function (text) {
+            if (text.error) {
+              _this9.terminal.error(text.error.info);
             } else {
               resolve(text[1]);
             }
@@ -11199,7 +12558,7 @@
     }, {
       key: "loadHtml",
       value: function loadHtml(args) {
-        var _this8 = this;
+        var _this10 = this;
         //(e || window.event).preventDefault();
         var label = args[0];
 
@@ -11218,17 +12577,17 @@
           return response.json();
         }).then(function (text) {
           if (text.error) {
-            _this8.terminal.error(text.error.info);
+            _this10.terminal.error(text.error.info);
           } else {
-            _this8.terminal.log("Page loaded!");
+            _this10.terminal.log("Page loaded!");
 
             var html = text.parse.text["*"];
             el.innerHTML = html;
 
-            _this8.init();
+            _this10.init();
           }
         })["catch"](function (error) {
-          _this8.terminal.error("! " + error);
+          _this10.terminal.error("! " + error);
         });
       }
     }]);

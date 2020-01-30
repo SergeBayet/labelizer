@@ -1,5 +1,6 @@
 import langCodes from './wikidata/langageCodes';
-console.log(langCodes);
+import accents from './wikidata/accentLabels';
+console.log(accents);
 const MD5 = function (d) { let result = M(V(Y(X(d), 8 * d.length))); return result.toLowerCase() }; function M(d) { for (var _, m = "0123456789ABCDEF", f = "", r = 0; r < d.length; r++)_ = d.charCodeAt(r), f += m.charAt(_ >>> 4 & 15) + m.charAt(15 & _); return f } function X(d) { for (var _ = Array(d.length >> 2), m = 0; m < _.length; m++)_[m] = 0; for (m = 0; m < 8 * d.length; m += 8)_[m >> 5] |= (255 & d.charCodeAt(m / 8)) << m % 32; return _ } function V(d) { for (var _ = "", m = 0; m < 32 * d.length; m += 8)_ += String.fromCharCode(d[m >> 5] >>> m % 32 & 255); return _ } function Y(d, _) { d[_ >> 5] |= 128 << _ % 32, d[14 + (_ + 64 >>> 9 << 4)] = _; for (var m = 1732584193, f = -271733879, r = -1732584194, i = 271733878, n = 0; n < d.length; n += 16) { var h = m, t = f, g = r, e = i; f = md5_ii(f = md5_ii(f = md5_ii(f = md5_ii(f = md5_hh(f = md5_hh(f = md5_hh(f = md5_hh(f = md5_gg(f = md5_gg(f = md5_gg(f = md5_gg(f = md5_ff(f = md5_ff(f = md5_ff(f = md5_ff(f, r = md5_ff(r, i = md5_ff(i, m = md5_ff(m, f, r, i, d[n + 0], 7, -680876936), f, r, d[n + 1], 12, -389564586), m, f, d[n + 2], 17, 606105819), i, m, d[n + 3], 22, -1044525330), r = md5_ff(r, i = md5_ff(i, m = md5_ff(m, f, r, i, d[n + 4], 7, -176418897), f, r, d[n + 5], 12, 1200080426), m, f, d[n + 6], 17, -1473231341), i, m, d[n + 7], 22, -45705983), r = md5_ff(r, i = md5_ff(i, m = md5_ff(m, f, r, i, d[n + 8], 7, 1770035416), f, r, d[n + 9], 12, -1958414417), m, f, d[n + 10], 17, -42063), i, m, d[n + 11], 22, -1990404162), r = md5_ff(r, i = md5_ff(i, m = md5_ff(m, f, r, i, d[n + 12], 7, 1804603682), f, r, d[n + 13], 12, -40341101), m, f, d[n + 14], 17, -1502002290), i, m, d[n + 15], 22, 1236535329), r = md5_gg(r, i = md5_gg(i, m = md5_gg(m, f, r, i, d[n + 1], 5, -165796510), f, r, d[n + 6], 9, -1069501632), m, f, d[n + 11], 14, 643717713), i, m, d[n + 0], 20, -373897302), r = md5_gg(r, i = md5_gg(i, m = md5_gg(m, f, r, i, d[n + 5], 5, -701558691), f, r, d[n + 10], 9, 38016083), m, f, d[n + 15], 14, -660478335), i, m, d[n + 4], 20, -405537848), r = md5_gg(r, i = md5_gg(i, m = md5_gg(m, f, r, i, d[n + 9], 5, 568446438), f, r, d[n + 14], 9, -1019803690), m, f, d[n + 3], 14, -187363961), i, m, d[n + 8], 20, 1163531501), r = md5_gg(r, i = md5_gg(i, m = md5_gg(m, f, r, i, d[n + 13], 5, -1444681467), f, r, d[n + 2], 9, -51403784), m, f, d[n + 7], 14, 1735328473), i, m, d[n + 12], 20, -1926607734), r = md5_hh(r, i = md5_hh(i, m = md5_hh(m, f, r, i, d[n + 5], 4, -378558), f, r, d[n + 8], 11, -2022574463), m, f, d[n + 11], 16, 1839030562), i, m, d[n + 14], 23, -35309556), r = md5_hh(r, i = md5_hh(i, m = md5_hh(m, f, r, i, d[n + 1], 4, -1530992060), f, r, d[n + 4], 11, 1272893353), m, f, d[n + 7], 16, -155497632), i, m, d[n + 10], 23, -1094730640), r = md5_hh(r, i = md5_hh(i, m = md5_hh(m, f, r, i, d[n + 13], 4, 681279174), f, r, d[n + 0], 11, -358537222), m, f, d[n + 3], 16, -722521979), i, m, d[n + 6], 23, 76029189), r = md5_hh(r, i = md5_hh(i, m = md5_hh(m, f, r, i, d[n + 9], 4, -640364487), f, r, d[n + 12], 11, -421815835), m, f, d[n + 15], 16, 530742520), i, m, d[n + 2], 23, -995338651), r = md5_ii(r, i = md5_ii(i, m = md5_ii(m, f, r, i, d[n + 0], 6, -198630844), f, r, d[n + 7], 10, 1126891415), m, f, d[n + 14], 15, -1416354905), i, m, d[n + 5], 21, -57434055), r = md5_ii(r, i = md5_ii(i, m = md5_ii(m, f, r, i, d[n + 12], 6, 1700485571), f, r, d[n + 3], 10, -1894986606), m, f, d[n + 10], 15, -1051523), i, m, d[n + 1], 21, -2054922799), r = md5_ii(r, i = md5_ii(i, m = md5_ii(m, f, r, i, d[n + 8], 6, 1873313359), f, r, d[n + 15], 10, -30611744), m, f, d[n + 6], 15, -1560198380), i, m, d[n + 13], 21, 1309151649), r = md5_ii(r, i = md5_ii(i, m = md5_ii(m, f, r, i, d[n + 4], 6, -145523070), f, r, d[n + 11], 10, -1120210379), m, f, d[n + 2], 15, 718787259), i, m, d[n + 9], 21, -343485551), m = safe_add(m, h), f = safe_add(f, t), r = safe_add(r, g), i = safe_add(i, e) } return Array(m, f, r, i) } function md5_cmn(d, _, m, f, r, i) { return safe_add(bit_rol(safe_add(safe_add(_, d), safe_add(f, i)), r), m) } function md5_ff(d, _, m, f, r, i, n) { return md5_cmn(_ & m | ~_ & f, d, _, r, i, n) } function md5_gg(d, _, m, f, r, i, n) { return md5_cmn(_ & f | m & ~f, d, _, r, i, n) } function md5_hh(d, _, m, f, r, i, n) { return md5_cmn(_ ^ m ^ f, d, _, r, i, n) } function md5_ii(d, _, m, f, r, i, n) { return md5_cmn(m ^ (_ | ~f), d, _, r, i, n) } function safe_add(d, _) { var m = (65535 & d) + (65535 & _); return (d >> 16) + (_ >> 16) + (m >> 16) << 16 | 65535 & m } function bit_rol(d, _) { return d << _ | d >>> 32 - _ };
 export const tools = {
   toSyllabicSpeech: word => {
@@ -15,11 +16,12 @@ export const tools = {
       }).join('');
   },
   ucfirst: word => {
-    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    return word.charAt(0).toUpperCase() + word.slice(1);
   }
 
 }
 export const alias = {
+  'a': 'accent',
   'label': 'lb',
   'lbl': 'lb',
   'syn': 'synonyms',
@@ -44,6 +46,48 @@ export const alias = {
   'l': 'link'
 }
 export const wikiTemplates = {
+  "audio": {
+    info: "Audio file",
+    default: {
+      language: '',
+      file: '',
+      text: ''
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index, obj) => {
+          switch (index) {
+            case 0:
+              return { language: value }
+            case 1:
+              return { file: value }
+            case 2:
+              return { text: value }
+          }
+        }
+      },
+      {
+        name: "clip",
+        action: value => ({ file: value })
+      },
+      {
+        name: "context",
+        action: value => ({ text: value })
+      }
+    ],
+    humanize: obj => {
+      let url = 'https://upload.wikimedia.org/wikipedia/commons/';
+      let file = encodeURIComponent(tools.ucfirst(obj.file.replace(/ /g, '_')));
+      let hash = MD5(file).substring(0, 2);
+      hash = hash.substring(0, 1) + "/" + hash + "/";
+      url += hash + file;
+      let type = url.slice(-3);
+      type = type == 'mp3' ? 'mpeg' : type;
+      console.log(file);
+      return ` <audio controls><source src="${url}" type="audio/${type}">Your browser does not support the audio element.</audio> `;
+    }
+  },
   "image": {
     info: "Template image",
     default: {
@@ -836,6 +880,37 @@ export const wikiTemplates = {
       return str.filter(x => x).join(' ');
     }
   },
+  "en-pron": {
+    info: "Use this template on inflection lines for English pronouns. ",
+    default: {
+      'pron': '${head}',
+      'desc': '',
+      'info': []
+    },
+    params: [
+      {
+        name: "desc",
+        action: value => ({ desc: value })
+      },
+      {
+        name: "",
+        action: (value, index, obj) => {
+          return { info: value }
+        }
+      }
+    ],
+    humanize: obj => {
+      let str = [];
+      str.push('<strong>' + obj.pron + '</strong>');
+      str.push(obj.desc ? '<i>' + obj.desc + '</i>' : '');
+      let parenthesis = [];
+      for (let i = 0; i < obj.info.length - 1; i += 2) {
+        parenthesis.push(`<i>${obj.info[i]}</i> <a href="#" data-link="${obj.info[i + 1]}">${obj.info[i + 1]}</a>`);
+      }
+      str.push(parenthesis.length > 0 ? '(' + parenthesis.join(', ') + ')' : '');
+      return str.join(' ');
+    }
+  },
   "en-noun": {
     info: "inflection template for most English nouns",
     default: {
@@ -889,6 +964,121 @@ export const wikiTemplates = {
       str.push(")");
       str = str.filter(x => x);
       return str.join("");
+    }
+  },
+  "en-proper noun": {
+    info: "Use this template to show the inflection line of an English proper noun",
+    default: {
+      singular: "${head}",
+      plural: [],
+      properties: [],
+      infos: []
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index) => {
+          switch (value) {
+            case "s":
+              return { plural: "${head}s" };
+            case "es":
+              return { plural: "${head}es" };
+            case "-":
+              return { plural: [], properties: "uncountable" };
+            case "~":
+              return { properties: ["countable", "uncountable"] };
+            case "!":
+              return { infos: "plural not attested" };
+            case "?":
+              return { infos: "unknown or uncertain plural" };
+            default:
+              return { plural: value };
+          }
+        }
+      },
+      {
+        name: "head",
+        action: value => {
+          return { singular: value };
+        }
+      }
+    ],
+    humanize: obj => {
+      let str = [];
+
+      str.push("<strong>" + obj.singular + "</strong> ");
+      str.push("Proper Noun (");
+      str.push("<i>");
+      str.push(obj.properties.join(" and "));
+      str.push("</i>");
+      if (obj.properties.length > 0) str.push("; ");
+      str.push(
+        "<i>plural </i>" +
+        obj.plural.map(x => '<a href="#">' + x + "</a>").join(" or ")
+      );
+      str.push(")");
+      str = str.filter(x => x);
+      return str.join("");
+    }
+  },
+  "given name": {
+    info: "This template is used in definitions for given names. ",
+    default: {
+      language: '',
+      gender: '',
+      or: '',
+      from: '',
+      fromt: '',
+      fromalt: '',
+      fromtr: '',
+      frompos: '',
+      fromlit: '',
+      fromid: '',
+      usage: '',
+      meaning: '',
+      dim: '',
+      dimalt: '',
+      dimtr: '',
+      eq: '',
+      eqalt: '',
+      eqtr: '',
+      xlit: '',
+      xlitalt: '',
+      var: '',
+      varalt: '',
+      vartr: '',
+      m: '',
+      malt: '',
+      mtr: '',
+      f: '',
+      falt: '',
+      ftr: '',
+      A: ''
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index, obj) => {
+          switch (index) {
+            case 0:
+              return { language: value };
+            case 1:
+              return { gender: value };
+          }
+        }
+      }
+    ],
+    humanize: obj => {
+      let str = [];
+      str.push(`A ${obj.gender} given name`);
+      str.push(obj.or ? 'or ' + obj.or : '');
+      if (obj.from == 'surnames') {
+        str.push('transferred from the surname')
+      }
+      else {
+        str.push('from ' + obj.from);
+      }
+      return str.join(' ');
     }
   },
   "+obj": {
@@ -1418,6 +1608,32 @@ export const wikiTemplates = {
     },
 
   },
+  "affix": {
+    info: "This template is used in the etymology section",
+    default: {
+      language: '',
+      parts: []
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index, obj) => {
+          switch (index) {
+            case 0:
+              return { language: value };
+            default:
+              return { parts: value };
+
+          }
+        }
+      }
+    ],
+    humanize: obj => {
+
+      return obj.parts.map(x => `<a href="#" data-link="${x}"><i>${x}</i></a>`).join(' + ');
+    },
+
+  },
   "suffix": {
     info: "This template is used in the etymology section",
     default: {
@@ -1469,6 +1685,115 @@ export const wikiTemplates = {
     ],
     humanize: obj => {
       return `<a href="#" data-link="${obj.taxon}">${obj.alternativeDisplay}</a>`;
+    }
+  },
+  "RQ": {
+    info: "Quotation templates",
+    default: {
+      'uniform title': '',
+      'book': '',
+      'chapter': '',
+      'page': '',
+      'pages': '',
+      'text': '',
+      'para': '',
+      'paras': ''
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index, obj) => {
+          switch (index) {
+            case 0:
+              return { 'uniform title': value };
+          }
+        }
+      }
+    ],
+    humanize: obj => {
+      let str = [];
+      if (obj.passage) obj.text = obj.passage;
+      // To do : manage uniform titles
+      str.push(obj['uniform title'] + ' : <dt><dd>' + obj.text + '</dd></dt>');
+      return str.join('');
+    }
+  },
+  "accent": {
+    info: "Use this template to specify an accent qualifier for a pronunciation. ",
+    default: {
+      accents: []
+    },
+    params: [
+      {
+        name: "",
+        action: value => {
+          return { accents: value }
+        }
+      }
+    ],
+    humanize: obj => {
+      let str = [];
+      for (let i = 0; i < obj.accents.length; i++) {
+        if (accents.aliases[obj.accents[i]]) {
+          obj.accents[i] = accents.labels[accents.aliases[obj.accents[i]]];
+        }
+        else {
+          obj.accents[i] = accents.labels[obj.accents[i]];
+        }
+        if (obj.accents[i].display) {
+          str.push(`<a href="#" data-link="${obj.accents[i].link}"><i>${obj.accents[i].display}</i></a>`);
+        }
+        else {
+          str.push(`<a href="#" data-link="${obj.accents[i].link}"><i>${obj.accents[i].link}</i></a>`);
+        }
+      }
+      return '(' + str.join(', ') + ')';
+    }
+  },
+  'IPA': {
+    info: "This template adds the proper formatting and links to a pronunciation transcription in the International Phonetic Alphabet.",
+    default: {
+      'language': '',
+      'transcriptions': []
+    },
+    params: [
+      {
+        name: '',
+        action: (value, index, obj) => {
+          switch (index) {
+            case 0:
+              return { language: value }
+            default:
+              return { transcriptions: value }
+          }
+        }
+      }
+    ],
+    humanize: obj => {
+      let str = [];
+      str.push('IPA: ');
+      str.push(obj.transcriptions.join(', '))
+      return str.join('');
+    }
+  },
+  'enPR': {
+    info: "This template is for phonemic transcriptions in the Appendix:English pronunciation (enPR) system, for use in the pronunciation section of entries.",
+    default: {
+      'transcriptions': []
+    },
+    params: [
+      {
+        name: '',
+        action: (value, index, obj) => {
+          return { transcriptions: value }
+        }
+      }
+    ],
+    humanize: obj => {
+      let str = [];
+      str.push('enPR: ');
+      str.push(obj.transcriptions.join(', '))
+      return str.join('');
     }
   }
 };

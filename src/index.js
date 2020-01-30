@@ -13,7 +13,7 @@ export default class Labelizer {
     this.o = options;
     this.indexToken = 0;
     this.consoleInitialized = false;
-    this.language = "fr";
+    this.language = "en";
 
     this.init();
   }
@@ -212,6 +212,18 @@ export default class Labelizer {
     let w = new Wiktionary(args[0], "English");
     w.getInfos().then(data => {
       let def = w.getEtymology(data);
+      def.forEach(x => {
+        x.forEach(y => {
+          this.terminal.log(y.parsed);
+        })
+        this.terminal.log('<br/>');
+      });
+    });
+  }
+  getPronunciation(args, opts) {
+    let w = new Wiktionary(args[0], "English");
+    w.getInfos().then(data => {
+      let def = w.getPronunciation(data);
       def.forEach(x => {
         x.forEach(y => {
           this.terminal.log(y.parsed);
@@ -515,6 +527,29 @@ export default class Labelizer {
         "https://" +
         this.language +
         ".wikipedia.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" +
+        str +
+        "&namespace=0&limit=10&origin=*",
+
+        { headers: myHeaders }
+      )
+        .then(response => response.json())
+        .then(text => {
+          if (text.error) {
+            this.terminal.error(text.error.info);
+          } else {
+            resolve(text[1]);
+          }
+        });
+    });
+  }
+  autocompleteWiktionary(str) {
+    return new Promise(resolve => {
+      var myHeaders = new Headers();
+      myHeaders.append("Content-Type", "application/json");
+      fetch(
+        "https://" +
+        this.language +
+        ".wiktionary.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" +
         str +
         "&namespace=0&limit=10&origin=*",
 

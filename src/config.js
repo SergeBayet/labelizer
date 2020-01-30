@@ -42,6 +42,9 @@ const terminalConfig = {
           name: "word",
           info: "written form of the word (case sensitive)",
           type: "string",
+          filter: {
+            callbackMethod: "autocompleteWiktionary"
+          },
           error: "word (${info}) must be a string"
         }
       ],
@@ -67,6 +70,25 @@ const terminalConfig = {
           name: "word",
           info: "written form of the word (case sensitive)",
           type: "string",
+          filter: {
+            callbackMethod: "autocompleteWiktionary"
+          },
+          error: "word (${info}) must be a string"
+        }
+      ]
+
+    },
+    {
+      name: "pronunce",
+      method: "getPronunciation",
+      args: [
+        {
+          name: "word",
+          info: "written form of the word (case sensitive)",
+          type: "string",
+          filter: {
+            callbackMethod: "autocompleteWiktionary"
+          },
           error: "word (${info}) must be a string"
         }
       ]
@@ -80,6 +102,9 @@ const terminalConfig = {
           name: "word",
           info: "written form of the word (case sensitive)",
           type: "string",
+          filter: {
+            callbackMethod: "autocompleteWiktionary"
+          },
           error: "word (${info}) must be a string"
         }
       ]
