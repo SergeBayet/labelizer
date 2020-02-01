@@ -170,41 +170,77 @@ export default class Labelizer {
 
   // Commands Console
   getTranslation(args, opts) {
-
     let w = new Wiktionary(args[0], "English");
     let index = 0;
-    let lang = '';
-    if (opts.isOption('language')) {
-      lang = opts.isOption('language').arguments;
+    let lang = "";
+    if (opts.isOption("language")) {
+      lang = opts.isOption("language").arguments;
     }
     console.log(lang);
     w.getInfos().then(data => {
       let trans = w.getTranslation(data);
       trans.forEach(x => {
         x.forEach(y => {
-          if (y.templates.filter(x => x.templateName == 'trans-top').length > 0) {
+          if (
+            y.templates.filter(x => x.templateName == "trans-top").length > 0
+          ) {
             index++;
-            this.terminal.log(index.toString() + '. ' + y.parsed);
-          }
-          else {
-            if (lang !== '') {
+            this.terminal.log(index.toString() + ". " + y.parsed);
+          } else {
+            if (lang !== "") {
               console.log(y.templates);
               let display = false;
-              if (y.templates.filter(x => {
-                if (x.lang && lang.includes(x.lang)) {
-                  display = true;
-                }
-              }));
+              if (
+                y.templates.filter(x => {
+                  if (x.lang && lang.includes(x.lang)) {
+                    display = true;
+                  }
+                })
+              );
               if (display) {
                 this.terminal.log(y.parsed);
               }
-            }
-            else {
+            } else {
               this.terminal.log(y.parsed);
             }
-
           }
-        })
+        });
+      });
+    });
+  }
+  getSynonyms(args, opts) {
+    let w = new Wiktionary(args[0], "English");
+    w.getInfos().then(data => {
+      let def = w.getSynonyms(data);
+      def.forEach(x => {
+        x.forEach(y => {
+          this.terminal.log(y.parsed);
+        });
+        this.terminal.log("<br/>");
+      });
+    });
+  }
+  getDerivedTerms(args, opts) {
+    let w = new Wiktionary(args[0], "English");
+    w.getInfos().then(data => {
+      let def = w.getDerivedTerms(data);
+      def.forEach(x => {
+        x.forEach(y => {
+          this.terminal.log(y.parsed);
+        });
+        this.terminal.log("<br/>");
+      });
+    });
+  }
+  getRelatedTerms(args, opts) {
+    let w = new Wiktionary(args[0], "English");
+    w.getInfos().then(data => {
+      let def = w.getRelatedTerms(data);
+      def.forEach(x => {
+        x.forEach(y => {
+          this.terminal.log(y.parsed);
+        });
+        this.terminal.log("<br/>");
       });
     });
   }
@@ -215,8 +251,8 @@ export default class Labelizer {
       def.forEach(x => {
         x.forEach(y => {
           this.terminal.log(y.parsed);
-        })
-        this.terminal.log('<br/>');
+        });
+        this.terminal.log("<br/>");
       });
     });
   }
@@ -227,8 +263,8 @@ export default class Labelizer {
       def.forEach(x => {
         x.forEach(y => {
           this.terminal.log(y.parsed);
-        })
-        this.terminal.log('<br/>');
+        });
+        this.terminal.log("<br/>");
       });
     });
   }
@@ -239,8 +275,8 @@ export default class Labelizer {
       def.forEach(x => {
         x.forEach(y => {
           this.terminal.log(y.parsed);
-        })
-        this.terminal.log('<br/>');
+        });
+        this.terminal.log("<br/>");
       });
     });
   }
@@ -525,10 +561,10 @@ export default class Labelizer {
       myHeaders.append("Content-Type", "application/json");
       fetch(
         "https://" +
-        this.language +
-        ".wikipedia.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" +
-        str +
-        "&namespace=0&limit=10&origin=*",
+          this.language +
+          ".wikipedia.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" +
+          str +
+          "&namespace=0&limit=10&origin=*",
 
         { headers: myHeaders }
       )
@@ -548,10 +584,10 @@ export default class Labelizer {
       myHeaders.append("Content-Type", "application/json");
       fetch(
         "https://" +
-        this.language +
-        ".wiktionary.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" +
-        str +
-        "&namespace=0&limit=10&origin=*",
+          this.language +
+          ".wiktionary.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" +
+          str +
+          "&namespace=0&limit=10&origin=*",
 
         { headers: myHeaders }
       )
@@ -578,10 +614,10 @@ export default class Labelizer {
     myHeaders.append("Content-Type", "application/json");
     fetch(
       "http://" +
-      this.language +
-      ".wikipedia.org/w/api.php?action=parse&page=" +
-      label +
-      "&format=json&redirects&origin=*",
+        this.language +
+        ".wikipedia.org/w/api.php?action=parse&page=" +
+        label +
+        "&format=json&redirects&origin=*",
       { headers: myHeaders }
     )
       .then(response => response.json())

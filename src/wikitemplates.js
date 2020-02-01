@@ -22,6 +22,11 @@ export const tools = {
 
 }
 export const alias = {
+  'top3': 'top2',
+  'top4': 'top2',
+  'mid3': 'mid2',
+  'mid4': 'mid4',
+  'en-proper-noun': 'en-proper noun',
   'a': 'accent',
   'label': 'lb',
   'lbl': 'lb',
@@ -44,7 +49,8 @@ export const alias = {
   'suf': 'suffix',
   'cog': 'cognate',
   'etyl': 'etymology language',
-  'l': 'link'
+  'l': 'link',
+  's': 'sense'
 }
 export const wikiTemplates = {
   "audio": {
@@ -198,7 +204,8 @@ export const wikiTemplates = {
     default: {
       lang: "",
       pos: "",
-      head: "${head}"
+      head: "${head}",
+      inflections: []
     },
     params: [
       {
@@ -209,6 +216,8 @@ export const wikiTemplates = {
               return { lang: value }
             case 1:
               return { pos: value }
+            default:
+              return { inflections: value}
           }
         }
       },
@@ -220,7 +229,54 @@ export const wikiTemplates = {
       }
     ],
     humanize: obj => {
-      return '<strong>' + obj.head + '</strong> ' + tools.ucfirst(obj.pos);
+      let str = [];
+      str.push('<strong>' + obj.head + '</strong> ' + tools.ucfirst(obj.pos));
+      let parenthesis = [];
+      for (let i = 0; i < obj.inflections.length; i += 2) {
+        let added = '';
+        if(obj.inflections[i + 1])
+        {
+          added = ` <a href="#" data-link="${obj.inflections[i + 1]}">${obj.inflections[i + 1]}</a>`;
+        }
+        parenthesis.push(`<i>${obj.inflections[i]}</i>` + added);
+      }
+      str.push(parenthesis.length > 0 ? ' (' + parenthesis.join(', ') + ')' : '');
+      return str.join('');
+    }
+  },
+  "vern": {
+    info: "This categorizes terms in Category:Entries missing English vernacular names of taxa. ",
+    default: {
+      term: '',
+      plural: '',
+    },
+    params: [
+      {
+        name:"",
+        action: (value, index) => {
+          switch(index) {
+            case 0:
+              return {term: value};
+            case 1:
+              return {plural: value};
+          }
+        }
+      },
+      {
+        name:"pl",
+        action: (value, index, obj) => {
+          return {plural: obj.term + value }
+        }
+      }
+    ],
+    humanize: obj => {
+      let str = [];
+      str.push(`<a href="#" data-link="${obj.term}">${obj.term}</a>`);
+      if(obj.plural !== '')
+      {
+        str.push(`(<i>plural</i> <a href="#" data-link="${obj.plural}">${obj.plural}</a>)`)
+      }
+      return str.join(' ');
     }
   },
   "qualifier": {
@@ -238,6 +294,23 @@ export const wikiTemplates = {
     ],
     humanize: obj => {
       return '(<i>' + obj.qualifier.join(', ') + '</i>)';
+    }
+  },
+  "sense": {
+    info: "This template is used to specify a sense qualifier (a gloss) for a usage note, synonym, antonym or other -onym.",
+    default: {
+      sense: ''
+    },
+    params: [
+      {
+        name: "",
+        action: value => {
+          return ({ sense: value });
+        }
+      }
+    ],
+    humanize: obj => {
+      return '(<i>' + obj.sense + '</i>): ';
     }
   },
   "defdate": {
@@ -902,7 +975,7 @@ export const wikiTemplates = {
     ],
     humanize: obj => {
       let str = [];
-      str.push('<strong>' + obj.pron + '</strong>');
+      str.push('<strong>' + obj.pron + '</strong> Pronoun');
       str.push(obj.desc ? '<i>' + obj.desc + '</i>' : '');
       let parenthesis = [];
       for (let i = 0; i < obj.info.length - 1; i += 2) {
@@ -1224,6 +1297,92 @@ export const wikiTemplates = {
       return str.join('');
     }
   },
+  "der-top": {
+    info: "Use this template to display a “Derived terms” section",
+    default: {
+      gloss: ""
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index, obj) => {
+          switch (index) {
+            case 0:
+              return { gloss: value }
+          }
+        }
+      }
+    ],
+    humanize: obj => {
+      let str = [];
+      str.push(obj.gloss ? '<strong>' + obj.gloss + '</strong>' : '<strong>Derived terms for ${head}</strong>');
+      return str.join('');
+    }
+  },
+  "top2": {
+    info: "Top of section",
+    default: {},
+    params: [],
+    humanize: obj => ''
+  },
+  "mid2": {
+    info: "Separator of section",
+    default: {},
+    params: [],
+    humanize: obj => ''
+  },
+  "bottom": {
+    info: "End of section",
+    default: {},
+    params: [],
+    humanize: obj => ''
+  },
+  "der-mid": {
+    info: "Separator of derived terms section",
+    default: {},
+    params: [],
+    humanize: obj => ''
+  },
+  "der-bottom": {
+    info: "End of derived terms section",
+    default: {},
+    params: [],
+    humanize: obj => ''
+  },
+  "rel-top": {
+    info: "Use this template to display a “Related terms” section",
+    default: {
+      gloss: ""
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index, obj) => {
+          switch (index) {
+            case 0:
+              return { gloss: value }
+          }
+        }
+      }
+    ],
+    humanize: obj => {
+      let str = [];
+      str.push(obj.gloss ? '<strong>' + obj.gloss + '</strong>' : '');
+      return str.join('');
+    }
+  },
+  "rel-mid": {
+    info: "Separator of related terms section",
+    default: {},
+    params: [],
+    humanize: obj => ''
+  },
+  "rel-bottom": {
+    info: "End of related terms section",
+    default: {},
+    params: [],
+    humanize: obj => ''
+  },
   "inherited": {
     info: "This template is intended for terms that have an unbroken chain of inheritance from the source term in question.",
     default: {
@@ -1475,7 +1634,7 @@ export const wikiTemplates = {
     humanize: obj => {
       let str = [];
 
-      str.push(obj.alternateText ? `<a href="#" data-link="${obj.pageName}"><i>${obj.alternateText}</i></a>` : '');
+      str.push(obj.alternateText ? `<a href="#" data-link="${obj.pageName}">${obj.alternateText}</a>` : '');
       str.push(obj.gloss ? `(“${obj.gloss}”)` : '');
       return str.filter(x => x).join(' ')
     }
@@ -1733,15 +1892,19 @@ export const wikiTemplates = {
       }
     ],
     humanize: obj => {
+      console.log(obj);
       let str = [];
       for (let i = 0; i < obj.accents.length; i++) {
         if (accents.aliases[obj.accents[i]]) {
           obj.accents[i] = accents.labels[accents.aliases[obj.accents[i]]];
         }
         else {
-          obj.accents[i] = accents.labels[obj.accents[i]];
+          obj.accents[i] = accents.labels[obj.accents[i]] || obj.accents[i];
         }
-        if (obj.accents[i].display) {
+        if(typeof obj.accents[i] == 'string') {
+          str.push(`<i>${obj.accents[i]}</i>`)
+        }
+        else if (obj.accents[i].display) {
           str.push(`<a href="#" data-link="${obj.accents[i].link}"><i>${obj.accents[i].display}</i></a>`);
         }
         else {
@@ -1872,6 +2035,64 @@ export const wikiTemplates = {
       
       str.push(`<i>of </i><strong>${obj.lemma}</strong>`);
       return str.join(' ');
+    }
+  },
+  'en-letter': {
+    info: "This template should be added to all English letter entries. ",
+    default: {
+      'letter': '${head}',
+      'upper': '',
+      'lower': '',
+      'mixed': ''
+    },
+    params: [],
+    humanize: obj => {
+      if(obj.letter == obj.upper) {
+        return `<strong>${obj.letter}</strong> Letter (<i>upper case</i>, <i>lower case </i><a href="#" data-link="${obj.lower}">${obj.lower}</a>, <i>plural </i><a href="#" data-link="${obj.upper}'s">${obj.upper}'s</a>)`
+      }
+      else
+      {
+        return `<strong>${obj.letter}</strong> Letter (<i>lower case</i>, <i>upper case </i><a href="#" data-link="${obj.upper}">${obj.upper}</a>, <i>plural </i><a href="#" data-link="${obj.lower}'s">${obj.lower}'s</a>)`
+      }
+    }
+  },
+  'en-number': {
+    info: "This template should be added to all English number entries. ",
+    default: {
+      'number': '${head}',
+      'upper': '',
+      'lower': '',
+      'mixed': ''
+    },
+    params: [],
+    humanize: obj => {
+      if(obj.letter == obj.upper) {
+        return `<strong>${obj.number}</strong> Numeral (<i>upper case</i> <i>lower case </i><a href="#" data-link="${obj.lower}">${obj.lower}</a>)`
+      }
+      else
+      {
+        return `<strong>${obj.number}</strong> Numeral (<i>lower case</i> <i>upper case </i><a href="#" data-link="${obj.upper}">${obj.upper}</a>)`
+      }
+    }
+  },
+  'en-prep': {
+    info: "Preposition template",
+    default: {
+      prep: '${head}'
+    },
+    params: [],
+    humanize: obj => {
+      return `<strong>${obj.prep}</strong> Preposition`;
+    }
+  },
+  'en-con': {
+    info: "Conjunction template",
+    default: {
+      conj: '${head}'
+    },
+    params: [],
+    humanize: obj => {
+      return `<strong>${obj.conj}</strong> Conjunction`;
     }
   }
 };

@@ -7204,6 +7204,42 @@
         error: "word (${info}) must be a string"
       }]
     }, {
+      name: "derived",
+      method: "getDerivedTerms",
+      args: [{
+        name: "word",
+        info: "written form of the word (case sensitive)",
+        type: "string",
+        filter: {
+          callbackMethod: "autocompleteWiktionary"
+        },
+        error: "word (${info}) must be a string"
+      }]
+    }, {
+      name: "related",
+      method: "getRelatedTerms",
+      args: [{
+        name: "word",
+        info: "written form of the word (case sensitive)",
+        type: "string",
+        filter: {
+          callbackMethod: "autocompleteWiktionary"
+        },
+        error: "word (${info}) must be a string"
+      }]
+    }, {
+      name: "syn",
+      method: "getSynonyms",
+      args: [{
+        name: "word",
+        info: "written form of the word (case sensitive)",
+        type: "string",
+        filter: {
+          callbackMethod: "autocompleteWiktionary"
+        },
+        error: "word (${info}) must be a string"
+      }]
+    }, {
       name: "pronunce",
       method: "getPronunciation",
       args: [{
@@ -9898,6 +9934,11 @@
     }
   };
   var alias = {
+    'top3': 'top2',
+    'top4': 'top2',
+    'mid3': 'mid2',
+    'mid4': 'mid4',
+    'en-proper-noun': 'en-proper noun',
     'a': 'accent',
     'label': 'lb',
     'lbl': 'lb',
@@ -9920,7 +9961,8 @@
     'suf': 'suffix',
     'cog': 'cognate',
     'etyl': 'etymology language',
-    'l': 'link'
+    'l': 'link',
+    's': 'sense'
   };
   var wikiTemplates = (_wikiTemplates = {
     "audio": {
@@ -10104,7 +10146,8 @@
       "default": {
         lang: "",
         pos: "",
-        head: "${head}"
+        head: "${head}",
+        inflections: []
       },
       params: [{
         name: "",
@@ -10119,6 +10162,11 @@
               return {
                 pos: value
               };
+
+            default:
+              return {
+                inflections: value
+              };
           }
         }
       }, {
@@ -10130,7 +10178,62 @@
         }
       }],
       humanize: function humanize(obj) {
-        return '<strong>' + obj.head + '</strong> ' + tools.ucfirst(obj.pos);
+        var str = [];
+        str.push('<strong>' + obj.head + '</strong> ' + tools.ucfirst(obj.pos));
+        var parenthesis = [];
+
+        for (var i = 0; i < obj.inflections.length; i += 2) {
+          var added = '';
+
+          if (obj.inflections[i + 1]) {
+            added = " <a href=\"#\" data-link=\"".concat(obj.inflections[i + 1], "\">").concat(obj.inflections[i + 1], "</a>");
+          }
+
+          parenthesis.push("<i>".concat(obj.inflections[i], "</i>") + added);
+        }
+
+        str.push(parenthesis.length > 0 ? ' (' + parenthesis.join(', ') + ')' : '');
+        return str.join('');
+      }
+    },
+    "vern": {
+      info: "This categorizes terms in Category:Entries missing English vernacular names of taxa. ",
+      "default": {
+        term: '',
+        plural: ''
+      },
+      params: [{
+        name: "",
+        action: function action(value, index) {
+          switch (index) {
+            case 0:
+              return {
+                term: value
+              };
+
+            case 1:
+              return {
+                plural: value
+              };
+          }
+        }
+      }, {
+        name: "pl",
+        action: function action(value, index, obj) {
+          return {
+            plural: obj.term + value
+          };
+        }
+      }],
+      humanize: function humanize(obj) {
+        var str = [];
+        str.push("<a href=\"#\" data-link=\"".concat(obj.term, "\">").concat(obj.term, "</a>"));
+
+        if (obj.plural !== '') {
+          str.push("(<i>plural</i> <a href=\"#\" data-link=\"".concat(obj.plural, "\">").concat(obj.plural, "</a>)"));
+        }
+
+        return str.join(' ');
       }
     },
     "qualifier": {
@@ -10148,6 +10251,23 @@
       }],
       humanize: function humanize(obj) {
         return '(<i>' + obj.qualifier.join(', ') + '</i>)';
+      }
+    },
+    "sense": {
+      info: "This template is used to specify a sense qualifier (a gloss) for a usage note, synonym, antonym or other -onym.",
+      "default": {
+        sense: ''
+      },
+      params: [{
+        name: "",
+        action: function action(value) {
+          return {
+            sense: value
+          };
+        }
+      }],
+      humanize: function humanize(obj) {
+        return '(<i>' + obj.sense + '</i>): ';
       }
     },
     "defdate": {
@@ -10942,7 +11062,7 @@
       }],
       humanize: function humanize(obj) {
         var str = [];
-        str.push('<strong>' + obj.pron + '</strong>');
+        str.push('<strong>' + obj.pron + '</strong> Pronoun');
         str.push(obj.desc ? '<i>' + obj.desc + '</i>' : '');
         var parenthesis = [];
 
@@ -11342,6 +11462,106 @@
         return str.join('');
       }
     },
+    "der-top": {
+      info: "Use this template to display a “Derived terms” section",
+      "default": {
+        gloss: ""
+      },
+      params: [{
+        name: "",
+        action: function action(value, index, obj) {
+          switch (index) {
+            case 0:
+              return {
+                gloss: value
+              };
+          }
+        }
+      }],
+      humanize: function humanize(obj) {
+        var str = [];
+        str.push(obj.gloss ? '<strong>' + obj.gloss + '</strong>' : '<strong>Derived terms for ${head}</strong>');
+        return str.join('');
+      }
+    },
+    "top2": {
+      info: "Top of section",
+      "default": {},
+      params: [],
+      humanize: function humanize(obj) {
+        return '';
+      }
+    },
+    "mid2": {
+      info: "Separator of section",
+      "default": {},
+      params: [],
+      humanize: function humanize(obj) {
+        return '';
+      }
+    },
+    "bottom": {
+      info: "End of section",
+      "default": {},
+      params: [],
+      humanize: function humanize(obj) {
+        return '';
+      }
+    },
+    "der-mid": {
+      info: "Separator of derived terms section",
+      "default": {},
+      params: [],
+      humanize: function humanize(obj) {
+        return '';
+      }
+    },
+    "der-bottom": {
+      info: "End of derived terms section",
+      "default": {},
+      params: [],
+      humanize: function humanize(obj) {
+        return '';
+      }
+    },
+    "rel-top": {
+      info: "Use this template to display a “Related terms” section",
+      "default": {
+        gloss: ""
+      },
+      params: [{
+        name: "",
+        action: function action(value, index, obj) {
+          switch (index) {
+            case 0:
+              return {
+                gloss: value
+              };
+          }
+        }
+      }],
+      humanize: function humanize(obj) {
+        var str = [];
+        str.push(obj.gloss ? '<strong>' + obj.gloss + '</strong>' : '');
+        return str.join('');
+      }
+    },
+    "rel-mid": {
+      info: "Separator of related terms section",
+      "default": {},
+      params: [],
+      humanize: function humanize(obj) {
+        return '';
+      }
+    },
+    "rel-bottom": {
+      info: "End of related terms section",
+      "default": {},
+      params: [],
+      humanize: function humanize(obj) {
+        return '';
+      }
+    },
     "inherited": {
       info: "This template is intended for terms that have an unbroken chain of inheritance from the source term in question.",
       "default": {
@@ -11687,7 +11907,7 @@
     }],
     humanize: function humanize(obj) {
       var str = [];
-      str.push(obj.alternateText ? "<a href=\"#\" data-link=\"".concat(obj.pageName, "\"><i>").concat(obj.alternateText, "</i></a>") : '');
+      str.push(obj.alternateText ? "<a href=\"#\" data-link=\"".concat(obj.pageName, "\">").concat(obj.alternateText, "</a>") : '');
       str.push(obj.gloss ? "(\u201C".concat(obj.gloss, "\u201D)") : '');
       return str.filter(function (x) {
         return x;
@@ -11986,16 +12206,19 @@
       }
     }],
     humanize: function humanize(obj) {
+      console.log(obj);
       var str = [];
 
       for (var i = 0; i < obj.accents.length; i++) {
         if (accents.aliases[obj.accents[i]]) {
           obj.accents[i] = accents.labels[accents.aliases[obj.accents[i]]];
         } else {
-          obj.accents[i] = accents.labels[obj.accents[i]];
+          obj.accents[i] = accents.labels[obj.accents[i]] || obj.accents[i];
         }
 
-        if (obj.accents[i].display) {
+        if (typeof obj.accents[i] == 'string') {
+          str.push("<i>".concat(obj.accents[i], "</i>"));
+        } else if (obj.accents[i].display) {
           str.push("<a href=\"#\" data-link=\"".concat(obj.accents[i].link, "\"><i>").concat(obj.accents[i].display, "</i></a>"));
         } else {
           str.push("<a href=\"#\" data-link=\"".concat(obj.accents[i].link, "\"><i>").concat(obj.accents[i].link, "</i></a>"));
@@ -12125,6 +12348,56 @@
       });
       str.push("<i>of </i><strong>".concat(obj.lemma, "</strong>"));
       return str.join(' ');
+    }
+  }), _defineProperty(_wikiTemplates, 'en-letter', {
+    info: "This template should be added to all English letter entries. ",
+    "default": {
+      'letter': '${head}',
+      'upper': '',
+      'lower': '',
+      'mixed': ''
+    },
+    params: [],
+    humanize: function humanize(obj) {
+      if (obj.letter == obj.upper) {
+        return "<strong>".concat(obj.letter, "</strong> Letter (<i>upper case</i>, <i>lower case </i><a href=\"#\" data-link=\"").concat(obj.lower, "\">").concat(obj.lower, "</a>, <i>plural </i><a href=\"#\" data-link=\"").concat(obj.upper, "'s\">").concat(obj.upper, "'s</a>)");
+      } else {
+        return "<strong>".concat(obj.letter, "</strong> Letter (<i>lower case</i>, <i>upper case </i><a href=\"#\" data-link=\"").concat(obj.upper, "\">").concat(obj.upper, "</a>, <i>plural </i><a href=\"#\" data-link=\"").concat(obj.lower, "'s\">").concat(obj.lower, "'s</a>)");
+      }
+    }
+  }), _defineProperty(_wikiTemplates, 'en-number', {
+    info: "This template should be added to all English number entries. ",
+    "default": {
+      'number': '${head}',
+      'upper': '',
+      'lower': '',
+      'mixed': ''
+    },
+    params: [],
+    humanize: function humanize(obj) {
+      if (obj.letter == obj.upper) {
+        return "<strong>".concat(obj.number, "</strong> Numeral (<i>upper case</i> <i>lower case </i><a href=\"#\" data-link=\"").concat(obj.lower, "\">").concat(obj.lower, "</a>)");
+      } else {
+        return "<strong>".concat(obj.number, "</strong> Numeral (<i>lower case</i> <i>upper case </i><a href=\"#\" data-link=\"").concat(obj.upper, "\">").concat(obj.upper, "</a>)");
+      }
+    }
+  }), _defineProperty(_wikiTemplates, 'en-prep', {
+    info: "Preposition template",
+    "default": {
+      prep: '${head}'
+    },
+    params: [],
+    humanize: function humanize(obj) {
+      return "<strong>".concat(obj.prep, "</strong> Preposition");
+    }
+  }), _defineProperty(_wikiTemplates, 'en-con', {
+    info: "Conjunction template",
+    "default": {
+      conj: '${head}'
+    },
+    params: [],
+    humanize: function humanize(obj) {
+      return "<strong>".concat(obj.conj, "</strong> Conjunction");
     }
   }), _wikiTemplates);
 
@@ -12700,6 +12973,57 @@
 
         return ret;
       }
+    }, {
+      key: "getDerivedTerms",
+      value: function getDerivedTerms(wikiObject) {
+        var pos = ["Derived terms"];
+        var ret = this.getNestedObjects(wikiObject[this.lang], pos).map(function (x) {
+          return x.content;
+        });
+        var wp = new WikiParser(this.word);
+
+        for (var i = 0; i < ret.length; i++) {
+          ret[i] = ret[i].map(function (el, index) {
+            return wp.parse(el);
+          });
+        }
+
+        return ret;
+      }
+    }, {
+      key: "getRelatedTerms",
+      value: function getRelatedTerms(wikiObject) {
+        var pos = ["Related terms"];
+        var ret = this.getNestedObjects(wikiObject[this.lang], pos).map(function (x) {
+          return x.content;
+        });
+        var wp = new WikiParser(this.word);
+
+        for (var i = 0; i < ret.length; i++) {
+          ret[i] = ret[i].map(function (el, index) {
+            return wp.parse(el);
+          });
+        }
+
+        return ret;
+      }
+    }, {
+      key: "getSynonyms",
+      value: function getSynonyms(wikiObject) {
+        var pos = ["Synonyms"];
+        var ret = this.getNestedObjects(wikiObject[this.lang], pos).map(function (x) {
+          return x.content;
+        });
+        var wp = new WikiParser(this.word);
+
+        for (var i = 0; i < ret.length; i++) {
+          ret[i] = ret[i].map(function (el, index) {
+            return wp.parse(el);
+          });
+        }
+
+        return ret;
+      }
     }]);
 
     return Wiktionary;
@@ -12877,10 +13201,10 @@
 
         var w = new Wiktionary(args[0], "English");
         var index = 0;
-        var lang = '';
+        var lang = "";
 
-        if (opts.isOption('language')) {
-          lang = opts.isOption('language').arguments;
+        if (opts.isOption("language")) {
+          lang = opts.isOption("language").arguments;
         }
 
         console.log(lang);
@@ -12889,13 +13213,13 @@
           trans.forEach(function (x) {
             x.forEach(function (y) {
               if (y.templates.filter(function (x) {
-                return x.templateName == 'trans-top';
+                return x.templateName == "trans-top";
               }).length > 0) {
                 index++;
 
-                _this3.terminal.log(index.toString() + '. ' + y.parsed);
+                _this3.terminal.log(index.toString() + ". " + y.parsed);
               } else {
-                if (lang !== '') {
+                if (lang !== "") {
                   console.log(y.templates);
                   var display = false;
                   if (y.templates.filter(function (x) {
@@ -12916,53 +13240,104 @@
         });
       }
     }, {
+      key: "getSynonyms",
+      value: function getSynonyms(args, opts) {
+        var _this4 = this;
+
+        var w = new Wiktionary(args[0], "English");
+        w.getInfos().then(function (data) {
+          var def = w.getSynonyms(data);
+          def.forEach(function (x) {
+            x.forEach(function (y) {
+              _this4.terminal.log(y.parsed);
+            });
+
+            _this4.terminal.log("<br/>");
+          });
+        });
+      }
+    }, {
+      key: "getDerivedTerms",
+      value: function getDerivedTerms(args, opts) {
+        var _this5 = this;
+
+        var w = new Wiktionary(args[0], "English");
+        w.getInfos().then(function (data) {
+          var def = w.getDerivedTerms(data);
+          def.forEach(function (x) {
+            x.forEach(function (y) {
+              _this5.terminal.log(y.parsed);
+            });
+
+            _this5.terminal.log("<br/>");
+          });
+        });
+      }
+    }, {
+      key: "getRelatedTerms",
+      value: function getRelatedTerms(args, opts) {
+        var _this6 = this;
+
+        var w = new Wiktionary(args[0], "English");
+        w.getInfos().then(function (data) {
+          var def = w.getRelatedTerms(data);
+          def.forEach(function (x) {
+            x.forEach(function (y) {
+              _this6.terminal.log(y.parsed);
+            });
+
+            _this6.terminal.log("<br/>");
+          });
+        });
+      }
+    }, {
       key: "getEtymology",
       value: function getEtymology(args, opts) {
-        var _this4 = this;
+        var _this7 = this;
 
         var w = new Wiktionary(args[0], "English");
         w.getInfos().then(function (data) {
           var def = w.getEtymology(data);
           def.forEach(function (x) {
             x.forEach(function (y) {
-              _this4.terminal.log(y.parsed);
+              _this7.terminal.log(y.parsed);
             });
 
-            _this4.terminal.log('<br/>');
+            _this7.terminal.log("<br/>");
           });
         });
       }
     }, {
       key: "getPronunciation",
       value: function getPronunciation(args, opts) {
-        var _this5 = this;
+        var _this8 = this;
 
         var w = new Wiktionary(args[0], "English");
         w.getInfos().then(function (data) {
           var def = w.getPronunciation(data);
           def.forEach(function (x) {
             x.forEach(function (y) {
-              _this5.terminal.log(y.parsed);
+              _this8.terminal.log(y.parsed);
             });
 
-            _this5.terminal.log('<br/>');
+            _this8.terminal.log("<br/>");
           });
         });
       }
     }, {
       key: "getDefinition",
       value: function getDefinition(args, opts) {
-        var _this6 = this;
+        var _this9 = this;
 
         var w = new Wiktionary(args[0], "English");
         w.getInfos().then(function (data) {
           var def = w.getDefinition(data);
           def.forEach(function (x) {
             x.forEach(function (y) {
-              _this6.terminal.log(y.parsed);
+              _this9.terminal.log(y.parsed);
             });
 
-            _this6.terminal.log('<br/>');
+            _this9.terminal.log("<br/>");
           });
         });
       }
@@ -13129,7 +13504,7 @@
     }, {
       key: "freq",
       value: function freq(args, opts) {
-        var _this7 = this;
+        var _this10 = this;
 
         var selector = " .token";
         var sensitive = true;
@@ -13184,7 +13559,7 @@
 
         if (opts.isOption("p")) {
           this.terminal.log(words.map(function (x) {
-            return x[0] + " (" + _this7.digits2(x[1] / wordsCount * 100) + "%)";
+            return x[0] + " (" + _this10.digits2(x[1] / wordsCount * 100) + "%)";
           }).join(" - "));
         } else {
           this.terminal.log(words.map(function (x) {
@@ -13278,18 +13653,18 @@
     }, {
       key: "autocompleteWiki",
       value: function autocompleteWiki(str) {
-        var _this8 = this;
+        var _this11 = this;
 
         return new Promise(function (resolve) {
           var myHeaders = new Headers();
           myHeaders.append("Content-Type", "application/json");
-          fetch("https://" + _this8.language + ".wikipedia.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" + str + "&namespace=0&limit=10&origin=*", {
+          fetch("https://" + _this11.language + ".wikipedia.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" + str + "&namespace=0&limit=10&origin=*", {
             headers: myHeaders
           }).then(function (response) {
             return response.json();
           }).then(function (text) {
             if (text.error) {
-              _this8.terminal.error(text.error.info);
+              _this11.terminal.error(text.error.info);
             } else {
               resolve(text[1]);
             }
@@ -13299,18 +13674,18 @@
     }, {
       key: "autocompleteWiktionary",
       value: function autocompleteWiktionary(str) {
-        var _this9 = this;
+        var _this12 = this;
 
         return new Promise(function (resolve) {
           var myHeaders = new Headers();
           myHeaders.append("Content-Type", "application/json");
-          fetch("https://" + _this9.language + ".wiktionary.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" + str + "&namespace=0&limit=10&origin=*", {
+          fetch("https://" + _this12.language + ".wiktionary.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" + str + "&namespace=0&limit=10&origin=*", {
             headers: myHeaders
           }).then(function (response) {
             return response.json();
           }).then(function (text) {
             if (text.error) {
-              _this9.terminal.error(text.error.info);
+              _this12.terminal.error(text.error.info);
             } else {
               resolve(text[1]);
             }
@@ -13320,7 +13695,7 @@
     }, {
       key: "loadHtml",
       value: function loadHtml(args) {
-        var _this10 = this;
+        var _this13 = this;
         //(e || window.event).preventDefault();
         var label = args[0];
 
@@ -13339,17 +13714,17 @@
           return response.json();
         }).then(function (text) {
           if (text.error) {
-            _this10.terminal.error(text.error.info);
+            _this13.terminal.error(text.error.info);
           } else {
-            _this10.terminal.log("Page loaded!");
+            _this13.terminal.log("Page loaded!");
 
             var html = text.parse.text["*"];
             el.innerHTML = html;
 
-            _this10.init();
+            _this13.init();
           }
         })["catch"](function (error) {
-          _this10.terminal.error("! " + error);
+          _this13.terminal.error("! " + error);
         });
       }
     }]);

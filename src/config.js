@@ -1,5 +1,3 @@
-
-
 const terminalConfig = {
   history: {
     cookies: true,
@@ -52,8 +50,7 @@ const terminalConfig = {
         {
           name: "language",
           abbr: "l",
-          info:
-            "Language of translation.",
+          info: "Language of translation.",
           arg: {
             name: "Language",
             type: "string",
@@ -76,7 +73,51 @@ const terminalConfig = {
           error: "word (${info}) must be a string"
         }
       ]
-
+    },
+    {
+      name: "derived",
+      method: "getDerivedTerms",
+      args: [
+        {
+          name: "word",
+          info: "written form of the word (case sensitive)",
+          type: "string",
+          filter: {
+            callbackMethod: "autocompleteWiktionary"
+          },
+          error: "word (${info}) must be a string"
+        }
+      ]
+    },
+    {
+      name: "related",
+      method: "getRelatedTerms",
+      args: [
+        {
+          name: "word",
+          info: "written form of the word (case sensitive)",
+          type: "string",
+          filter: {
+            callbackMethod: "autocompleteWiktionary"
+          },
+          error: "word (${info}) must be a string"
+        }
+      ]
+    },
+    {
+      name: "syn",
+      method: "getSynonyms",
+      args: [
+        {
+          name: "word",
+          info: "written form of the word (case sensitive)",
+          type: "string",
+          filter: {
+            callbackMethod: "autocompleteWiktionary"
+          },
+          error: "word (${info}) must be a string"
+        }
+      ]
     },
     {
       name: "pronunce",
@@ -92,7 +133,6 @@ const terminalConfig = {
           error: "word (${info}) must be a string"
         }
       ]
-
     },
     {
       name: "etymo",
@@ -108,7 +148,6 @@ const terminalConfig = {
           error: "word (${info}) must be a string"
         }
       ]
-
     },
     {
       name: "ngrams",

@@ -186,5 +186,44 @@ class Wiktionary {
     }
     return ret;
   }
+  getDerivedTerms(wikiObject) {
+    const pos = ["Derived terms"];
+    let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(
+      x => x.content
+    );
+    let wp = new WikiParser(this.word);
+    for (let i = 0; i < ret.length; i++) {
+      ret[i] = ret[i].map((el, index) => {
+        return wp.parse(el);
+      });
+    }
+    return ret;
+  }
+  getRelatedTerms(wikiObject) {
+    const pos = ["Related terms"];
+    let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(
+      x => x.content
+    );
+    let wp = new WikiParser(this.word);
+    for (let i = 0; i < ret.length; i++) {
+      ret[i] = ret[i].map((el, index) => {
+        return wp.parse(el);
+      });
+    }
+    return ret;
+  }
+  getSynonyms(wikiObject) {
+    const pos = ["Synonyms"];
+    let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(
+      x => x.content
+    );
+    let wp = new WikiParser(this.word);
+    for (let i = 0; i < ret.length; i++) {
+      ret[i] = ret[i].map((el, index) => {
+        return wp.parse(el);
+      });
+    }
+    return ret;
+  }
 }
 export default Wiktionary;
