@@ -97,8 +97,14 @@ class Wiktionary {
   }
   getNestedObjects(obj, properties, data = []) {
     for (let el in obj) {
-      if (properties.includes(el)) {
-        data.push(obj[el]);
+      for (const prop of properties) {
+        if (prop instanceof RegExp) {
+          if (prop.test(el)) {
+            data.push(obj[el]);
+          }
+        } else if (el == prop) {
+          data.push(obj[el]);
+        }
       }
       if (typeof obj[el] === "object") {
         this.getNestedObjects(obj[el], properties, data);
@@ -118,7 +124,8 @@ class Wiktionary {
       "Preposition",
       "Numeral",
       "Letter",
-      "Article"
+      "Article",
+      "Symbol"
     ];
     //console.log(wikiObject);
     let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(
@@ -167,7 +174,7 @@ class Wiktionary {
     return ret;
   }
   getEtymology(wikiObject) {
-    const pos = ["Etymology"];
+    const pos = [/Etymology( \d)?/];
     let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(
       x => x.content
     );
