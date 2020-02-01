@@ -9934,6 +9934,10 @@
     }
   };
   var alias = {
+    'rel-top2': 'rel-top',
+    'rel-mid2': 'rel-mid',
+    'rel-top3': 'rel-top',
+    'rel-mid3': 'rel-mid',
     'top3': 'top2',
     'top4': 'top2',
     'mid3': 'mid2',
