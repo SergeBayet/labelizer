@@ -7142,6 +7142,10 @@
       cookieName: "lbz_history",
       expire: 90
     },
+    dym: {
+      max: 5,
+      triggerScore: 0.3
+    },
     css: {
       input: {
         position: "static",
@@ -7630,6 +7634,54 @@
     return Autocomplete;
   }();
 
+  var distance = {
+    kb: function kb(word, list) {
+      word.split("").map(function (_char) {});
+    },
+    dym: function dym(word, list) {
+      var triggerScore = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0.5;
+      var max = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 5;
+
+      var masks = _toConsumableArray(list);
+
+      var scores = [];
+
+      for (var i = 0; i < list.length; i++) {
+        scores.push({
+          word: list[i],
+          score: 0
+        });
+      }
+
+      word.toLowerCase().split("").filter(function (x) {
+        return x;
+      }).forEach(function (_char2) {
+        masks = masks.map(function (el, nEl) {
+          var i = el.indexOf(_char2);
+
+          if (i !== -1) {
+            el = el.substring(0, i) + "$" + el.substring(i + 1);
+            scores[nEl].score += 1 / el.length;
+            return el;
+          }
+
+          return el;
+        });
+      });
+      scores = scores.filter(function (x) {
+        return x.score > triggerScore;
+      }).sort(function (a, b) {
+        return a.score < b.score;
+      });
+
+      if (scores.length > 0) {
+        scores = scores.slice(0, max);
+      }
+
+      return scores;
+    }
+  };
+
   var ARROW_DOWN = 40;
   var ARROW_UP = 38;
   var ENTER = 13;
@@ -7861,39 +7913,8 @@
     }, {
       key: "didYouMean",
       value: function didYouMean(word, list) {
+        var scores = distance.dym(word, list, terminalConfig.dym.triggerScore, terminalConfig.dym.max);
         var str = [];
-
-        var masks = _toConsumableArray(list);
-
-        var scores = [];
-
-        for (var i = 0; i < list.length; i++) {
-          scores.push({
-            word: list[i],
-            score: 0
-          });
-        }
-
-        word.toLowerCase().split("").filter(function (x) {
-          return x;
-        }).forEach(function (_char) {
-          masks = masks.map(function (el, nEl) {
-            var i = el.indexOf(_char);
-
-            if (i !== -1) {
-              el = el.substring(0, i) + "$" + el.substring(i + 1);
-              scores[nEl].score += 1 / el.length;
-              return el;
-            }
-
-            return el;
-          });
-        });
-        scores = scores.filter(function (x) {
-          return x.score > 0.5;
-        }).sort(function (a, b) {
-          return a.score < b.score;
-        });
 
         if (scores.length > 0) {
           str.push("Did you mean :");
@@ -7902,7 +7923,6 @@
           });
         }
 
-        console.log(str);
         return str.join("<br/>");
       }
     }, {
@@ -8134,7 +8154,7 @@
 
         if (definition.length == 0 && parser.command !== "help") {
           this.error(this.interpolation(terminalConfig.errors.unknown, context) || "Command not found : " + parser.command);
-          this.info(this.didYouMean(parser.command, terminalConfig.commands.map(function (x) {
+          this.log(this.didYouMean(parser.command, terminalConfig.commands.map(function (x) {
             return x.name;
           })));
           return false;

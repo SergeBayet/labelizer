@@ -2,6 +2,7 @@ import { getCookie, setCookie } from "./cookies";
 import terminalConfig from "./config";
 import Editable from "./editable";
 import Autocomplete from "./autocomplete";
+import distance from "./lexicography/distance";
 
 const ARROW_DOWN = 40;
 const ARROW_UP = 38;
@@ -183,43 +184,20 @@ class Terminal {
     return ret;
   }
   didYouMean(word, list) {
+    let scores = distance.dym(
+      word,
+      list,
+      terminalConfig.dym.triggerScore,
+      terminalConfig.dym.max
+    );
     let str = [];
-    let masks = [...list];
-    let scores = [];
-    for (let i = 0; i < list.length; i++) {
-      scores.push({ word: list[i], score: 0 });
-    }
-    word
-      .toLowerCase()
-      .split("")
-      .filter(x => x)
-      .forEach(char => {
-        masks = masks.map((el, nEl) => {
-          let i = el.indexOf(char);
-          if (i !== -1) {
-            el = el.substring(0, i) + "$" + el.substring(i + 1);
-            scores[nEl].score += 1 / el.length;
-            return el;
-          }
-          return el;
-        });
-      });
-    scores = scores
-      .filter(x => x.score > 0.5)
-      .sort((a, b) => a.score < b.score);
     if (scores.length > 0) {
       str.push("Did you mean :");
       scores.map(el => {
         str.push(el.word);
       });
     }
-    console.log(str);
     return str.join("<br/>");
-    console.log(
-      masks,
-      scores.filter(x => x.score > 0.5).sort((a, b) => a.score < b.score)
-    );
-    return "Did you mean?";
   }
 
   interpolation(str, context) {
@@ -456,7 +434,7 @@ class Terminal {
         this.interpolation(terminalConfig.errors.unknown, context) ||
           "Command not found : " + parser.command
       );
-      this.info(
+      this.log(
         this.didYouMean(
           parser.command,
           terminalConfig.commands.map(x => x.name)

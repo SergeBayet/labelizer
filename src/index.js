@@ -1,6 +1,6 @@
 import "../node_modules/@babel/polyfill/dist/polyfill.min.js";
-import carry from "./carry";
-import { isStopWord } from "./stopwords";
+import carry from "./lexicography/carry";
+import { isStopWord } from "./lexicography/stopwords";
 import Terminal from "./terminal";
 import Wiktionary from "./wikitionary";
 const version = "0.0.1";

@@ -4,6 +4,10 @@ const terminalConfig = {
     cookieName: "lbz_history",
     expire: 90
   },
+  dym: {
+    max: 5,
+    triggerScore: 0.3
+  },
   css: {
     input: {
       position: "static",
