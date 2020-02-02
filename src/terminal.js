@@ -146,15 +146,20 @@ class Terminal {
       switch (e.keyCode) {
         case ENTER:
           e.preventDefault();
-          ac.hide();
+          if (!ac.isHidden()) {
+            ac.hide();
+            return false;
+          }
           this.execute(e.target.innerText.trim());
           inputElement.innerHTML = "";
           break;
         case ARROW_UP:
+          if (!ac.isHidden()) return false;
           ac.hide();
           this.upHistory(e);
           break;
         case ARROW_DOWN:
+          if (!ac.isHidden()) return false;
           ac.hide();
           this.downHistory(e);
           break;

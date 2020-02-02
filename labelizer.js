@@ -7526,6 +7526,8 @@
   /*#__PURE__*/
   function () {
     function Autocomplete(element) {
+      var _this2 = this;
+
       var css = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
       _classCallCheck(this, Autocomplete);
@@ -7534,14 +7536,49 @@
       this.items = [];
       this.element = element;
       this.div = document.createElement("div");
-      this.div.setAttribute('class', 'autocomplete-items');
-      this.div.style.display = 'none';
+      this.div.setAttribute("class", "autocomplete-items");
+      this.div.style.display = "none";
       this.element.parentNode.appendChild(this.div);
       this.span = null;
+      this.currentFocus = 0;
       this.css(css);
+      this.element.addEventListener("keydown", function (e) {
+        if (!_this2.hidden) {
+          switch (e.keyCode) {
+            case 40:
+              //down
+              _this2.currentFocus++;
+
+              _this2.addActive(_this2.div.childNodes);
+
+              break;
+
+            case 38:
+              //up
+              _this2.currentFocus--;
+
+              _this2.addActive(_this2.div.childNodes);
+
+              break;
+
+            case 13:
+              e.preventDefault();
+
+              if (_this2.currentFocus > -1) {
+                if (_this2.div.childNodes) _this2.div.childNodes[_this2.currentFocus].click();
+              }
+
+          }
+        }
+      });
     }
 
     _createClass(Autocomplete, [{
+      key: "isHidden",
+      value: function isHidden() {
+        return this.hidden;
+      }
+    }, {
       key: "css",
       value: function css(cssJson) {
         var css = cssJson || defaultCssJson;
@@ -7558,7 +7595,7 @@
     }, {
       key: "setPositionX",
       value: function setPositionX(x) {
-        this.div.style.left = x.toString() + 'px';
+        this.div.style.left = x.toString() + "px";
       }
     }, {
       key: "setElementToUpdate",
@@ -7569,18 +7606,18 @@
       key: "show",
       value: function show() {
         this.hidden = false;
-        this.div.style.display = 'block';
+        this.div.style.display = "block";
       }
     }, {
       key: "hide",
       value: function hide() {
         this.hidden = true;
-        this.div.style.display = 'none';
+        this.div.style.display = "none";
       }
     }, {
       key: "update",
       value: function update(data, options) {
-        var _this2 = this;
+        var _this3 = this;
 
         var b, i;
         this.div.innerHTML = "";
@@ -7590,11 +7627,14 @@
           return;
         }
 
+        this.currentFocus = -1;
+
         var _loop = function _loop() {
           /*check if the item starts with the same letters as the text field value:*/
 
           /*create a DIV element for each matching element:*/
           b = document.createElement("div");
+          b.setAttribute("data-id", i.toString());
           /*make the matching letters bold:*/
 
           b.innerHTML = data[i][options.label];
@@ -7608,35 +7648,119 @@
           b.innerHTML += "<input type='hidden' value='" + (data[i][options.value] || data[i][options.label]) + "'>";
           /*execute a function when someone clicks on the item value (DIV element):*/
 
-          var _this = _this2;
+          var _this = _this3;
           b.addEventListener("click", function (e) {
             /*insert the value for the autocomplete text field:*/
             _this.span.innerText = this.getElementsByTagName("input")[0].value;
             /*close the list of autocompleted values,
             (or any other open lists of autocompleted values:*/
-
-            _this.hide();
+            //_this.hide();
 
             _this.element.focus();
           });
 
-          _this2.div.appendChild(b);
+          _this3.div.appendChild(b);
         };
 
         for (i = 0; i < data.length; i++) {
           _loop();
-        }
+        } //this.element.removeEventListener("keydown");
+
 
         this.show();
+      }
+    }, {
+      key: "addActive",
+      value: function addActive(el) {
+        if (!el) return false;
+        this.removeActive(el);
+        if (this.currentFocus >= el.length) this.currentFocus = 0;
+        if (this.currentFocus < 0) this.currentFocus = el.length - 1;
+        el[this.currentFocus].classList.add("autocomplete-active");
+      }
+    }, {
+      key: "removeActive",
+      value: function removeActive(el) {
+        for (var i = 0; i < el.length; i++) {
+          el[i].classList.remove("autocomplete-active");
+        }
       }
     }]);
 
     return Autocomplete;
   }();
 
+  var keyboardLayout = ["²&é\"'(§è!çà)- ³1234567890°_", ' azertyuiop^$  AZERTYUIOP"*', " qsdfghjklmùµ  QSDFGHJKLM%£", "<wxcvbn,;:=   >WXCVBN?./+  "];
   var distance = {
     kb: function kb(word, list) {
-      word.split("").map(function (_char) {});
+      var triggerScore = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 10;
+      var max = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 5;
+
+      var masks = _toConsumableArray(list);
+
+      var scores = [];
+
+      for (var i = 0; i < list.length; i++) {
+        scores.push({
+          word: list[i],
+          score: 0
+        });
+      }
+
+      list.forEach(function (wordToCompare, index) {
+        console.log(wordToCompare);
+        var score = 0;
+        word.split("").forEach(function (char1, ind1) {
+          var currentRes = 1000;
+          wordToCompare.split("").forEach(function (char2, ind2) {
+            var res = calc(char1, char2) + (ind1 - ind2 == 0 ? 0 : 0.1);
+
+            if (res < currentRes) {
+              currentRes = res;
+            }
+          }); //console.log(currentRes);
+
+          score += currentRes;
+        });
+        scores[index].score = score;
+      });
+      scores = scores.filter(function (x) {
+        return x.score < triggerScore;
+      }).sort(function (a, b) {
+        return a.score > b.score;
+      });
+
+      if (scores.length > 0) {
+        scores = scores.slice(0, max);
+      }
+
+      return scores;
+
+      function calc(char1, char2) {
+        var x1, y1, x2, y2;
+
+        for (var _i = 0; _i < keyboardLayout.length; _i++) {
+          var ind1 = keyboardLayout[_i].indexOf(char1);
+
+          if (~ind1) {
+            x1 = ind1 % 14;
+            y1 = _i;
+          }
+
+          var ind2 = keyboardLayout[_i].indexOf(char2);
+
+          if (~ind2) {
+            x2 = ind2 % 14;
+            y2 = _i;
+          }
+        }
+
+        if (x1 && y1) {
+          return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        }
+
+        return false;
+      }
     },
     dym: function dym(word, list) {
       var triggerScore = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0.5;
@@ -7655,9 +7779,9 @@
 
       word.toLowerCase().split("").filter(function (x) {
         return x;
-      }).forEach(function (_char2) {
+      }).forEach(function (_char) {
         masks = masks.map(function (el, nEl) {
-          var i = el.indexOf(_char2);
+          var i = el.indexOf(_char);
 
           if (i !== -1) {
             el = el.substring(0, i) + "$" + el.substring(i + 1);
@@ -7844,37 +7968,61 @@
                 switch (_context.prev = _context.next) {
                   case 0:
                     _context.t0 = e.keyCode;
-                    _context.next = _context.t0 === ENTER ? 3 : _context.t0 === ARROW_UP ? 8 : _context.t0 === ARROW_DOWN ? 11 : 14;
+                    _context.next = _context.t0 === ENTER ? 3 : _context.t0 === ARROW_UP ? 10 : _context.t0 === ARROW_DOWN ? 15 : 20;
                     break;
 
                   case 3:
                     e.preventDefault();
-                    ac.hide();
 
+                    if (ac.isHidden()) {
+                      _context.next = 7;
+                      break;
+                    }
+
+                    ac.hide();
+                    return _context.abrupt("return", false);
+
+                  case 7:
                     _this2.execute(e.target.innerText.trim());
 
                     inputElement.innerHTML = "";
-                    return _context.abrupt("break", 20);
+                    return _context.abrupt("break", 26);
 
-                  case 8:
+                  case 10:
+                    if (ac.isHidden()) {
+                      _context.next = 12;
+                      break;
+                    }
+
+                    return _context.abrupt("return", false);
+
+                  case 12:
                     ac.hide();
 
                     _this2.upHistory(e);
 
-                    return _context.abrupt("break", 20);
+                    return _context.abrupt("break", 26);
 
-                  case 11:
+                  case 15:
+                    if (ac.isHidden()) {
+                      _context.next = 17;
+                      break;
+                    }
+
+                    return _context.abrupt("return", false);
+
+                  case 17:
                     ac.hide();
 
                     _this2.downHistory(e);
 
-                    return _context.abrupt("break", 20);
+                    return _context.abrupt("break", 26);
 
-                  case 14:
-                    _context.next = 16;
+                  case 20:
+                    _context.next = 22;
                     return _this2.parserCli(e.target.innerText).autocomplete;
 
-                  case 16:
+                  case 22:
                     items = _context.sent;
 
                     //console.log("items : ", items);
@@ -7891,7 +8039,7 @@
                     });
                     _this2.historyCursor = _this2.history.length;
 
-                  case 20:
+                  case 26:
                   case "end":
                     return _context.stop();
                 }
