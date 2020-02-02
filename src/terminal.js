@@ -182,23 +182,63 @@ class Terminal {
     let ret = context.parserCli(text).highlighted;
     return ret;
   }
+  didYouMean(word, list) {
+    let str = [];
+    let masks = [...list];
+    let scores = [];
+    for (let i = 0; i < list.length; i++) {
+      scores.push({ word: list[i], score: 0 });
+    }
+    word
+      .toLowerCase()
+      .split("")
+      .filter(x => x)
+      .forEach(char => {
+        masks = masks.map((el, nEl) => {
+          let i = el.indexOf(char);
+          if (i !== -1) {
+            el = el.substring(0, i) + "$" + el.substring(i + 1);
+            scores[nEl].score += 1 / el.length;
+            return el;
+          }
+          return el;
+        });
+      });
+    scores = scores
+      .filter(x => x.score > 0.5)
+      .sort((a, b) => a.score < b.score);
+    if (scores.length > 0) {
+      str.push("Did you mean :");
+      scores.map(el => {
+        str.push(el.word);
+      });
+    }
+    console.log(str);
+    return str.join("<br/>");
+    console.log(
+      masks,
+      scores.filter(x => x.score > 0.5).sort((a, b) => a.score < b.score)
+    );
+    return "Did you mean?";
+  }
+
   interpolation(str, context) {
     if (str == undefined) return false;
     let _this = this;
 
-    let parsed = str.replace(/(\$\{command\})/, function (x, i) {
+    let parsed = str.replace(/(\$\{command\})/, function(x, i) {
       return _this.currentCommand || "[command undefined]";
     });
 
-    parsed = parsed.replace(/(\$\{option\})/, function (x, i) {
+    parsed = parsed.replace(/(\$\{option\})/, function(x, i) {
       return _this.currentOption || "[option undefined]";
     });
 
-    parsed = parsed.replace(/(\$\{info\})/, function (x, i) {
+    parsed = parsed.replace(/(\$\{info\})/, function(x, i) {
       return context.info || "[info undefined]";
     });
 
-    parsed = parsed.replace(/\$\{args\[(\d+)\]\}/, function (x, i) {
+    parsed = parsed.replace(/\$\{args\[(\d+)\]\}/, function(x, i) {
       return context.arguments[i - 1] || "[argument undefined]";
     });
 
@@ -384,7 +424,7 @@ class Terminal {
       index++;
     }
 
-    parser.options.isOption = function (str) {
+    parser.options.isOption = function(str) {
       let opt = this.filter(options => options.name == str)[0] || [];
       return opt.length == 0 ? false : opt;
     };
@@ -414,7 +454,13 @@ class Terminal {
     if (definition.length == 0 && parser.command !== "help") {
       this.error(
         this.interpolation(terminalConfig.errors.unknown, context) ||
-        "Command not found : " + parser.command
+          "Command not found : " + parser.command
+      );
+      this.info(
+        this.didYouMean(
+          parser.command,
+          terminalConfig.commands.map(x => x.name)
+        )
       );
       return false;
     }
@@ -506,7 +552,7 @@ class Terminal {
       if (!validOption) {
         this.error(
           this.interpolation(terminalConfig.errors.invalidOption, parser) ||
-          "Invalid option"
+            "Invalid option"
         );
       }
     });
@@ -514,7 +560,7 @@ class Terminal {
     this.log(this.interpolation(definition.info, parser) || "");
     let _this = this;
     // Call the user method with arguments and options
-    let promise = new Promise(function (resolve, reject) {
+    let promise = new Promise(function(resolve, reject) {
       resolve(
         _this.commandsNamespace[definition.method](
           parser.arguments,
@@ -535,7 +581,7 @@ class Terminal {
       return value >= filter[0] && value <= filter[1];
     } else if (filter instanceof RegExp) {
       return filter.test(value);
-    } else if (typeof filter === 'object') {
+    } else if (typeof filter === "object") {
       return true;
     }
     this.error("Filter <em>" + filter.toString() + "</em> not supported");

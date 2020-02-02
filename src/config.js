@@ -120,6 +120,66 @@ const terminalConfig = {
       ]
     },
     {
+      name: "ant",
+      method: "getAntonyms",
+      args: [
+        {
+          name: "word",
+          info: "written form of the word (case sensitive)",
+          type: "string",
+          filter: {
+            callbackMethod: "autocompleteWiktionary"
+          },
+          error: "word (${info}) must be a string"
+        }
+      ]
+    },
+    {
+      name: "hyper",
+      method: "getHypernyms",
+      args: [
+        {
+          name: "word",
+          info: "written form of the word (case sensitive)",
+          type: "string",
+          filter: {
+            callbackMethod: "autocompleteWiktionary"
+          },
+          error: "word (${info}) must be a string"
+        }
+      ]
+    },
+    {
+      name: "hypo",
+      method: "getHyponyms",
+      args: [
+        {
+          name: "word",
+          info: "written form of the word (case sensitive)",
+          type: "string",
+          filter: {
+            callbackMethod: "autocompleteWiktionary"
+          },
+          error: "word (${info}) must be a string"
+        }
+      ]
+    },
+    {
+      name: "further",
+      method: "getFurtherReading",
+      args: [
+        {
+          name: "word",
+          info: "written form of the word (case sensitive)",
+          type: "string",
+          filter: {
+            callbackMethod: "autocompleteWiktionary"
+          },
+          error: "word (${info}) must be a string"
+        }
+      ]
+    },
+    {
       name: "pronunce",
       method: "getPronunciation",
       args: [

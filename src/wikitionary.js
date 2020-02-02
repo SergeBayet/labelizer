@@ -41,14 +41,16 @@ class Wiktionary {
 
   async getInfos() {
     let page = await this.getPage(this.word);
-
+    if (!page) {
+      return { error: "Word doesn't exist" };
+    }
     const rPos = /^=+([^=]*)=+$/;
     let lines = page.split("\n");
 
     let count = 0;
     let newLines = [];
     while (count < lines.length) {
-      if (/^[\w\|]/.test(lines[count]) && !rPos.test(lines[count - 1])) {
+      if (/^[\w\|\}]/.test(lines[count]) && !rPos.test(lines[count - 1])) {
         newLines[newLines.length - 1] += lines[count];
       } else {
         newLines.push(lines[count]);
@@ -125,7 +127,8 @@ class Wiktionary {
       "Numeral",
       "Letter",
       "Article",
-      "Symbol"
+      "Symbol",
+      "Phrase"
     ];
     //console.log(wikiObject);
     let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(
@@ -214,6 +217,58 @@ class Wiktionary {
   }
   getSynonyms(wikiObject) {
     const pos = ["Synonyms"];
+    let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(
+      x => x.content
+    );
+    let wp = new WikiParser(this.word);
+    for (let i = 0; i < ret.length; i++) {
+      ret[i] = ret[i].map((el, index) => {
+        return wp.parse(el);
+      });
+    }
+    return ret;
+  }
+  getAntonyms(wikiObject) {
+    const pos = ["Antonyms"];
+    let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(
+      x => x.content
+    );
+    let wp = new WikiParser(this.word);
+    for (let i = 0; i < ret.length; i++) {
+      ret[i] = ret[i].map((el, index) => {
+        return wp.parse(el);
+      });
+    }
+    return ret;
+  }
+  getHyponyms(wikiObject) {
+    const pos = ["Hyponyms"];
+    let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(
+      x => x.content
+    );
+    let wp = new WikiParser(this.word);
+    for (let i = 0; i < ret.length; i++) {
+      ret[i] = ret[i].map((el, index) => {
+        return wp.parse(el);
+      });
+    }
+    return ret;
+  }
+  getHypernyms(wikiObject) {
+    const pos = ["Hypernyms"];
+    let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(
+      x => x.content
+    );
+    let wp = new WikiParser(this.word);
+    for (let i = 0; i < ret.length; i++) {
+      ret[i] = ret[i].map((el, index) => {
+        return wp.parse(el);
+      });
+    }
+    return ret;
+  }
+  getFurtherReading(wikiObject) {
+    const pos = [/Further reading.*/, "References"];
     let ret = this.getNestedObjects(wikiObject[this.lang], pos).map(
       x => x.content
     );

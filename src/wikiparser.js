@@ -23,7 +23,13 @@ class WikiParser {
       let depth = symbols.length - 1;
       original = original.replace(/^: (.*)/gm);
       //if (depth == 0) original = '<br/>' + original;
-      return "<div style='padding-left:" + (depth + 1) * 2 + "em'>" + original + "</div>";
+      return (
+        "<div style='padding-left:" +
+        (depth + 1) * 2 +
+        "em'>" +
+        original +
+        "</div>"
+      );
     });
 
     return str;
@@ -87,14 +93,16 @@ class WikiParser {
           break;
         default:
           switch (anchor.substring(0, 1)) {
-            case '[':
+            case "[":
               type = "simpleBracket";
               cursor += 2;
               lastAnchor = cursor;
               break;
-            case ']':
+            case "]":
               if (type == "simpleBracket") {
-                let inside = this.manageSimpleLink(str.substring(lastAnchor - 1, cursor));
+                let inside = this.manageSimpleLink(
+                  str.substring(lastAnchor - 1, cursor)
+                );
                 str =
                   str.substring(0, lastAnchor - 2) +
                   inside +
@@ -107,7 +115,6 @@ class WikiParser {
             default:
               cursor++;
           }
-
       }
     }
 
@@ -115,23 +122,28 @@ class WikiParser {
   }
   manageTemplate(str) {
     let template = {};
-    let parsed = "";
     let params = str.split("|").map(x => x.trim());
 
     let templateName = params[0];
-    let subTemplate = templateName.indexOf(':');
+    let subTemplate = templateName.indexOf(":");
     if (subTemplate !== -1) {
       //console.log(templateName);
-      params = [...templateName.split(':'), ...params.slice(1)];
+      params = [...templateName.split(":"), ...params.slice(1)];
 
       templateName = params[0];
-      console.log(templateName);
+      //console.log(templateName);
     }
     if (alias[params[0]] !== undefined) {
       templateName = alias[params[0]];
     }
     let wt = wikiTemplates[templateName];
     if (wt !== undefined) {
+      // Subtemplate ?
+      if (wt.subTemplate) {
+        let displayed = wt.subTemplate.displayed;
+        wt = wikiTemplates[wt.subTemplate.template];
+        wt.default.displayed = displayed;
+      }
       template.templateName = templateName;
       if (wt.default !== undefined) {
         for (let key in wt.default) {
@@ -145,15 +157,14 @@ class WikiParser {
         let regex = /^(\w+)=(.*)/;
         let pair = regex.exec(params[i]);
         if (pair) {
-          pair = pair.splice(1).filter(x => x)
+          pair = pair.splice(1).filter(x => x);
           if (pair[1] === undefined) {
             continue;
           }
         } else {
           pair = [params[i]];
         }
-        let paramName,
-          value;
+        let paramName, value;
 
         if (pair.length == 2) {
           paramName = pair[0];
@@ -181,8 +192,7 @@ class WikiParser {
               template[key] = object[key];
             }
           }
-        }
-        else if (paramName !== '') {
+        } else if (paramName !== "") {
           template[paramName] = value;
         }
       }
@@ -192,14 +202,12 @@ class WikiParser {
       }
       str = wt.humanize(template);
     } else {
-
       //str = str.replace(/\|/g, '');          // Avoid problem of parsing with '|'
-
     }
     //console.log(template);
     return { template: template, parsed: str };
   }
-  parseParameter(str = '') {
+  parseParameter(str = "") {
     if (Array.isArray(str)) {
       str = str.map(x => this.parseParameter(x));
     } else {
@@ -208,39 +216,26 @@ class WikiParser {
     return str;
   }
   manageSimpleLink(str) {
-
-
     let pair = str.split(/ (.+)/).filter(x => x),
       url,
       display;
     if (this.isUrl(pair[0])) {
       url = pair[0];
-    }
-    else {
-      return '&#91;' + str + '&#93;';
+    } else {
+      return "&#91;" + str + "&#93;";
     }
     if (pair.length == 2) {
       display = pair[1];
-      return (
-        '<a href="#" data-link="' +
-        url +
-        '">' +
-        display +
-        "</a>"
-      );
+      return '<a href="#" data-link="' + url + '">' + display + "</a>";
     } else {
-      return (
-        '<a href="#" data-link="' +
-        url +
-        '">&#91;*&#93;</a>'
-      );
+      return '<a href="#" data-link="' + url + '">&#91;*&#93;</a>';
     }
   }
   manageLink(str, blend = "") {
     //console.log(str);
     let params = str.split("|");
-    if (/^(File:|Image:)(.*)/.test(params[0])) {
-      return ('{{image|' + str + '}}');
+    if (/^(File:|Image:)(.*)/i.test(params[0])) {
+      return "{{image|" + str + "}}";
     }
     if (params.length == 1) {
       return (
@@ -277,7 +272,9 @@ class WikiParser {
     return str;
   }
   isUrl(str) {
-    return /(((http|ftp|https):\/{2})+(([0-9a-z_-]+\.)+(aero|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|ac|ad|ae|af|ag|ai|al|am|an|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cu|cv|cx|cy|cz|cz|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mn|mn|mo|mp|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|nom|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ra|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sj|sk|sl|sm|sn|so|sr|st|su|sv|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|yu|za|zm|zw|arpa)(:[0-9]+)?((\/([~0-9a-zA-Z\#\+\%@\.\/_-]+))?(\?[0-9a-zA-Z\+\%@\/&\[\];=_-]+)?)?))\b/img.test(str);
+    return /(((http|ftp|https):\/{2})+(([0-9a-z_-]+\.)+(aero|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|ac|ad|ae|af|ag|ai|al|am|an|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cu|cv|cx|cy|cz|cz|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mn|mn|mo|mp|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|nom|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ra|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sj|sk|sl|sm|sn|so|sr|st|su|sv|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|yu|za|zm|zw|arpa)(:[0-9]+)?((\/([~0-9a-zA-Z\#\+\%@\.\/_-]+))?(\?[0-9a-zA-Z\+\%@\/&\[\];=_-]+)?)?))\b/gim.test(
+      str
+    );
   }
 }
 export default WikiParser;

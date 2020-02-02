@@ -22,6 +22,18 @@ export const tools = {
 
 }
 export const alias = {
+  'der2': 'der',
+  'der3': 'der',
+  'der4': 'der',
+  'der5': 'der',
+  'col2': 'der',
+  'col3': 'der',
+  'col4': 'der',
+  'col5': 'der',
+  'rel2': 'der',
+  'rel3': 'der',
+  'rel4': 'der',
+  'rel5': 'der',
   'rel-top2': 'rel-top',
   'rel-mid2': 'rel-mid',
   'rel-top3': 'rel-top',
@@ -1387,6 +1399,37 @@ export const wikiTemplates = {
     params: [],
     humanize: obj => ''
   },
+  "der": {
+    info: "List of derived terms",
+    default: {
+      language: '',
+      terms : [],
+      title: '',
+      sort: ''
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index, obj) => {
+          switch(index)
+          {
+            case 0:
+              return {language: value};
+            default:
+              return {terms: value};
+          }
+        }
+      }
+    ],
+    humanize: obj => {
+      let str = [];
+      str.push(obj.title !== '' ? '<strong>' + obj.title + '</strong>' : '');
+      obj.terms.sort((a,b) => a>b).map(el => {
+        str.push(`<a href="#" data-link="${el}">${el}</a>`);
+      })
+      return str.join('<br/>');
+    }
+  },
   "inherited": {
     info: "This template is intended for terms that have an unbroken chain of inheritance from the source term in question.",
     default: {
@@ -2098,5 +2141,112 @@ export const wikiTemplates = {
     humanize: obj => {
       return `<strong>${obj.conj}</strong> Conjunction`;
     }
-  }
+  },
+  'form of': {
+    info: "This template creates a definition line for the form of a primary entry",
+    default: {
+      'displayed': '',
+      'language': '',
+      'term': '',
+      'alt': '',
+      'gloss': ''
+    },
+    params: [
+      {
+        name: "",
+        action: (value, index, obj) => {
+          switch(index) {
+            case 0:
+              return {language: value};
+            case 1:
+              return {term: value};
+            case 2:
+              return {alt: value};
+            case 3:
+              return {gloss: value};
+          }
+        }
+      },
+      {
+        name: "t",
+        action: value => ({gloss: value})
+      }
+    ],
+    humanize: obj => {
+      let str = [];
+      str.push('<i>'+obj.displayed+'</i>');
+      str.push(`<a href="#" data-link="${obj.term}">${obj.alt !== '' ? obj.alt : obj.term}</a>`)
+      str.push(obj.gloss ? `(${obj.gloss})` : '');
+      return str.join(' ');
+    }
+  },
+  "present participle of": {
+    subTemplate: { template: "form of" , displayed: "present participle of"}
+  },
+  "active participle of": {
+    subTemplate: { template: "form of" , displayed: "active participle of"}
+  },
+  "feminine plural past participle of": {
+    subTemplate: { template: "form of" , displayed: "feminine plural past participle of"}
+  },
+  "feminine singular past participle of": {
+    subTemplate: { template: "form of" , displayed: "feminine singular past participle of"}
+  },
+  "futur participle of": {
+    subTemplate: { template: "form of" , displayed: "futur participle of"}
+  },
+  "gerund of": {
+    subTemplate: { template: "form of" , displayed: "gerund of"}
+  },
+  "imperative of": {
+    subTemplate: { template: "form of" , displayed: "imperative of"}
+  },
+  "masculine plural past participle of": {
+    subTemplate: { template: "form of" , displayed: "masculine plural past participle of"}
+  },
+  "neuter singular past participle of": {
+    subTemplate: { template: "form of" , displayed: "neuter singular past participle of"}
+  },
+  "participle of": {
+    subTemplate: { template: "form of" , displayed: "participle of"}
+  },
+  "passive of": {
+    subTemplate: { template: "form of" , displayed: "passive of"}
+  },
+  "passive participle of": {
+    subTemplate: { template: "form of" , displayed: "passive participle of"}
+  },
+  "passive past tense of": {
+    subTemplate: { template: "form of" , displayed: "passive past tense of"}
+  },
+  "past active participle of": {
+    subTemplate: { template: "form of" , displayed: "past active participle of"}
+  },
+  "past participle of": {
+    subTemplate: { template: "form of" , displayed: "past participle of"}
+  },
+  "past passive participle of": {
+    subTemplate: { template: "form of" , displayed: "past passive participle of"}
+  },
+  "past tense of": {
+    subTemplate: { template: "form of" , displayed: "past tense of"}
+  },
+  "perfect participle of": {
+    subTemplate: { template: "form of" , displayed: "perfect participle of"}
+  },
+  "present active participle of": {
+    subTemplate: { template: "form of" , displayed: "present active participle of"}
+  },
+  "present tense of": {
+    subTemplate: { template: "form of" , displayed: "present tense of"}
+  },
+  "reflexive of": {
+    subTemplate: { template: "form of" , displayed: "reflexive of"}
+  },
+  "supine of": {
+    subTemplate: { template: "form of" , displayed: "supine of"}
+  },
+  "verbal noun of": {
+    subTemplate: { template: "form of" , displayed: "verbal noun of"}
+  },
 };

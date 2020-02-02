@@ -14,7 +14,6 @@ export default class Labelizer {
     this.indexToken = 0;
     this.consoleInitialized = false;
     this.language = "en";
-
     this.init();
   }
 
@@ -176,8 +175,11 @@ export default class Labelizer {
     if (opts.isOption("language")) {
       lang = opts.isOption("language").arguments;
     }
-    console.log(lang);
     w.getInfos().then(data => {
+      if (data.error) {
+        this.terminal.error(data.error);
+        return false;
+      }
       let trans = w.getTranslation(data);
       trans.forEach(x => {
         x.forEach(y => {
@@ -188,7 +190,6 @@ export default class Labelizer {
             this.terminal.log(index.toString() + ". " + y.parsed);
           } else {
             if (lang !== "") {
-              console.log(y.templates);
               let display = false;
               if (
                 y.templates.filter(x => {
@@ -211,7 +212,75 @@ export default class Labelizer {
   getSynonyms(args, opts) {
     let w = new Wiktionary(args[0], "English");
     w.getInfos().then(data => {
+      if (data.error) {
+        this.terminal.error(data.error);
+        return false;
+      }
       let def = w.getSynonyms(data);
+      def.forEach(x => {
+        x.forEach(y => {
+          this.terminal.log(y.parsed);
+        });
+        this.terminal.log("<br/>");
+      });
+    });
+  }
+  getAntonyms(args, opts) {
+    let w = new Wiktionary(args[0], "English");
+    w.getInfos().then(data => {
+      if (data.error) {
+        this.terminal.error(data.error);
+        return false;
+      }
+      let def = w.getAntonyms(data);
+      def.forEach(x => {
+        x.forEach(y => {
+          this.terminal.log(y.parsed);
+        });
+        this.terminal.log("<br/>");
+      });
+    });
+  }
+  getHyponyms(args, opts) {
+    let w = new Wiktionary(args[0], "English");
+    w.getInfos().then(data => {
+      if (data.error) {
+        this.terminal.error(data.error);
+        return false;
+      }
+      let def = w.getHyponyms(data);
+      def.forEach(x => {
+        x.forEach(y => {
+          this.terminal.log(y.parsed);
+        });
+        this.terminal.log("<br/>");
+      });
+    });
+  }
+  getHypernyms(args, opts) {
+    let w = new Wiktionary(args[0], "English");
+    w.getInfos().then(data => {
+      if (data.error) {
+        this.terminal.error(data.error);
+        return false;
+      }
+      let def = w.getHypernyms(data);
+      def.forEach(x => {
+        x.forEach(y => {
+          this.terminal.log(y.parsed);
+        });
+        this.terminal.log("<br/>");
+      });
+    });
+  }
+  getFurtherReading(args, opts) {
+    let w = new Wiktionary(args[0], "English");
+    w.getInfos().then(data => {
+      if (data.error) {
+        this.terminal.error(data.error);
+        return false;
+      }
+      let def = w.getFurtherReading(data);
       def.forEach(x => {
         x.forEach(y => {
           this.terminal.log(y.parsed);
@@ -223,6 +292,10 @@ export default class Labelizer {
   getDerivedTerms(args, opts) {
     let w = new Wiktionary(args[0], "English");
     w.getInfos().then(data => {
+      if (data.error) {
+        this.terminal.error(data.error);
+        return false;
+      }
       let def = w.getDerivedTerms(data);
       def.forEach(x => {
         x.forEach(y => {
@@ -235,6 +308,10 @@ export default class Labelizer {
   getRelatedTerms(args, opts) {
     let w = new Wiktionary(args[0], "English");
     w.getInfos().then(data => {
+      if (data.error) {
+        this.terminal.error(data.error);
+        return false;
+      }
       let def = w.getRelatedTerms(data);
       def.forEach(x => {
         x.forEach(y => {
@@ -247,6 +324,10 @@ export default class Labelizer {
   getEtymology(args, opts) {
     let w = new Wiktionary(args[0], "English");
     w.getInfos().then(data => {
+      if (data.error) {
+        this.terminal.error(data.error);
+        return false;
+      }
       let def = w.getEtymology(data);
       def.forEach(x => {
         x.forEach(y => {
@@ -259,6 +340,10 @@ export default class Labelizer {
   getPronunciation(args, opts) {
     let w = new Wiktionary(args[0], "English");
     w.getInfos().then(data => {
+      if (data.error) {
+        this.terminal.error(data.error);
+        return false;
+      }
       let def = w.getPronunciation(data);
       def.forEach(x => {
         x.forEach(y => {
@@ -270,7 +355,12 @@ export default class Labelizer {
   }
   getDefinition(args, opts) {
     let w = new Wiktionary(args[0], "English");
+
     w.getInfos().then(data => {
+      if (data.error) {
+        this.terminal.error(data.error);
+        return false;
+      }
       let def = w.getDefinition(data);
       def.forEach(x => {
         x.forEach(y => {
