@@ -1,7 +1,7 @@
 import langCodes from './wikidata/langageCodes';
 import accents from './wikidata/accentLabels';
 import forms from './wikidata/formof';
-console.log(forms);
+
 const MD5 = function (d) { let result = M(V(Y(X(d), 8 * d.length))); return result.toLowerCase() }; function M(d) { for (var _, m = "0123456789ABCDEF", f = "", r = 0; r < d.length; r++)_ = d.charCodeAt(r), f += m.charAt(_ >>> 4 & 15) + m.charAt(15 & _); return f } function X(d) { for (var _ = Array(d.length >> 2), m = 0; m < _.length; m++)_[m] = 0; for (m = 0; m < 8 * d.length; m += 8)_[m >> 5] |= (255 & d.charCodeAt(m / 8)) << m % 32; return _ } function V(d) { for (var _ = "", m = 0; m < 32 * d.length; m += 8)_ += String.fromCharCode(d[m >> 5] >>> m % 32 & 255); return _ } function Y(d, _) { d[_ >> 5] |= 128 << _ % 32, d[14 + (_ + 64 >>> 9 << 4)] = _; for (var m = 1732584193, f = -271733879, r = -1732584194, i = 271733878, n = 0; n < d.length; n += 16) { var h = m, t = f, g = r, e = i; f = md5_ii(f = md5_ii(f = md5_ii(f = md5_ii(f = md5_hh(f = md5_hh(f = md5_hh(f = md5_hh(f = md5_gg(f = md5_gg(f = md5_gg(f = md5_gg(f = md5_ff(f = md5_ff(f = md5_ff(f = md5_ff(f, r = md5_ff(r, i = md5_ff(i, m = md5_ff(m, f, r, i, d[n + 0], 7, -680876936), f, r, d[n + 1], 12, -389564586), m, f, d[n + 2], 17, 606105819), i, m, d[n + 3], 22, -1044525330), r = md5_ff(r, i = md5_ff(i, m = md5_ff(m, f, r, i, d[n + 4], 7, -176418897), f, r, d[n + 5], 12, 1200080426), m, f, d[n + 6], 17, -1473231341), i, m, d[n + 7], 22, -45705983), r = md5_ff(r, i = md5_ff(i, m = md5_ff(m, f, r, i, d[n + 8], 7, 1770035416), f, r, d[n + 9], 12, -1958414417), m, f, d[n + 10], 17, -42063), i, m, d[n + 11], 22, -1990404162), r = md5_ff(r, i = md5_ff(i, m = md5_ff(m, f, r, i, d[n + 12], 7, 1804603682), f, r, d[n + 13], 12, -40341101), m, f, d[n + 14], 17, -1502002290), i, m, d[n + 15], 22, 1236535329), r = md5_gg(r, i = md5_gg(i, m = md5_gg(m, f, r, i, d[n + 1], 5, -165796510), f, r, d[n + 6], 9, -1069501632), m, f, d[n + 11], 14, 643717713), i, m, d[n + 0], 20, -373897302), r = md5_gg(r, i = md5_gg(i, m = md5_gg(m, f, r, i, d[n + 5], 5, -701558691), f, r, d[n + 10], 9, 38016083), m, f, d[n + 15], 14, -660478335), i, m, d[n + 4], 20, -405537848), r = md5_gg(r, i = md5_gg(i, m = md5_gg(m, f, r, i, d[n + 9], 5, 568446438), f, r, d[n + 14], 9, -1019803690), m, f, d[n + 3], 14, -187363961), i, m, d[n + 8], 20, 1163531501), r = md5_gg(r, i = md5_gg(i, m = md5_gg(m, f, r, i, d[n + 13], 5, -1444681467), f, r, d[n + 2], 9, -51403784), m, f, d[n + 7], 14, 1735328473), i, m, d[n + 12], 20, -1926607734), r = md5_hh(r, i = md5_hh(i, m = md5_hh(m, f, r, i, d[n + 5], 4, -378558), f, r, d[n + 8], 11, -2022574463), m, f, d[n + 11], 16, 1839030562), i, m, d[n + 14], 23, -35309556), r = md5_hh(r, i = md5_hh(i, m = md5_hh(m, f, r, i, d[n + 1], 4, -1530992060), f, r, d[n + 4], 11, 1272893353), m, f, d[n + 7], 16, -155497632), i, m, d[n + 10], 23, -1094730640), r = md5_hh(r, i = md5_hh(i, m = md5_hh(m, f, r, i, d[n + 13], 4, 681279174), f, r, d[n + 0], 11, -358537222), m, f, d[n + 3], 16, -722521979), i, m, d[n + 6], 23, 76029189), r = md5_hh(r, i = md5_hh(i, m = md5_hh(m, f, r, i, d[n + 9], 4, -640364487), f, r, d[n + 12], 11, -421815835), m, f, d[n + 15], 16, 530742520), i, m, d[n + 2], 23, -995338651), r = md5_ii(r, i = md5_ii(i, m = md5_ii(m, f, r, i, d[n + 0], 6, -198630844), f, r, d[n + 7], 10, 1126891415), m, f, d[n + 14], 15, -1416354905), i, m, d[n + 5], 21, -57434055), r = md5_ii(r, i = md5_ii(i, m = md5_ii(m, f, r, i, d[n + 12], 6, 1700485571), f, r, d[n + 3], 10, -1894986606), m, f, d[n + 10], 15, -1051523), i, m, d[n + 1], 21, -2054922799), r = md5_ii(r, i = md5_ii(i, m = md5_ii(m, f, r, i, d[n + 8], 6, 1873313359), f, r, d[n + 15], 10, -30611744), m, f, d[n + 6], 15, -1560198380), i, m, d[n + 13], 21, 1309151649), r = md5_ii(r, i = md5_ii(i, m = md5_ii(m, f, r, i, d[n + 4], 6, -145523070), f, r, d[n + 11], 10, -1120210379), m, f, d[n + 2], 15, 718787259), i, m, d[n + 9], 21, -343485551), m = safe_add(m, h), f = safe_add(f, t), r = safe_add(r, g), i = safe_add(i, e) } return Array(m, f, r, i) } function md5_cmn(d, _, m, f, r, i) { return safe_add(bit_rol(safe_add(safe_add(_, d), safe_add(f, i)), r), m) } function md5_ff(d, _, m, f, r, i, n) { return md5_cmn(_ & m | ~_ & f, d, _, r, i, n) } function md5_gg(d, _, m, f, r, i, n) { return md5_cmn(_ & f | m & ~f, d, _, r, i, n) } function md5_hh(d, _, m, f, r, i, n) { return md5_cmn(_ ^ m ^ f, d, _, r, i, n) } function md5_ii(d, _, m, f, r, i, n) { return md5_cmn(m ^ (_ | ~f), d, _, r, i, n) } function safe_add(d, _) { var m = (65535 & d) + (65535 & _); return (d >> 16) + (_ >> 16) + (m >> 16) << 16 | 65535 & m } function bit_rol(d, _) { return d << _ | d >>> 32 - _ };
 export const tools = {
   toSyllabicSpeech: word => {
@@ -233,7 +233,7 @@ export const wikiTemplates = {
             case 1:
               return { pos: value }
             default:
-              return { inflections: value}
+              return { inflections: value }
           }
         }
       },
@@ -250,8 +250,7 @@ export const wikiTemplates = {
       let parenthesis = [];
       for (let i = 0; i < obj.inflections.length; i += 2) {
         let added = '';
-        if(obj.inflections[i + 1])
-        {
+        if (obj.inflections[i + 1]) {
           added = ` <a href="#" data-link="${obj.inflections[i + 1]}">${obj.inflections[i + 1]}</a>`;
         }
         parenthesis.push(`<i>${obj.inflections[i]}</i>` + added);
@@ -268,28 +267,27 @@ export const wikiTemplates = {
     },
     params: [
       {
-        name:"",
+        name: "",
         action: (value, index) => {
-          switch(index) {
+          switch (index) {
             case 0:
-              return {term: value};
+              return { term: value };
             case 1:
-              return {plural: value};
+              return { plural: value };
           }
         }
       },
       {
-        name:"pl",
+        name: "pl",
         action: (value, index, obj) => {
-          return {plural: obj.term + value }
+          return { plural: obj.term + value }
         }
       }
     ],
     humanize: obj => {
       let str = [];
       str.push(`<a href="#" data-link="${obj.term}">${obj.term}</a>`);
-      if(obj.plural !== '')
-      {
+      if (obj.plural !== '') {
         str.push(`(<i>plural</i> <a href="#" data-link="${obj.plural}">${obj.plural}</a>)`)
       }
       return str.join(' ');
@@ -1403,7 +1401,7 @@ export const wikiTemplates = {
     info: "List of derived terms",
     default: {
       language: '',
-      terms : [],
+      terms: [],
       title: '',
       sort: ''
     },
@@ -1411,12 +1409,11 @@ export const wikiTemplates = {
       {
         name: "",
         action: (value, index, obj) => {
-          switch(index)
-          {
+          switch (index) {
             case 0:
-              return {language: value};
+              return { language: value };
             default:
-              return {terms: value};
+              return { terms: value };
           }
         }
       }
@@ -1424,7 +1421,7 @@ export const wikiTemplates = {
     humanize: obj => {
       let str = [];
       str.push(obj.title !== '' ? '<strong>' + obj.title + '</strong>' : '');
-      obj.terms.sort((a,b) => a>b).map(el => {
+      obj.terms.sort((a, b) => a > b).map(el => {
         str.push(`<a href="#" data-link="${el}">${el}</a>`);
       })
       return str.join('<br/>');
@@ -1948,7 +1945,7 @@ export const wikiTemplates = {
         else {
           obj.accents[i] = accents.labels[obj.accents[i]] || obj.accents[i];
         }
-        if(typeof obj.accents[i] == 'string') {
+        if (typeof obj.accents[i] == 'string') {
           str.push(`<i>${obj.accents[i]}</i>`)
         }
         else if (obj.accents[i].display) {
@@ -2008,7 +2005,7 @@ export const wikiTemplates = {
     }
   },
   'inflection of': {
-    info:"This template is used to create definition lines for inflected (non-lemma) forms of other terms.",
+    info: "This template is used to create definition lines for inflected (non-lemma) forms of other terms.",
     default: {
       language: '',
       lemma: '',
@@ -2023,15 +2020,15 @@ export const wikiTemplates = {
       {
         name: "",
         action: (value, index, obj) => {
-          switch(index) {
+          switch (index) {
             case 0:
-              return {language: value};
+              return { language: value };
             case 1:
-              return {lemma: value};
+              return { lemma: value };
             case 2:
-              return {alternative: value};
+              return { alternative: value };
             default:
-              return {tags: value}
+              return { tags: value }
           }
         }
       }
@@ -2041,45 +2038,38 @@ export const wikiTemplates = {
       let tags = [];
       obj.tags.forEach(el => {
         let short = forms.shortcuts[el];
-        if(short)
-        {
-          
-          if(Array.isArray(short))
-          {
+        if (short) {
+
+          if (Array.isArray(short)) {
             tags = [...tags, ...short];
           }
-          else
-          {
+          else {
             let separated = short.split('//');
-            if(separated.length > 1)
-            {
+            if (separated.length > 1) {
               tags = [...tags, ...separated];
             }
-            else
-            {
+            else {
               tags.push(short);
             }
-            
+
           }
         }
-        else if(forms.tags[el])
-        {
+        else if (forms.tags[el]) {
           tags.push(el);
         }
       })
       tags.forEach(el => {
         let short = forms.shortcuts[el];
         let tag;
-        if(short) {
+        if (short) {
           tag = forms.tags[short];
           str.push(`<a href="#" data-link="${tag.glossary || short}">${short}</a>`)
-        } else 
-        {
+        } else {
           tag = forms.tags[el];
           str.push(`<a href="#" data-link="${tag.glossary || el}">${el}</a>`)
         }
       })
-      
+
       str.push(`<i>of </i><strong>${obj.lemma}</strong>`);
       return str.join(' ');
     }
@@ -2094,11 +2084,10 @@ export const wikiTemplates = {
     },
     params: [],
     humanize: obj => {
-      if(obj.letter == obj.upper) {
+      if (obj.letter == obj.upper) {
         return `<strong>${obj.letter}</strong> Letter (<i>upper case</i>, <i>lower case </i><a href="#" data-link="${obj.lower}">${obj.lower}</a>, <i>plural </i><a href="#" data-link="${obj.upper}'s">${obj.upper}'s</a>)`
       }
-      else
-      {
+      else {
         return `<strong>${obj.letter}</strong> Letter (<i>lower case</i>, <i>upper case </i><a href="#" data-link="${obj.upper}">${obj.upper}</a>, <i>plural </i><a href="#" data-link="${obj.lower}'s">${obj.lower}'s</a>)`
       }
     }
@@ -2113,11 +2102,10 @@ export const wikiTemplates = {
     },
     params: [],
     humanize: obj => {
-      if(obj.letter == obj.upper) {
+      if (obj.letter == obj.upper) {
         return `<strong>${obj.number}</strong> Numeral (<i>upper case</i> <i>lower case </i><a href="#" data-link="${obj.lower}">${obj.lower}</a>)`
       }
-      else
-      {
+      else {
         return `<strong>${obj.number}</strong> Numeral (<i>lower case</i> <i>upper case </i><a href="#" data-link="${obj.upper}">${obj.upper}</a>)`
       }
     }
@@ -2155,98 +2143,98 @@ export const wikiTemplates = {
       {
         name: "",
         action: (value, index, obj) => {
-          switch(index) {
+          switch (index) {
             case 0:
-              return {language: value};
+              return { language: value };
             case 1:
-              return {term: value};
+              return { term: value };
             case 2:
-              return {alt: value};
+              return { alt: value };
             case 3:
-              return {gloss: value};
+              return { gloss: value };
           }
         }
       },
       {
         name: "t",
-        action: value => ({gloss: value})
+        action: value => ({ gloss: value })
       }
     ],
     humanize: obj => {
       let str = [];
-      str.push('<i>'+obj.displayed+'</i>');
+      str.push('<i>' + obj.displayed + '</i>');
       str.push(`<a href="#" data-link="${obj.term}">${obj.alt !== '' ? obj.alt : obj.term}</a>`)
       str.push(obj.gloss ? `(${obj.gloss})` : '');
       return str.join(' ');
     }
   },
   "present participle of": {
-    subTemplate: { template: "form of" , displayed: "present participle of"}
+    subTemplate: { template: "form of", displayed: "present participle of" }
   },
   "active participle of": {
-    subTemplate: { template: "form of" , displayed: "active participle of"}
+    subTemplate: { template: "form of", displayed: "active participle of" }
   },
   "feminine plural past participle of": {
-    subTemplate: { template: "form of" , displayed: "feminine plural past participle of"}
+    subTemplate: { template: "form of", displayed: "feminine plural past participle of" }
   },
   "feminine singular past participle of": {
-    subTemplate: { template: "form of" , displayed: "feminine singular past participle of"}
+    subTemplate: { template: "form of", displayed: "feminine singular past participle of" }
   },
   "futur participle of": {
-    subTemplate: { template: "form of" , displayed: "futur participle of"}
+    subTemplate: { template: "form of", displayed: "futur participle of" }
   },
   "gerund of": {
-    subTemplate: { template: "form of" , displayed: "gerund of"}
+    subTemplate: { template: "form of", displayed: "gerund of" }
   },
   "imperative of": {
-    subTemplate: { template: "form of" , displayed: "imperative of"}
+    subTemplate: { template: "form of", displayed: "imperative of" }
   },
   "masculine plural past participle of": {
-    subTemplate: { template: "form of" , displayed: "masculine plural past participle of"}
+    subTemplate: { template: "form of", displayed: "masculine plural past participle of" }
   },
   "neuter singular past participle of": {
-    subTemplate: { template: "form of" , displayed: "neuter singular past participle of"}
+    subTemplate: { template: "form of", displayed: "neuter singular past participle of" }
   },
   "participle of": {
-    subTemplate: { template: "form of" , displayed: "participle of"}
+    subTemplate: { template: "form of", displayed: "participle of" }
   },
   "passive of": {
-    subTemplate: { template: "form of" , displayed: "passive of"}
+    subTemplate: { template: "form of", displayed: "passive of" }
   },
   "passive participle of": {
-    subTemplate: { template: "form of" , displayed: "passive participle of"}
+    subTemplate: { template: "form of", displayed: "passive participle of" }
   },
   "passive past tense of": {
-    subTemplate: { template: "form of" , displayed: "passive past tense of"}
+    subTemplate: { template: "form of", displayed: "passive past tense of" }
   },
   "past active participle of": {
-    subTemplate: { template: "form of" , displayed: "past active participle of"}
+    subTemplate: { template: "form of", displayed: "past active participle of" }
   },
   "past participle of": {
-    subTemplate: { template: "form of" , displayed: "past participle of"}
+    subTemplate: { template: "form of", displayed: "past participle of" }
   },
   "past passive participle of": {
-    subTemplate: { template: "form of" , displayed: "past passive participle of"}
+    subTemplate: { template: "form of", displayed: "past passive participle of" }
   },
   "past tense of": {
-    subTemplate: { template: "form of" , displayed: "past tense of"}
+    subTemplate: { template: "form of", displayed: "past tense of" }
   },
   "perfect participle of": {
-    subTemplate: { template: "form of" , displayed: "perfect participle of"}
+    subTemplate: { template: "form of", displayed: "perfect participle of" }
   },
   "present active participle of": {
-    subTemplate: { template: "form of" , displayed: "present active participle of"}
+    subTemplate: { template: "form of", displayed: "present active participle of" }
   },
   "present tense of": {
-    subTemplate: { template: "form of" , displayed: "present tense of"}
+    subTemplate: { template: "form of", displayed: "present tense of" }
   },
   "reflexive of": {
-    subTemplate: { template: "form of" , displayed: "reflexive of"}
+    subTemplate: { template: "form of", displayed: "reflexive of" }
   },
   "supine of": {
-    subTemplate: { template: "form of" , displayed: "supine of"}
+    subTemplate: { template: "form of", displayed: "supine of" }
   },
   "verbal noun of": {
-    subTemplate: { template: "form of" , displayed: "verbal noun of"}
+    subTemplate: { template: "form of", displayed: "verbal noun of" }
   },
 };

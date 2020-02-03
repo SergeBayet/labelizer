@@ -37,6 +37,21 @@ const terminalConfig = {
   help: "Some global help here!",
   commands: [
     {
+      name: "entities",
+      method: "getEntities",
+      args: [
+        {
+          name: "type",
+          info: "type of named entity",
+          type: "string",
+          filter: ['date', 'time', 'name', 'organization', 'locations', 'monetary', 'percentages']
+        }
+      ],
+      info: "Retrieving entities...",
+      shortDescription: "Retrieve named entities",
+      description: `Named-entity recognition (NER) (also known as entity identification, entity chunking and entity extraction) is a subtask of information extraction that seeks to locate and classify named entity mentioned in unstructured text into pre-defined categories such as person names, organizations, locations, medical codes, time expressions, quantities, monetary values, percentages, etc. `
+    },
+    {
       name: "trans",
       method: "getTranslation",
       args: [

@@ -209,19 +209,19 @@ class Terminal {
     if (str == undefined) return false;
     let _this = this;
 
-    let parsed = str.replace(/(\$\{command\})/, function(x, i) {
+    let parsed = str.replace(/(\$\{command\})/, function (x, i) {
       return _this.currentCommand || "[command undefined]";
     });
 
-    parsed = parsed.replace(/(\$\{option\})/, function(x, i) {
+    parsed = parsed.replace(/(\$\{option\})/, function (x, i) {
       return _this.currentOption || "[option undefined]";
     });
 
-    parsed = parsed.replace(/(\$\{info\})/, function(x, i) {
+    parsed = parsed.replace(/(\$\{info\})/, function (x, i) {
       return context.info || "[info undefined]";
     });
 
-    parsed = parsed.replace(/\$\{args\[(\d+)\]\}/, function(x, i) {
+    parsed = parsed.replace(/\$\{args\[(\d+)\]\}/, function (x, i) {
       return context.arguments[i - 1] || "[argument undefined]";
     });
 
@@ -247,23 +247,30 @@ class Terminal {
     if (tree[0].hasOwnProperty("filter")) {
       //console.log("user autocomplete");
       //console.log(tree[0]["filter"]);
-      ac = await this.commandsNamespace[tree[0]["filter"]["callbackMethod"]](
-        str
-      );
-      let ac2 = [];
-      for (let i = 0; i < ac.length; i++) {
-        ac2.push({ name: '"' + ac[i] + '"' });
+      if (tree[0]['filter']['callbackMethod']) {
+        ac = await this.commandsNamespace[tree[0]["filter"]["callbackMethod"]](
+          str
+        );
+        let ac2 = [];
+        for (let i = 0; i < ac.length; i++) {
+          ac2.push({ name: '"' + ac[i] + '"' });
+        }
+        ac2.label = property;
+        ac2.info = info;
+        console.log(ac2);
+        return ac2;
       }
-      ac2.label = property;
-      ac2.info = info;
-      return ac2;
+      else if (Array.isArray(tree[0]['filter'])) {
+        //console.log(tree[0]['filter']);
+        ac = tree[0]['filter'].filter(option => option.startsWith(str)).map(x => ({ name: x }));
+        //console.log(ac);
+      }
     } else {
       ac = tree.filter(command => command[property].startsWith(str));
     }
 
     ac.label = property;
     ac.info = info;
-    //console.log(ac);
     return ac;
   }
   unquote(str) {
@@ -407,7 +414,7 @@ class Terminal {
       index++;
     }
 
-    parser.options.isOption = function(str) {
+    parser.options.isOption = function (str) {
       let opt = this.filter(options => options.name == str)[0] || [];
       return opt.length == 0 ? false : opt;
     };
@@ -437,7 +444,7 @@ class Terminal {
     if (definition.length == 0 && parser.command !== "help") {
       this.error(
         this.interpolation(terminalConfig.errors.unknown, context) ||
-          "Command not found : " + parser.command
+        "Command not found : " + parser.command
       );
       this.log(
         this.didYouMean(
@@ -535,7 +542,7 @@ class Terminal {
       if (!validOption) {
         this.error(
           this.interpolation(terminalConfig.errors.invalidOption, parser) ||
-            "Invalid option"
+          "Invalid option"
         );
       }
     });
@@ -543,7 +550,7 @@ class Terminal {
     this.log(this.interpolation(definition.info, parser) || "");
     let _this = this;
     // Call the user method with arguments and options
-    let promise = new Promise(function(resolve, reject) {
+    let promise = new Promise(function (resolve, reject) {
       resolve(
         _this.commandsNamespace[definition.method](
           parser.arguments,

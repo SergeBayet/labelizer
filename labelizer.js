@@ -7174,6 +7174,18 @@
     },
     help: "Some global help here!",
     commands: [{
+      name: "entities",
+      method: "getEntities",
+      args: [{
+        name: "type",
+        info: "type of named entity",
+        type: "string",
+        filter: ['date', 'time', 'name', 'organization', 'locations', 'monetary', 'percentages']
+      }],
+      info: "Retrieving entities...",
+      shortDescription: "Retrieve named entities",
+      description: "Named-entity recognition (NER) (also known as entity identification, entity chunking and entity extraction) is a subtask of information extraction that seeks to locate and classify named entity mentioned in unstructured text into pre-defined categories such as person names, organizations, locations, medical codes, time expressions, quantities, monetary values, percentages, etc. "
+    }, {
       name: "trans",
       method: "getTranslation",
       args: [{
@@ -8132,14 +8144,19 @@
                   }
 
                   if (!tree[0].hasOwnProperty("filter")) {
-                    _context2.next = 16;
+                    _context2.next = 21;
                     break;
                   }
 
-                  _context2.next = 8;
+                  if (!tree[0]['filter']['callbackMethod']) {
+                    _context2.next = 18;
+                    break;
+                  }
+
+                  _context2.next = 9;
                   return this.commandsNamespace[tree[0]["filter"]["callbackMethod"]](str);
 
-                case 8:
+                case 9:
                   ac = _context2.sent;
                   ac2 = [];
 
@@ -8151,20 +8168,36 @@
 
                   ac2.label = property;
                   ac2.info = info;
+                  console.log(ac2);
                   return _context2.abrupt("return", ac2);
 
-                case 16:
+                case 18:
+                  if (Array.isArray(tree[0]['filter'])) {
+                    //console.log(tree[0]['filter']);
+                    ac = tree[0]['filter'].filter(function (option) {
+                      return option.startsWith(str);
+                    }).map(function (x) {
+                      return {
+                        name: x
+                      };
+                    }); //console.log(ac);
+                  }
+
+                case 19:
+                  _context2.next = 22;
+                  break;
+
+                case 21:
                   ac = tree.filter(function (command) {
                     return command[property].startsWith(str);
                   });
 
-                case 17:
+                case 22:
                   ac.label = property;
-                  ac.info = info; //console.log(ac);
-
+                  ac.info = info;
                   return _context2.abrupt("return", ac);
 
-                case 20:
+                case 25:
                 case "end":
                   return _context2.stop();
               }
@@ -10104,7 +10137,6 @@
   };
 
   var _wikiTemplates;
-  console.log(forms);
 
   var MD5 = function MD5(d) {
     var result = M$1(V$1(Y(X(d), 8 * d.length)));
@@ -13595,6 +13627,91 @@
     return Wiktionary;
   }();
 
+  var particules = ['am', 'an', 'auf', 'auf der', 'aus der', 'im', 'von', 'von der', 'von und zu', 'zu', 'zum', 'zur', 'de', 'den', 'op de', 'op den', 't', 'ten', 'ter', 'te', 'van', 'vanden', 'van den', 'vander', 'van der', 'af', 'av', 'von', 'de', 'del', 'de la', 'de los', 'de las', 'y', 'a', 'da', 'das', 'de', 'do', 'dos', 'of', 'de', 'la', 'des', 'd', "'"];
+  var entities = {
+    findSentences: function findSentences(tokens) {},
+    findNames: function findNames(tokens) {
+      // Object with id and token
+      var names = [];
+      var cursor = 0;
+      var currentEntity = [];
+      var startSentence = true;
+
+      while (cursor < tokens.length) {
+        if (entities.isUcFirst(tokens[cursor].token)) {
+          if (!(startSentence && isStopWord(tokens[cursor].token, 'en'))) {
+            currentEntity.push({
+              token: tokens[cursor].token,
+              id: tokens[cursor].id,
+              cursor: cursor,
+              type: 'uc',
+              startSentence: startSentence
+            });
+          }
+
+          startSentence = false;
+        } else if ((entities.isParticule(tokens[cursor].token) || entities.isBlank(tokens[cursor].token)) && currentEntity.length) {
+          currentEntity.push({
+            token: tokens[cursor].token,
+            id: tokens[cursor].id,
+            cursor: cursor,
+            type: 'sep',
+            startSentence: startSentence
+          });
+        } else {
+          if (currentEntity.length) {
+            var trimmedEntity = entities.trim(currentEntity);
+
+            if (!(trimmedEntity.length == 1 && trimmedEntity[0].startSentence)) {
+              names.push(trimmedEntity);
+            }
+          }
+
+          currentEntity = [];
+        }
+
+        if (tokens[cursor].id == '-1' || entities.isFinalPunctuation(tokens[cursor].token)) {
+          startSentence = true;
+        }
+
+        cursor++;
+      }
+
+      return names;
+    },
+    isUcFirst: function isUcFirst(token) {
+      return /^[A-Z].*$/.test(token);
+    },
+    isFinalPunctuation: function isFinalPunctuation(token) {
+      return /^[.!?]$/.test(token);
+    },
+    isBlank: function isBlank(token) {
+      return /^[\s]$/.test(token);
+    },
+    isParticule: function isParticule(token) {
+      return particules.includes(token.toLowerCase());
+    },
+    trim: function trim(entity) {
+      var cursor = entity.length - 1;
+      var newEntity;
+
+      while (entity[cursor].type !== 'uc') {
+        cursor--;
+      }
+
+      newEntity = entity.slice(0, cursor + 1);
+
+      for (var i = 1; i < newEntity.length; i++) {
+        if (+newEntity[i].id !== +newEntity[i - 1].id + 1) {
+          console.log(newEntity);
+          return [];
+        }
+      }
+
+      return newEntity;
+    }
+  };
+
   var Labelizer =
   /*#__PURE__*/
   function () {
@@ -13609,7 +13726,8 @@
       this.o = options;
       this.indexToken = 0;
       this.consoleInitialized = false;
-      this.language = "en";
+      this.language = "en"; //this.loadHtml(['Email Limited']);
+
       this.init();
     }
 
@@ -13719,6 +13837,9 @@
       value: function repl(node) {
         var _this2 = this;
 
+        //console.log(node.nodeName);
+        var nodeBlockTypes = ['address', 'article', 'aside', 'blockquote', 'dd', 'div', 'dl', 'dt', 'fieldset', 'figcatpion', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hr', 'li', 'main', 'nav', 'ol', 'p', 'pre', 'section', 'table', 'tfoot', 'ul', 'video'];
+        var isBlockElement = nodeBlockTypes.includes(node.nodeName.toLowerCase());
         if (node.className === undefined || node.nodeName == "CODE" || node.nodeName == "PRE") return;
         var classNames = node.className.split(" ");
         if (classNames.includes("mw-editsection") || classNames.includes("plainlinks") || classNames.includes("references-small")) return;
@@ -13728,9 +13849,10 @@
           var n = nodes[i];
 
           if (n.nodeType == n.TEXT_NODE) {
-            var toks = n.textContent.split(/([\x2D\.0-9A-z\xC0-\xFC]*)/g).filter(function (x) {
+            var toks = n.textContent.replace(/\s\s+/g, ' ').split(/([\x2D\.0-9A-z\xC0-\xFC]*)/g).filter(function (x) {
               return x;
             });
+            console.log(n.textContent, toks);
             var _i2 = 0;
 
             while (toks[_i2]) {
@@ -13757,13 +13879,56 @@
           } else {
             this.repl(n);
           }
-        }
+        } //if (isBlockElement) {
+
+
+        var replacementNode = document.createElement("span");
+        replacementNode.innerHTML = '<span class="token" data-id="-1"></span>';
+        node.appendChild(replacementNode, node); //}
       } // Commands Console
 
     }, {
+      key: "getEntities",
+      value: function getEntities(args, opts) {
+        var selector = " .token";
+        var entityType = args[0];
+
+        var tokensEl = _toConsumableArray(document.querySelectorAll(this.selector + selector)).map(function (x) {
+          return {
+            id: x.getAttribute('data-id'),
+            token: x.innerText
+          };
+        }).filter(function (x) {
+          return x.token || x.id == '-1';
+        });
+
+        var results;
+
+        switch (entityType) {
+          case 'name':
+            results = entities.findNames(tokensEl);
+            this.highlightEntities(results, 'cyan');
+            break;
+        }
+      }
+    }, {
+      key: "highlightEntities",
+      value: function highlightEntities(res) {
+        var _this3 = this;
+
+        var color = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'red';
+        //let tokensEl = document.querySelectorAll(this.selector+" .token");
+        res.forEach(function (el) {
+          el.map(function (x) {
+            var token = document.querySelector(_this3.selector + " .token[data-id='" + x.id + "']");
+            token.style.backgroundColor = color;
+          });
+        });
+      }
+    }, {
       key: "getTranslation",
       value: function getTranslation(args, opts) {
-        var _this3 = this;
+        var _this4 = this;
 
         var w = new Wiktionary(args[0], "English");
         var index = 0;
@@ -13775,7 +13940,7 @@
 
         w.getInfos().then(function (data) {
           if (data.error) {
-            _this3.terminal.error(data.error);
+            _this4.terminal.error(data.error);
 
             return false;
           }
@@ -13788,7 +13953,7 @@
               }).length > 0) {
                 index++;
 
-                _this3.terminal.log(index.toString() + ". " + y.parsed);
+                _this4.terminal.log(index.toString() + ". " + y.parsed);
               } else {
                 if (lang !== "") {
                   var display = false;
@@ -13799,10 +13964,10 @@
                   })) ;
 
                   if (display) {
-                    _this3.terminal.log(y.parsed);
+                    _this4.terminal.log(y.parsed);
                   }
                 } else {
-                  _this3.terminal.log(y.parsed);
+                  _this4.terminal.log(y.parsed);
                 }
               }
             });
@@ -13812,29 +13977,6 @@
     }, {
       key: "getSynonyms",
       value: function getSynonyms(args, opts) {
-        var _this4 = this;
-
-        var w = new Wiktionary(args[0], "English");
-        w.getInfos().then(function (data) {
-          if (data.error) {
-            _this4.terminal.error(data.error);
-
-            return false;
-          }
-
-          var def = w.getSynonyms(data);
-          def.forEach(function (x) {
-            x.forEach(function (y) {
-              _this4.terminal.log(y.parsed);
-            });
-
-            _this4.terminal.log("<br/>");
-          });
-        });
-      }
-    }, {
-      key: "getAntonyms",
-      value: function getAntonyms(args, opts) {
         var _this5 = this;
 
         var w = new Wiktionary(args[0], "English");
@@ -13845,7 +13987,7 @@
             return false;
           }
 
-          var def = w.getAntonyms(data);
+          var def = w.getSynonyms(data);
           def.forEach(function (x) {
             x.forEach(function (y) {
               _this5.terminal.log(y.parsed);
@@ -13856,8 +13998,8 @@
         });
       }
     }, {
-      key: "getHyponyms",
-      value: function getHyponyms(args, opts) {
+      key: "getAntonyms",
+      value: function getAntonyms(args, opts) {
         var _this6 = this;
 
         var w = new Wiktionary(args[0], "English");
@@ -13868,7 +14010,7 @@
             return false;
           }
 
-          var def = w.getHyponyms(data);
+          var def = w.getAntonyms(data);
           def.forEach(function (x) {
             x.forEach(function (y) {
               _this6.terminal.log(y.parsed);
@@ -13879,8 +14021,8 @@
         });
       }
     }, {
-      key: "getHypernyms",
-      value: function getHypernyms(args, opts) {
+      key: "getHyponyms",
+      value: function getHyponyms(args, opts) {
         var _this7 = this;
 
         var w = new Wiktionary(args[0], "English");
@@ -13891,7 +14033,7 @@
             return false;
           }
 
-          var def = w.getHypernyms(data);
+          var def = w.getHyponyms(data);
           def.forEach(function (x) {
             x.forEach(function (y) {
               _this7.terminal.log(y.parsed);
@@ -13902,8 +14044,8 @@
         });
       }
     }, {
-      key: "getFurtherReading",
-      value: function getFurtherReading(args, opts) {
+      key: "getHypernyms",
+      value: function getHypernyms(args, opts) {
         var _this8 = this;
 
         var w = new Wiktionary(args[0], "English");
@@ -13914,7 +14056,7 @@
             return false;
           }
 
-          var def = w.getFurtherReading(data);
+          var def = w.getHypernyms(data);
           def.forEach(function (x) {
             x.forEach(function (y) {
               _this8.terminal.log(y.parsed);
@@ -13925,8 +14067,8 @@
         });
       }
     }, {
-      key: "getDerivedTerms",
-      value: function getDerivedTerms(args, opts) {
+      key: "getFurtherReading",
+      value: function getFurtherReading(args, opts) {
         var _this9 = this;
 
         var w = new Wiktionary(args[0], "English");
@@ -13937,7 +14079,7 @@
             return false;
           }
 
-          var def = w.getDerivedTerms(data);
+          var def = w.getFurtherReading(data);
           def.forEach(function (x) {
             x.forEach(function (y) {
               _this9.terminal.log(y.parsed);
@@ -13948,8 +14090,8 @@
         });
       }
     }, {
-      key: "getRelatedTerms",
-      value: function getRelatedTerms(args, opts) {
+      key: "getDerivedTerms",
+      value: function getDerivedTerms(args, opts) {
         var _this10 = this;
 
         var w = new Wiktionary(args[0], "English");
@@ -13960,7 +14102,7 @@
             return false;
           }
 
-          var def = w.getRelatedTerms(data);
+          var def = w.getDerivedTerms(data);
           def.forEach(function (x) {
             x.forEach(function (y) {
               _this10.terminal.log(y.parsed);
@@ -13971,8 +14113,8 @@
         });
       }
     }, {
-      key: "getEtymology",
-      value: function getEtymology(args, opts) {
+      key: "getRelatedTerms",
+      value: function getRelatedTerms(args, opts) {
         var _this11 = this;
 
         var w = new Wiktionary(args[0], "English");
@@ -13983,7 +14125,7 @@
             return false;
           }
 
-          var def = w.getEtymology(data);
+          var def = w.getRelatedTerms(data);
           def.forEach(function (x) {
             x.forEach(function (y) {
               _this11.terminal.log(y.parsed);
@@ -13994,8 +14136,8 @@
         });
       }
     }, {
-      key: "getPronunciation",
-      value: function getPronunciation(args, opts) {
+      key: "getEtymology",
+      value: function getEtymology(args, opts) {
         var _this12 = this;
 
         var w = new Wiktionary(args[0], "English");
@@ -14006,7 +14148,7 @@
             return false;
           }
 
-          var def = w.getPronunciation(data);
+          var def = w.getEtymology(data);
           def.forEach(function (x) {
             x.forEach(function (y) {
               _this12.terminal.log(y.parsed);
@@ -14017,8 +14159,8 @@
         });
       }
     }, {
-      key: "getDefinition",
-      value: function getDefinition(args, opts) {
+      key: "getPronunciation",
+      value: function getPronunciation(args, opts) {
         var _this13 = this;
 
         var w = new Wiktionary(args[0], "English");
@@ -14029,13 +14171,36 @@
             return false;
           }
 
-          var def = w.getDefinition(data);
+          var def = w.getPronunciation(data);
           def.forEach(function (x) {
             x.forEach(function (y) {
               _this13.terminal.log(y.parsed);
             });
 
             _this13.terminal.log("<br/>");
+          });
+        });
+      }
+    }, {
+      key: "getDefinition",
+      value: function getDefinition(args, opts) {
+        var _this14 = this;
+
+        var w = new Wiktionary(args[0], "English");
+        w.getInfos().then(function (data) {
+          if (data.error) {
+            _this14.terminal.error(data.error);
+
+            return false;
+          }
+
+          var def = w.getDefinition(data);
+          def.forEach(function (x) {
+            x.forEach(function (y) {
+              _this14.terminal.log(y.parsed);
+            });
+
+            _this14.terminal.log("<br/>");
           });
         });
       }
@@ -14202,7 +14367,7 @@
     }, {
       key: "freq",
       value: function freq(args, opts) {
-        var _this14 = this;
+        var _this15 = this;
 
         var selector = " .token";
         var sensitive = true;
@@ -14257,7 +14422,7 @@
 
         if (opts.isOption("p")) {
           this.terminal.log(words.map(function (x) {
-            return x[0] + " (" + _this14.digits2(x[1] / wordsCount * 100) + "%)";
+            return x[0] + " (" + _this15.digits2(x[1] / wordsCount * 100) + "%)";
           }).join(" - "));
         } else {
           this.terminal.log(words.map(function (x) {
@@ -14351,33 +14516,12 @@
     }, {
       key: "autocompleteWiki",
       value: function autocompleteWiki(str) {
-        var _this15 = this;
-
-        return new Promise(function (resolve) {
-          var myHeaders = new Headers();
-          myHeaders.append("Content-Type", "application/json");
-          fetch("https://" + _this15.language + ".wikipedia.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" + str + "&namespace=0&limit=10&origin=*", {
-            headers: myHeaders
-          }).then(function (response) {
-            return response.json();
-          }).then(function (text) {
-            if (text.error) {
-              _this15.terminal.error(text.error.info);
-            } else {
-              resolve(text[1]);
-            }
-          });
-        });
-      }
-    }, {
-      key: "autocompleteWiktionary",
-      value: function autocompleteWiktionary(str) {
         var _this16 = this;
 
         return new Promise(function (resolve) {
           var myHeaders = new Headers();
           myHeaders.append("Content-Type", "application/json");
-          fetch("https://" + _this16.language + ".wiktionary.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" + str + "&namespace=0&limit=10&origin=*", {
+          fetch("https://" + _this16.language + ".wikipedia.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" + str + "&namespace=0&limit=10&origin=*", {
             headers: myHeaders
           }).then(function (response) {
             return response.json();
@@ -14391,9 +14535,30 @@
         });
       }
     }, {
+      key: "autocompleteWiktionary",
+      value: function autocompleteWiktionary(str) {
+        var _this17 = this;
+
+        return new Promise(function (resolve) {
+          var myHeaders = new Headers();
+          myHeaders.append("Content-Type", "application/json");
+          fetch("https://" + _this17.language + ".wiktionary.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" + str + "&namespace=0&limit=10&origin=*", {
+            headers: myHeaders
+          }).then(function (response) {
+            return response.json();
+          }).then(function (text) {
+            if (text.error) {
+              _this17.terminal.error(text.error.info);
+            } else {
+              resolve(text[1]);
+            }
+          });
+        });
+      }
+    }, {
       key: "loadHtml",
       value: function loadHtml(args) {
-        var _this17 = this;
+        var _this18 = this;
         //(e || window.event).preventDefault();
         var label = args[0];
 
@@ -14412,17 +14577,17 @@
           return response.json();
         }).then(function (text) {
           if (text.error) {
-            _this17.terminal.error(text.error.info);
+            _this18.terminal.error(text.error.info);
           } else {
-            _this17.terminal.log("Page loaded!");
+            _this18.terminal.log("Page loaded!");
 
             var html = text.parse.text["*"];
             el.innerHTML = html;
 
-            _this17.init();
+            _this18.init();
           }
         })["catch"](function (error) {
-          _this17.terminal.error("! " + error);
+          _this18.terminal.error("! " + error);
         });
       }
     }]);

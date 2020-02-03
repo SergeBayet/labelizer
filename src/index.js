@@ -3,6 +3,7 @@ import carry from "./lexicography/carry";
 import { isStopWord } from "./lexicography/stopwords";
 import Terminal from "./terminal";
 import Wiktionary from "./wikitionary";
+import entities from "./lexicography/entities"
 const version = "0.0.1";
 
 export default class Labelizer {
@@ -14,6 +15,7 @@ export default class Labelizer {
     this.indexToken = 0;
     this.consoleInitialized = false;
     this.language = "en";
+    //this.loadHtml(['Email Limited']);
     this.init();
   }
 
@@ -110,6 +112,11 @@ export default class Labelizer {
   }
 
   repl(node) {
+    //console.log(node.nodeName);
+    let nodeBlockTypes = ['address', 'article', 'aside', 'blockquote', 'dd', 'div', 'dl', 'dt', 'fieldset', 'figcatpion',
+      'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hr', 'li', 'main', 'nav', 'ol', 'p', 'pre', 'section',
+      'table', 'tfoot', 'ul', 'video'];
+    let isBlockElement = nodeBlockTypes.includes(node.nodeName.toLowerCase());
     if (
       node.className === undefined ||
       node.nodeName == "CODE" ||
@@ -125,13 +132,15 @@ export default class Labelizer {
       classNames.includes("references-small")
     )
       return;
-    var nodes = node.childNodes;
 
+    var nodes = node.childNodes;
     for (var i = 0, m = nodes.length; i < m; i++) {
       var n = nodes[i];
 
       if (n.nodeType == n.TEXT_NODE) {
-        let toks = n.textContent.split(/([A-zÀ-ü0-9\-\.]*)/gu).filter(x => x);
+
+        let toks = n.textContent.replace(/\s\s+/g, ' ').split(/([A-zÀ-ü0-9\-\.]*)/gu).filter(x => x);
+        console.log(n.textContent, toks);
         let i = 0;
         while (toks[i]) {
           if (/^[^\.]*\.$/gm.test(toks[i])) {
@@ -165,9 +174,38 @@ export default class Labelizer {
         this.repl(n);
       }
     }
+    //if (isBlockElement) {
+    var replacementNode = document.createElement("span");
+    replacementNode.innerHTML = '<span class="token" data-id="-1"></span>';
+    node.appendChild(replacementNode, node);
+
+    //}
   }
 
   // Commands Console
+  getEntities(args, opts) {
+    let selector = " .token";
+    let entityType = args[0];
+    let tokensEl = [...document.querySelectorAll(this.selector + selector)]
+      .map(x => ({ id: x.getAttribute('data-id'), token: x.innerText }))
+      .filter(x => x.token || x.id == '-1');
+    let results;
+    switch (entityType) {
+      case 'name':
+        results = entities.findNames(tokensEl);
+        this.highlightEntities(results, 'cyan')
+        break;
+    }
+  }
+  highlightEntities(res, color = 'red') {
+    //let tokensEl = document.querySelectorAll(this.selector+" .token");
+    res.forEach(el => {
+      el.map(x => {
+        const token = document.querySelector(this.selector + " .token[data-id='" + x.id + "']");
+        token.style.backgroundColor = color;
+      });
+    })
+  }
   getTranslation(args, opts) {
     let w = new Wiktionary(args[0], "English");
     let index = 0;
@@ -651,10 +689,10 @@ export default class Labelizer {
       myHeaders.append("Content-Type", "application/json");
       fetch(
         "https://" +
-          this.language +
-          ".wikipedia.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" +
-          str +
-          "&namespace=0&limit=10&origin=*",
+        this.language +
+        ".wikipedia.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" +
+        str +
+        "&namespace=0&limit=10&origin=*",
 
         { headers: myHeaders }
       )
@@ -674,10 +712,10 @@ export default class Labelizer {
       myHeaders.append("Content-Type", "application/json");
       fetch(
         "https://" +
-          this.language +
-          ".wiktionary.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" +
-          str +
-          "&namespace=0&limit=10&origin=*",
+        this.language +
+        ".wiktionary.org/w/api.php?action=opensearch&format=json&formatversion=2&search=" +
+        str +
+        "&namespace=0&limit=10&origin=*",
 
         { headers: myHeaders }
       )
@@ -693,6 +731,7 @@ export default class Labelizer {
   }
   loadHtml(args, options = []) {
     //(e || window.event).preventDefault();
+
     let label = args[0];
     if (!label) {
       this.terminal.log("Argument 'url' is missing");
@@ -704,10 +743,10 @@ export default class Labelizer {
     myHeaders.append("Content-Type", "application/json");
     fetch(
       "http://" +
-        this.language +
-        ".wikipedia.org/w/api.php?action=parse&page=" +
-        label +
-        "&format=json&redirects&origin=*",
+      this.language +
+      ".wikipedia.org/w/api.php?action=parse&page=" +
+      label +
+      "&format=json&redirects&origin=*",
       { headers: myHeaders }
     )
       .then(response => response.json())
